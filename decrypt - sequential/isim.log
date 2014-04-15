@@ -1,0 +1,52 @@
+ISim log file
+Running: C:\Users\User\Documents\Projects\FPGA\decrypt\main_isim_beh.exe -intstyle ise -gui -tclbatch isim.cmd -wdb C:/Users/User/Documents/Projects/FPGA/decrypt/main_isim_beh.wdb 
+ISim P.20131013 (signature 0x7708f090)
+WARNING: A WEBPACK license was found.
+WARNING: Please use Xilinx License Configuration Manager to check out a full ISim license.
+WARNING: ISim will run in Lite mode. Please refer to the ISim documentation for more information on the differences between the Lite and the Full version.
+This is a Lite version of ISim.
+Time resolution is 1 ps
+# onerror resume
+# wave add /
+# run 1000 ns
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+# restart
+# isim force add /main/di 61626364658000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028 -radix hex
+# run all
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+# run 1.00us
+# restart
+# isim force add /main/di 0 -radix hex -cancel 1 ns
+# isim force add /main/di 61626364658000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028 -radix hex -time 1 ns -cancel 1 us
+# run all
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+# isim force add /main/di 0 -radix hex -cancel 100 ns
+# restart
+# isim force add /main/di 0 -radix hex -cancel 100 ns
+# run all
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+# isim force add /main/di 61626364658000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028 -radix hex -time 100 ns
+# run all
+# isim force add /main/di 61626364658000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028 -radix hex -time 100 ns -cancel 400 ns
+# run all
+# step
+# step
+ISim P.20131013 (signature 0x7708f090)
+WARNING: A WEBPACK license was found.
+WARNING: Please use Xilinx License Configuration Manager to check out a full ISim license.
+WARNING: ISim will run in Lite mode. Please refer to the ISim documentation for more information on the differences between the Lite and the Full version.
+This is a Lite version of ISim.
+# run 1000 ns
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+# restart
+# run all
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+# isim force add /main/di 61626364658000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028 -radix hex
+# run all
+# run 1.00us

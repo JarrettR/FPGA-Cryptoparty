@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/User/Documents/Projects/FPGA/decrypt/main_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="main" />
+            <top_module name="numeric_std" />
+            <top_module name="std_logic_1164" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="7" />
+   <wvobject fp_name="/main/di" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">di[511:0]</obj_property>
+      <obj_property name="ObjectShortName">di[511:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/main/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/main/d0o" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d0o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">d0o[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/main/d1o" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d1o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">d1o[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/main/d2o" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d2o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">d2o[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/main/d3o" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d3o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">d3o[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/main/d4o" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d4o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">d4o[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+</wave_config>

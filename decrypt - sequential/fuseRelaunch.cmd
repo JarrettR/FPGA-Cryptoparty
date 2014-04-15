@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -o "C:/Users/User/Documents/Projects/FPGA/decrypt/main_isim_beh.exe" -prj "C:/Users/User/Documents/Projects/FPGA/decrypt/main_beh.prj" "work.main" 
