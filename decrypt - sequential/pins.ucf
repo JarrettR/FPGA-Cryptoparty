@@ -1,0 +1,50 @@
+
+NET "CLK" LOC = "B8"; # Bank = 0, Signal name = MCLK
+
+
+# Pin assignment for DispCtl
+# Connected to Basys2 onBoard 7seg display
+NET "seg<0>" LOC = "L14"; # Bank = 1, Signal name = CA
+NET "seg<1>" LOC = "H12"; # Bank = 1, Signal name = CB
+NET "seg<2>" LOC = "N14"; # Bank = 1, Signal name = CC
+NET "seg<3>" LOC = "N11"; # Bank = 2, Signal name = CD
+NET "seg<4>" LOC = "P12"; # Bank = 2, Signal name = CE
+NET "seg<5>" LOC = "L13"; # Bank = 1, Signal name = CF
+NET "seg<6>" LOC = "M12"; # Bank = 1, Signal name = CG
+NET "seg<7>" LOC = "N13"; # Bank = 1, Signal name = DP
+
+NET "an<3>" LOC = "K14"; # Bank = 1, Signal name = AN3
+NET "an<2>" LOC = "M13"; # Bank = 1, Signal name = AN2
+NET "an<1>" LOC = "J12"; # Bank = 1, Signal name = AN1
+NET "an<0>" LOC = "F12"; # Bank = 1, Signal name = AN0
+#
+## Loop Back only tested signals
+#NET "Di<15>" LOC = "B2";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JA1
+#NET "Di<14>" LOC = "A3";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JA2
+#NET "Di<13>" LOC = "J3";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JA3
+#NET "Di<12>" LOC = "B5";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JA4
+#
+#NET "Di<11>" LOC = "C6";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JB1
+#NET "Di<10>" LOC = "B6";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JB2
+#NET "Di<9>" LOC = "C5";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JB3
+#NET "Di<8>" LOC = "B7";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JB4
+#
+#NET "Di<7>" LOC = "A9";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JC1
+#NET "Di<6>" LOC = "B9";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JC2
+#NET "Di<5>" LOC = "A10";# | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JC3
+#NET "Di<4>" LOC = "C9";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JC4
+#NET "Di<3>" LOC = "C12";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JD1
+#NET "Di<2>" LOC = "A13";#  | DRIVE = 2  | PULLUP ; # Bank = 2, Signal name = JD2
+#NET "Di<1>" LOC = "C13";#  | DRIVE = 2  | PULLUP ; # Bank = 1, Signal name = JD3
+#NET "Di<0>" LOC = "D12";#  | DRIVE = 2  | PULLUP ; # Bank = 2, Signal name = JD4 
+
+
+# Pin assignment for SWs
+NET "Di<7>" LOC = "N3";  # Bank = 2, Signal name = SW7
+NET "Di<6>" LOC = "E2";  # Bank = 3, Signal name = SW6
+NET "Di<5>" LOC = "F3";  # Bank = 3, Signal name = SW5
+NET "Di<4>" LOC = "G3";  # Bank = 3, Signal name = SW4
+NET "Di<3>" LOC = "B4";  # Bank = 3, Signal name = SW3
+NET "Di<2>" LOC = "K3";  # Bank = 3, Signal name = SW2
+NET "Di<1>" LOC = "L3";  # Bank = 3, Signal name = SW1
+NET "Di<0>" LOC = "P11";  # Bank = 2, Signal name = SW0
