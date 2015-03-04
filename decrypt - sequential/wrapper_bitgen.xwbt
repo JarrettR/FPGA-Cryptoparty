@@ -1,8 +1,0 @@
-INTSTYLE=ise
-INFILE=C:\Users\User\Documents\Projects\FPGA\decrypt\wrapper.ncd
-OUTFILE=C:\Users\User\Documents\Projects\FPGA\decrypt\wrapper.bit
-FAMILY=Spartan3E
-PART=xc3s1600e-4fg320
-WORKINGDIR=C:\Users\User\Documents\Projects\FPGA\decrypt
-LICENSE=WebPack
-USER_INFO=210882525_0_0_418

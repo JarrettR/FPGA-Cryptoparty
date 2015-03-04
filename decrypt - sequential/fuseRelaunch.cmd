@@ -1,1 +1,0 @@
--intstyle "ise" -incremental -o "C:/Users/User/Documents/Projects/FPGA/decrypt/testbench_isim_beh.exe" -prj "C:/Users/User/Documents/Projects/FPGA/decrypt/testbench_beh.prj" "work.testbench" 
