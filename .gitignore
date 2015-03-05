@@ -1,5 +1,4 @@
 *.html
-*.wcfg
 *.tcl
 *.wdb
 *.xmsgs
@@ -11,9 +10,20 @@
 *.ngc
 *.ngm
 *.map
+*/isim*
 *.xst
+*.exe
+*.ini
+*.sim
 *.par
 *.jou
+*.vdb
+*.dbg
+*.dll
+*.dat
+*.didat
+*.obj
+*.c
 *.wdf
 *.wpc
 *.ppr
