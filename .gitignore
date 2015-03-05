@@ -11,6 +11,13 @@
 *.ngc
 *.ngm
 *.map
+*.xst
+*.par
+*.jou
+*.wdf
+*.wpc
+*.ppr
+*.pcf
 *.vdbl
 *.vdbx
 */_ngo*

@@ -48,6 +48,8 @@ architecture Behavioral of SHA1 is
 	constant H4i: STD_LOGIC_VECTOR (31 downto 0) := X"C3D2E1F0";
 
 
+	--signal count: integer := 0;
+
 begin
 
 	process
@@ -74,10 +76,12 @@ begin
 		E := H4i;
 		
 		
-		for t in 0 to 15 loop
-			TEMP := Di ((511-(t * 32)) downto (480 -(t * 32)));
-			W(t) := TEMP;
+		for t in 1 to 15 loop
+		--	TEMP := Di ((511-(t * 32)) downto (480 -(t * 32)));
+			W(t) := W(t - 1);
 		end loop;
+		
+		W(0) := Di;
 		
 		for t in 16 to 79 loop
 			TEMP := W(t-3) xor W(t-8) xor W(t-14) xor W(t-16);
@@ -133,11 +137,12 @@ begin
 		end loop;
 		
 		
-		Do <= std_logic_vector(unsigned(H0i) + unsigned(A))
-			& std_logic_vector(unsigned(H1i) + unsigned(B))
-			& std_logic_vector(unsigned(H2i) + unsigned(C))
-			& std_logic_vector(unsigned(H3i) + unsigned(D))
-			& std_logic_vector(unsigned(H4i) + unsigned(E));
+		Do <= E;
+		--std_logic_vector(unsigned(H0i) + unsigned(A))
+			--& std_logic_vector(unsigned(H1i) + unsigned(B))
+		--	& std_logic_vector(unsigned(H2i) + unsigned(C))
+		--	& std_logic_vector(unsigned(H3i) + unsigned(D))
+		--	& std_logic_vector(unsigned(H4i) + unsigned(E));
 		
 	end process;
 	

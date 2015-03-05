@@ -30,6 +30,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity main is
+    port(
+			Di : in  STD_LOGIC_VECTOR (31 downto 0);
+         CLK : in  STD_LOGIC;
+         Do : out  STD_LOGIC_VECTOR (31 downto 0)
+        );
 end main;
 
 architecture Behavioral of main is
@@ -43,16 +48,20 @@ architecture Behavioral of main is
     end component;
     
    --Inputs
-   --signal Di : std_logic_vector(511 downto 0) := (others => '0');
-   signal CLK  : std_logic := '0';
-   signal LOAD : std_logic_vector(31 downto 0);
+   --signal Di : std_logic_vector(31 downto 0);-- := (others => '0');
+   --signal CLK  : std_logic := '0';
+   --signal LOAD : std_logic_vector(31 downto 0);
 
  	--Outputs
-   signal Do : std_logic_vector(31 downto 0);
+   --signal Do : std_logic_vector(31 downto 0);
 	
 	
 begin
-
+   hash: SHA1 PORT MAP (
+          Di => Di,
+          CLK => CLK,
+          Do => Do
+        );
 
 
 end Behavioral;
