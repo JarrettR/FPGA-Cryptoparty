@@ -39,7 +39,7 @@ end main;
 
 architecture Behavioral of main is
 
- component SHA1
+ component HMAC
     port(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
@@ -57,7 +57,7 @@ architecture Behavioral of main is
 	
 	
 begin
-   hash: SHA1 PORT MAP (
+   hmac: HMAC PORT MAP (
           Di => Di,
           CLK => CLK,
           Do => Do
