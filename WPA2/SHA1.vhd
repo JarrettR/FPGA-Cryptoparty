@@ -28,8 +28,9 @@ entity SHA1 is
     port (
 		Di : in STD_LOGIC_VECTOR (31 downto 0);
 		CLK : in STD_LOGIC;
-	  
-		Do : out STD_LOGIC_VECTOR (31 downto 0)
+		RST : in STD_LOGIC;
+		Do : out STD_LOGIC_VECTOR (31 downto 0);
+		Valid : out STD_LOGIC
     );
 end SHA1;
 
@@ -138,11 +139,6 @@ begin
 		
 		
 		Do <= E;
-		--std_logic_vector(unsigned(H0i) + unsigned(A))
-			--& std_logic_vector(unsigned(H1i) + unsigned(B))
-		--	& std_logic_vector(unsigned(H2i) + unsigned(C))
-		--	& std_logic_vector(unsigned(H3i) + unsigned(D))
-		--	& std_logic_vector(unsigned(H4i) + unsigned(E));
 		
 	end process;
 	

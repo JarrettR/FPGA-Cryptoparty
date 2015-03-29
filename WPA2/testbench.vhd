@@ -36,28 +36,15 @@ ENTITY testbench IS
 END testbench;
  
 ARCHITECTURE behavior OF testbench IS 
- 
-    -- Component Declaration for the Unit Under Test (UUT)
- 
---    COMPONENT main
---    PORT(
---         Di : IN  std_logic_vector(511 downto 0);
---         CLK : IN  std_logic;
---         LOAD: IN  std_logic;
---         D0o : OUT  std_logic_vector(31 downto 0);
---         D1o : OUT  std_logic_vector(31 downto 0);
---         D2o : OUT  std_logic_vector(31 downto 0);
---         D3o : OUT  std_logic_vector(31 downto 0);
---         D4o : OUT  std_logic_vector(31 downto 0);
---         Wo : OUT  std_logic_vector(511 downto 0)
---        );
---    END COMPONENT;
+
  
     COMPONENT main
     PORT(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
-         Do : out  STD_LOGIC_VECTOR (31 downto 0)
+         RST : in  STD_LOGIC;
+         Do : out  STD_LOGIC_VECTOR (31 downto 0);
+         Valid : out  STD_LOGIC
         );
     END COMPONENT;
     
@@ -65,10 +52,12 @@ ARCHITECTURE behavior OF testbench IS
    --Inputs
    --signal Di : std_logic_vector(511 downto 0) := (others => '0');
    signal CLK  : std_logic := '0';
+   signal RST  : std_logic := '0';
    signal LOAD : std_logic_vector(31 downto 0);
 
  	--Outputs
    signal Do : std_logic_vector(31 downto 0);
+   signal Valid : std_logic;
    --signal Di: std_logic_vector(31 downto 0);
    signal Di: std_logic_vector(31 downto 0) := X"0a000028";
 	
@@ -89,20 +78,9 @@ ARCHITECTURE behavior OF testbench IS
  
 BEGIN
  
-	-- Instantiate the Unit Under Test (UUT)
---   uut: main PORT MAP (
---          Di => Di,
---          CLK => CLK,
---          LOAD => LOAD,
---          D0o => D0o,
---          D1o => D1o,
---          D2o => D2o,
---          D3o => D3o,
---          D4o => D4o,
---          Wo => Wo
---        );
+
    uut: main PORT MAP (
-          Di, CLK, Do
+          Di, CLK, RST, Do, Valid
         );
 
    -- Clock process definitions
@@ -157,12 +135,6 @@ BEGIN
 --			X"65800000" after 90 ns,
 --			X"61626364" after 95 ns;
 
---		Di <= X"61626364" & X"65800000" & X"00000000" & X"00000000"
---			 & X"00000000" & X"00000000" & X"00000000" & X"00000000"
---			 & X"00000000" & X"00000000" & X"00000000" & X"00000000"
---			 & X"00000000" & X"00000000" & X"00000000" & X"00000028";
-
-      -- insert stimulus here 
 
    end process;
 

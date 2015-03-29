@@ -41,6 +41,7 @@
 *.stx
 *.xreport
 *.prj
+*.projectmgr
 *.syr
 *.bak
 *.make

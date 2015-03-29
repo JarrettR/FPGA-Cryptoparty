@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date:    22:44:10 03/02/2015 
+-- Create Date:    21:53:11 03/27/2015 
 -- Design Name: 
--- Module Name:    main - Behavioral 
+-- Module Name:    crc - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
@@ -29,28 +29,17 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity main is
-    port(
-			Di : in  STD_LOGIC_VECTOR (31 downto 0);
-         CLK : in  STD_LOGIC;
-         RST : in  STD_LOGIC;
-         Do : out  STD_LOGIC_VECTOR (31 downto 0);
-         Valid : out  STD_LOGIC
-        );
-end main;
+entity crc is
+    Port ( Di : in  STD_LOGIC_VECTOR (31 downto 0);
+           CLK : in  STD_LOGIC;
+           RST : in  STD_LOGIC;
+           Do : out  STD_LOGIC_VECTOR (31 downto 0);
+           Valid : out  STD_LOGIC);
+end crc;
 
-architecture Behavioral of main is
+architecture Behavioral of crc is
 
--- component HMAC
---    port(
---			Di : in  STD_LOGIC_VECTOR (31 downto 0);
---         CLK : in  STD_LOGIC;
---         Do : out  STD_LOGIC_VECTOR (31 downto 0)
---        );
---    end component;
-
-
- component CRC
+ component SHA1
     port(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
@@ -59,25 +48,49 @@ architecture Behavioral of main is
          Valid : out  STD_LOGIC
         );
     end component;
-    
-   --Inputs
-   --signal Di : std_logic_vector(31 downto 0);-- := (others => '0');
-   --signal CLK  : std_logic := '0';
-   --signal LOAD : std_logic_vector(31 downto 0);
-
- 	--Outputs
-   --signal Do : std_logic_vector(31 downto 0);
+	 
+	 
+	signal data: STD_LOGIC_VECTOR (31 downto 0) := X"00000000";
+	signal checksum: STD_LOGIC_VECTOR (31 downto 0) := X"00000000";
 	
 	
 begin
-   crc: CRC PORT MAP (
-          Di => Di,
+
+	process
+	variable DataLength: integer := 0;
+	begin
+		wait until CLK'event and CLK='1';
+		
+		if (RST = '0') then
+			if (DataLength > 0) then
+				checksum <= std_logic_vector(to_unsigned(DataLength, checksum'length));;
+				DataLength := 0;			
+			end if;
+		else
+			DataLength := DataLength + 1;	
+		end if;
+		
+	end process;
+	
+	process
+	variable count: integer := 0;
+	begin
+		wait until CLK'event and CLK='1';
+		
+		if (count = 0) then
+			data <= checksum;
+		else
+			data <= Di;
+		end if;
+	end process;
+	
+   sha: SHA1 PORT MAP (
+          Data => Di,
           CLK => CLK,
           RST => RST,
           Do => Do,
           Valid => Valid
         );
-
 
 end Behavioral;
 
