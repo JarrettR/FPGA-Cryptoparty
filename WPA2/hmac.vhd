@@ -34,7 +34,8 @@ entity HMAC is
            Dv : in  STD_LOGIC_VECTOR (511 downto 0);
            CLK : in  STD_LOGIC);
            RST : in  STD_LOGIC);
-           Do : out  STD_LOGIC_VECTOR (31 downto 0);
+           Do : out  STD_LOGIC_VECTOR (31 downto 0)
+			  );
 end HMAC;
 
 architecture Behavioral of HMAC is

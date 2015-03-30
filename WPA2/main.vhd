@@ -70,7 +70,7 @@ architecture Behavioral of main is
 	
 	
 begin
-   crc: CRC PORT MAP (
+   checksum: CRC PORT MAP (
           Di => Di,
           CLK => CLK,
           RST => RST,

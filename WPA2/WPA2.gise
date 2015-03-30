@@ -92,6 +92,10 @@
     <transform xil_pn:end_ts="1427530919" xil_pn:in_ck="2363338193091615923" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1427530919">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="SHA1.vhd"/>
       <outfile xil_pn:name="crc.vhd"/>
       <outfile xil_pn:name="hmac.vhd"/>
@@ -181,8 +185,8 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1427531076" xil_pn:in_ck="9145892917731129603" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-1702768299941974542" xil_pn:start_ts="1427531060">
-      <status xil_pn:value="FailedRun"/>
+    <transform xil_pn:end_ts="1427704461" xil_pn:in_ck="9145892917731129603" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-1702768299941974542" xil_pn:start_ts="1427704344">
+      <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="SHA1.ngr"/>
@@ -191,6 +195,7 @@
       <outfile xil_pn:name="main.ngc"/>
       <outfile xil_pn:name="main.ngr"/>
       <outfile xil_pn:name="main.prj"/>
+      <outfile xil_pn:name="main.stx"/>
       <outfile xil_pn:name="main.syr"/>
       <outfile xil_pn:name="main.xst"/>
       <outfile xil_pn:name="main_stx_beh.prj"/>
@@ -205,7 +210,8 @@
     <transform xil_pn:end_ts="1427516710" xil_pn:in_ck="3010067086862303471" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="4077658253884082052" xil_pn:start_ts="1427516684">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="InputChanged"/>
       <outfile xil_pn:name="_ngo"/>
       <outfile xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
       <outfile xil_pn:name="main.bld"/>

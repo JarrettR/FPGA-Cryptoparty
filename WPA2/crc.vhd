@@ -22,22 +22,23 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity crc is
+entity CRC is
     Port ( Di : in  STD_LOGIC_VECTOR (31 downto 0);
            CLK : in  STD_LOGIC;
            RST : in  STD_LOGIC;
            Do : out  STD_LOGIC_VECTOR (31 downto 0);
-           Valid : out  STD_LOGIC);
-end crc;
+           Valid : out  STD_LOGIC
+			 );
+end CRC;
 
-architecture Behavioral of crc is
+architecture Behavioral of CRC is
 
  component SHA1
     port(
@@ -63,7 +64,7 @@ begin
 		
 		if (RST = '0') then
 			if (DataLength > 0) then
-				checksum <= std_logic_vector(to_unsigned(DataLength, checksum'length));;
+				checksum <= std_logic_vector(to_unsigned(DataLength, checksum'length));
 				DataLength := 0;			
 			end if;
 		else
@@ -85,7 +86,7 @@ begin
 	end process;
 	
    sha: SHA1 PORT MAP (
-          Data => Di,
+          Di => data,
           CLK => CLK,
           RST => RST,
           Do => Do,
