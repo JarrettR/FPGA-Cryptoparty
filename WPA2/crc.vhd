@@ -52,45 +52,47 @@ architecture Behavioral of CRC is
 	 
 	 
 	signal data: STD_LOGIC_VECTOR (31 downto 0) := X"00000000";
-	signal checksum: STD_LOGIC_VECTOR (31 downto 0) := X"00000000";
+	signal DataLength: integer := 0;
+	signal CheckSum: integer := 0;
 	
 	
 begin
 
-	process
-	variable DataLength: integer := 0;
-	begin
-		wait until CLK'event and CLK='1';
+--	process
+--	begin
+--		wait until rising_edge(RST);
+--		
+--		DataLength <= 0;
+--		CheckSum <= 0;
+--		
+--	end process;
+	
 		
-		if (RST = '0') then
-			if (DataLength > 0) then
-				checksum <= std_logic_vector(to_unsigned(DataLength, checksum'length));
-				DataLength := 0;			
-			end if;
-		else
-			DataLength := DataLength + 1;	
-		end if;
-		
-	end process;
 	
 	process
-	variable count: integer := 0;
 	begin
 		wait until CLK'event and CLK='1';
-		
-		if (count = 0) then
-			data <= checksum;
+		DataLength <= DataLength + 1;	
+		if (RST = '1') then
+			CheckSum <= CheckSum + 1;	
+		end if;
+		if (DataLength = 16) then
+			data <= std_logic_vector(to_unsigned(CheckSum, data'length));	
+			DataLength <= 0;
+			CheckSum <= 0;
 		else
 			data <= Di;
 		end if;
+		
 	end process;
 	
+
    sha: SHA1 PORT MAP (
-          Di => data,
-          CLK => CLK,
-          RST => RST,
-          Do => Do,
-          Valid => Valid
+          data,
+          CLK,
+          RST,
+          Do,
+          Valid
         );
 
 end Behavioral;

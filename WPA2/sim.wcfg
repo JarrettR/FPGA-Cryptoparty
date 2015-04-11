@@ -11,10 +11,14 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="8" />
+   <WVObjectSize size="9" />
    <wvobject fp_name="/testbench/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
    </wvobject>
    <wvobject fp_name="/testbench/load" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">load[31:0]</obj_property>
@@ -23,12 +27,14 @@
    <wvobject fp_name="/testbench/do" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">do[31:0]</obj_property>
       <obj_property name="ObjectShortName">do[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/valid" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">valid</obj_property>
+      <obj_property name="ObjectShortName">valid</obj_property>
    </wvobject>
    <wvobject fp_name="/testbench/di" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">di[31:0]</obj_property>
       <obj_property name="ObjectShortName">di[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/testbench/count" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">count</obj_property>
@@ -41,9 +47,5 @@
    <wvobject fp_name="/testbench/w2" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">w2[511:0]</obj_property>
       <obj_property name="ObjectShortName">w2[511:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/testbench/clk_period" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">clk_period</obj_property>
-      <obj_property name="ObjectShortName">clk_period</obj_property>
    </wvobject>
 </wave_config>

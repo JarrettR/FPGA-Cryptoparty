@@ -59,7 +59,7 @@ ARCHITECTURE behavior OF testbench IS
    signal Do : std_logic_vector(31 downto 0);
    signal Valid : std_logic;
    --signal Di: std_logic_vector(31 downto 0);
-   signal Di: std_logic_vector(31 downto 0) := X"0a000028";
+   signal Di: std_logic_vector(31 downto 0);-- := X"0a000028";
 	
 	constant W1 : std_logic_vector(511 downto 0) := X"31323334" & X"35800000" & X"00000000" & X"00000000"
 			 & X"00000000" & X"00000000" & X"00000000" & X"00000000"
@@ -74,7 +74,7 @@ ARCHITECTURE behavior OF testbench IS
    -- Clock period definitions
    constant CLK_period : time := 5 ns;
 	
-	signal count: integer range 0 to 31;
+	signal count: integer range 0 to 33;
  
 BEGIN
  
@@ -100,14 +100,19 @@ BEGIN
       -- hold reset state for 100 ns.
 --      LOAD <=  '1' after 5 ns,
 --					'0' after 15 ns;
-		if count < 16 then
-			Di <= W1((511 - (count * 32)) downto (480 - (count * 32)));
+		if count = 0 then
+			RST <= '1';
 			count <= count + 1;
-		elsif count < 31 then 
-			Di <= W2((511 - ((count - 16) * 32)) downto (480 - ((count - 16) * 32)));
+		elsif count < 17 then
+			Di <= W1((511 - ((count - 1) * 32)) downto (480 - ((count - 1) * 32)));
+			count <= count + 1;
+			RST <= '0';
+		elsif count < 33 then 
+			RST <= '1';
+			Di <= W2((511 - ((count - 17) * 32)) downto (480 - ((count - 17) * 32)));
 			count <= count + 1;
 		else 
-			Di <= W2((511 - ((count - 16) * 32)) downto (480 - ((count - 16) * 32)));
+			Di <= W2(31 downto 0);
 			count <= 0;
 		end if; 
 		

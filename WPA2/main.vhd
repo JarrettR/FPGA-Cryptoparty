@@ -50,7 +50,7 @@ architecture Behavioral of main is
 --    end component;
 
 
- component CRC
+ component SHA1
     port(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
@@ -70,7 +70,7 @@ architecture Behavioral of main is
 	
 	
 begin
-   checksum: CRC PORT MAP (
+   sha: SHA1 PORT MAP (
           Di => Di,
           CLK => CLK,
           RST => RST,
