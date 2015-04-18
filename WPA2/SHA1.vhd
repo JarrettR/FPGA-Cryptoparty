@@ -28,9 +28,7 @@ entity SHA1 is
     port (
 		Di : in STD_LOGIC_VECTOR (31 downto 0);
 		CLK : in STD_LOGIC;
-		RST : in STD_LOGIC;
-		Do : out STD_LOGIC_VECTOR (31 downto 0);
-		Valid : out STD_LOGIC
+		Do : out STD_LOGIC_VECTOR (31 downto 0)
     );
 end SHA1;
 
@@ -77,12 +75,13 @@ begin
 		E := H4i;
 		
 		
+		W(0) := Di;
+		
 		for t in 1 to 15 loop
 		--	TEMP := Di ((511-(t * 32)) downto (480 -(t * 32)));
 			W(t) := W(t - 1);
 		end loop;
 		
-		W(0) := Di;
 		
 		for t in 16 to 79 loop
 			TEMP := W(t-3) xor W(t-8) xor W(t-14) xor W(t-16);

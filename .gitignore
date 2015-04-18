@@ -3,6 +3,17 @@
 *.wdb
 *.xmsgs
 *.cmd
+*.xpi
+*.twr
+*.twx
+*.unroutes
+*.ut
+*.csv
+*.bgn
+*.drc
+*.ptwx
+*.pad
+*.txt
 *.log
 *.debug
 *.ngr

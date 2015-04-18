@@ -33,9 +33,7 @@ entity main is
     port(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
-         RST : in  STD_LOGIC;
-         Do : out  STD_LOGIC_VECTOR (31 downto 0);
-         Valid : out  STD_LOGIC
+         Do : out  STD_LOGIC_VECTOR (31 downto 0)
         );
 end main;
 
@@ -54,9 +52,7 @@ architecture Behavioral of main is
     port(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
-         RST : in  STD_LOGIC;
-         Do : out  STD_LOGIC_VECTOR (31 downto 0);
-         Valid : out  STD_LOGIC
+         Do : out  STD_LOGIC_VECTOR (31 downto 0)
         );
     end component;
     
@@ -73,9 +69,7 @@ begin
    sha: SHA1 PORT MAP (
           Di => Di,
           CLK => CLK,
-          RST => RST,
-          Do => Do,
-          Valid => Valid
+          Do => Do
         );
 
 

@@ -36,15 +36,28 @@ ENTITY testbench IS
 END testbench;
  
 ARCHITECTURE behavior OF testbench IS 
-
+ 
+    -- Component Declaration for the Unit Under Test (UUT)
+ 
+--    COMPONENT main
+--    PORT(
+--         Di : IN  std_logic_vector(511 downto 0);
+--         CLK : IN  std_logic;
+--         LOAD: IN  std_logic;
+--         D0o : OUT  std_logic_vector(31 downto 0);
+--         D1o : OUT  std_logic_vector(31 downto 0);
+--         D2o : OUT  std_logic_vector(31 downto 0);
+--         D3o : OUT  std_logic_vector(31 downto 0);
+--         D4o : OUT  std_logic_vector(31 downto 0);
+--         Wo : OUT  std_logic_vector(511 downto 0)
+--        );
+--    END COMPONENT;
  
     COMPONENT main
     PORT(
 			Di : in  STD_LOGIC_VECTOR (31 downto 0);
          CLK : in  STD_LOGIC;
-         RST : in  STD_LOGIC;
-         Do : out  STD_LOGIC_VECTOR (31 downto 0);
-         Valid : out  STD_LOGIC
+         Do : out  STD_LOGIC_VECTOR (31 downto 0)
         );
     END COMPONENT;
     
@@ -52,14 +65,12 @@ ARCHITECTURE behavior OF testbench IS
    --Inputs
    --signal Di : std_logic_vector(511 downto 0) := (others => '0');
    signal CLK  : std_logic := '0';
-   signal RST  : std_logic := '0';
    signal LOAD : std_logic_vector(31 downto 0);
 
  	--Outputs
    signal Do : std_logic_vector(31 downto 0);
-   signal Valid : std_logic;
    --signal Di: std_logic_vector(31 downto 0);
-   signal Di: std_logic_vector(31 downto 0);-- := X"0a000028";
+   signal Di: std_logic_vector(31 downto 0) := X"0a000028";
 	
 	constant W1 : std_logic_vector(511 downto 0) := X"31323334" & X"35800000" & X"00000000" & X"00000000"
 			 & X"00000000" & X"00000000" & X"00000000" & X"00000000"
@@ -74,13 +85,24 @@ ARCHITECTURE behavior OF testbench IS
    -- Clock period definitions
    constant CLK_period : time := 5 ns;
 	
-	signal count: integer range 0 to 33;
+	signal count: integer range 0 to 31;
  
 BEGIN
  
-
+	-- Instantiate the Unit Under Test (UUT)
+--   uut: main PORT MAP (
+--          Di => Di,
+--          CLK => CLK,
+--          LOAD => LOAD,
+--          D0o => D0o,
+--          D1o => D1o,
+--          D2o => D2o,
+--          D3o => D3o,
+--          D4o => D4o,
+--          Wo => Wo
+--        );
    uut: main PORT MAP (
-          Di, CLK, RST, Do, Valid
+          Di, CLK, Do
         );
 
    -- Clock process definitions
@@ -100,19 +122,14 @@ BEGIN
       -- hold reset state for 100 ns.
 --      LOAD <=  '1' after 5 ns,
 --					'0' after 15 ns;
-		if count = 0 then
-			RST <= '1';
+		if count < 16 then
+			Di <= W1((511 - (count * 32)) downto (480 - (count * 32)));
 			count <= count + 1;
-		elsif count < 17 then
-			Di <= W1((511 - ((count - 1) * 32)) downto (480 - ((count - 1) * 32)));
-			count <= count + 1;
-			RST <= '0';
-		elsif count < 33 then 
-			RST <= '1';
-			Di <= W2((511 - ((count - 17) * 32)) downto (480 - ((count - 17) * 32)));
+		elsif count < 31 then 
+			Di <= W2((511 - ((count - 16) * 32)) downto (480 - ((count - 16) * 32)));
 			count <= count + 1;
 		else 
-			Di <= W2(31 downto 0);
+			Di <= W2((511 - ((count - 16) * 32)) downto (480 - ((count - 16) * 32)));
 			count <= 0;
 		end if; 
 		
@@ -140,6 +157,12 @@ BEGIN
 --			X"65800000" after 90 ns,
 --			X"61626364" after 95 ns;
 
+--		Di <= X"61626364" & X"65800000" & X"00000000" & X"00000000"
+--			 & X"00000000" & X"00000000" & X"00000000" & X"00000000"
+--			 & X"00000000" & X"00000000" & X"00000000" & X"00000000"
+--			 & X"00000000" & X"00000000" & X"00000000" & X"00000028";
+
+      -- insert stimulus here 
 
    end process;
 
