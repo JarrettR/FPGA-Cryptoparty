@@ -16,6 +16,7 @@ architecture behavioural of hmac is
 			rst        : in  std_logic;
 			start      : in  std_logic;
 			load       : in  std_logic;
+			cont       : in  std_logic;
 			last_word  : in  std_logic;
 			last_bytes : in  std_logic_vector(1 downto 0);
 			ack        : out std_logic;
@@ -57,15 +58,16 @@ architecture behavioural of hmac is
 	
 	signal bo_chunk      : chunk := (others => (others => '0'));
 	signal bo_count      : natural := 0;
+	signal cont  : std_logic := '0';
 
 begin
 	sha1_bi : sha1 
 		port map (
-			s_clk, s_rst, bi_start, bi_load, bi_last_word, bi_last_bytes, bi_ack, bi_msg, bi_hash, bi_ready
+			s_clk, s_rst, bi_start, bi_load, cont, bi_last_word, bi_last_bytes, bi_ack, bi_msg, bi_hash, bi_ready
 		);
 	sha1_bo : sha1 
 		port map (
-			s_clk, s_rst, bo_start, bo_load, bo_last_word, bo_last_bytes, bo_ack, bo_msg, bo_hash, bo_ready
+			s_clk, s_rst, bo_start, bo_load, cont, bo_last_word, bo_last_bytes, bo_ack, bo_msg, bo_hash, bo_ready
 		);
 
 	rst_process :process
@@ -121,6 +123,9 @@ begin
 		if rising_edge(s_clk) then
 			bo_load <= '0';
 			if bo_start = '1' then
+				if bo_count > 13 then
+					cont <= '1';
+				end if;	
 				if bo_ack = '1' or bo_ready = '1' then
 					if 0 <= i and i < bo_count - 1 then
 						bo_load      <= '1';
@@ -148,7 +153,7 @@ begin
 	
 	bi_process : process
 	begin
-		wait for 20 ns;
+		wait for 5 ns;
 	   
 		-- SHA1("abcdefghijklmnopqrstuvwx") = d717e22e 1659305f ad6ef088 64923db6 4aba9c08
 		--bi_chunk(0)   <= X"61626364";
@@ -171,7 +176,7 @@ begin
 		bi_chunk(13)   <= X"00000000" xor X"36363636";
 		--bi_chunk(14)   <= X"00000000" xor X"36363636";
 		--bi_chunk(15)   <= X"00000000" xor X"36363636";
-		bi_count      <= 14;
+		bi_count      <= 1;
 		bi_last_bytes <= "00";
 		bi_start      <= '1';
 		wait until bi_ready = '1'; 
@@ -185,7 +190,7 @@ begin
 	
 	bo_process : process
 	begin
-		wait for 40 ns;
+		wait for 20 ns;
 		wait until bi_ready='1';
 	   
 		-- SHA1("abcdefghijklmnopqrstuvwx") = d717e22e 1659305f ad6ef088 64923db6 4aba9c08
@@ -225,9 +230,15 @@ begin
 		bo_chunk(10)   <= X"4d4e4f50";
 		bo_chunk(11)   <= X"51525354";
 		bo_chunk(12)   <= X"55565758";
-		bo_chunk(13)   <= X"00595a30";
-		bo_count      <= 14;
-		bo_last_bytes <= "11";
+		bo_chunk(13)   <= X"595a3031";
+		bo_chunk(14)   <= X"32333435";
+		bo_chunk(15)   <= X"00363738";
+		bo_chunk(16)   <= X"71727374";
+		bo_chunk(17)   <= X"75767778";
+		bo_chunk(18)   <= X"41424344";
+		bo_count      <= 11;
+		bo_last_bytes <= "00";
+		--cont <= '1';
 		bo_start      <= '1';
 		wait for 5 ns;
 		wait until bo_ready = '1'; 

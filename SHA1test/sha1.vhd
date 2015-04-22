@@ -15,6 +15,7 @@ entity sha1 is
 		rst        : in  std_logic;  -- asynchronous reset
 		start      : in  std_logic;
 		load       : in  std_logic;
+		cont       : in  std_logic;
 		last_word  : in  std_logic;
 		last_bytes : in  std_logic_vector(1 downto 0);
 		ack        : out std_logic;
@@ -32,6 +33,7 @@ architecture sha1_arch of sha1 is
 			clk        : in  std_logic;
 			rst        : in  std_logic;  -- asynchronous reset
 			load       : in  std_logic;
+			cont  		 : in std_logic;
 			last_word  : in  std_logic;
 			last_bytes : in  std_logic_vector(1 downto 0);
 			ack        : out std_logic;
@@ -72,7 +74,7 @@ architecture sha1_arch of sha1 is
 	
 	signal h     : std_logic_vector(159 downto 0);
 	signal hashin     : std_logic_vector(159 downto 0);
-	signal cont  : std_logic := '0';
+	--signal cont  : std_logic := '0';
 	
 begin
 
@@ -81,6 +83,7 @@ begin
 			clk        => clk,
 			rst        => rst,
 			load       => load_prep,
+			cont			=> cont,
 			last_word  => last_word,
 			last_bytes => last_bytes,
 			ack        => ack_prep,

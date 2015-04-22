@@ -86,11 +86,12 @@ begin
 			h2i <= h(95 downto 64);
 			h3i <= h(63 downto 32);
 			h4i <= h(31 downto 0);
---			h0i <= h0;
---			h1i <= h1;
---			h2i <= h2;
---			h3i <= h3;
---			h4i <= h4;
+		else
+			h0i <= h0;
+			h1i <= h1;
+			h2i <= h2;
+			h3i <= h3;
+			h4i <= h4;
 		end if;
 		
 		if rst = '0' then
@@ -173,6 +174,8 @@ begin
 					state <= C_NEXT_ROUND;
 					if 0 <= round and round < 16 then 
 						ack <= '1';
+					--elsif cont = '1' and round < 16 then 
+					--	ack <= '1';
 					end if;
 				else 
 					state <= C_PROCESS_WORD;
@@ -197,7 +200,9 @@ begin
 					hash( 95 downto  64) <= hash_round( 95 downto  64) + h2i;  -- c
 					hash( 63 downto  32) <= hash_round( 63 downto  32) + h3i;  -- d
 					hash( 31 downto   0) <= hash_round( 31 downto   0) + h4i;  -- e
-					ready  <= '1';  -- end of operations
+					--if cont = '0' then
+						ready  <= '1';  -- end of operations
+					--end if;
 					state  <= C_IDLE;
 				end if;
 			when others =>  

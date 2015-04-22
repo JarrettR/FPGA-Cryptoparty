@@ -8,6 +8,7 @@ entity sha1_chunk_prep is
 		clk        : in  std_logic;
 		rst        : in  std_logic;  -- asynchronous reset
 		load       : in  std_logic;
+		cont  		: in std_logic;
 		last_word  : in  std_logic;  
 		last_bytes : in  std_logic_vector(1 downto 0);  -- number of bytes that need to be loaded
 		ack        : out std_logic;
@@ -92,10 +93,10 @@ begin
 				ready <= '0';
 				if load_pulse = '1' then 
 					if last_word = '0' then 
-						if 0 <= i and i < 13 then 
+						--if 0 <= i and i < 13 then 
 							dout <= din;
 							bits <= bits + 32;
-						end if;
+						--end if;
 						state <= C_SEND_WORD;
 					else
 						case last_bytes is 
@@ -142,6 +143,10 @@ begin
 						dout  <= (others => '0');
 						i     <= i + 1;
 						state <= C_ZERO_FILL;
+					elsif cont = '1' and i < 29 then
+						dout  <= (others => '0');
+						i     <= i + 1;
+						state <= C_ZERO_FILL;
 					else
 						size  <= std_logic_vector(to_unsigned(bits, 64));
 						dout  <= size(63 downto 32); 
@@ -153,14 +158,28 @@ begin
 			when C_SIZE_FILL =>
 				ready <= '0';
 				if load_pulse = '1' then 
-					if i = 14 then 
+					if i = 14 and cont = '0' then 
 						-- here we generate 2 words for the complete 
 						-- message size (number of bits received)
 						dout  <= size(31 downto 0);
 						state <= C_SIZE_FILL;
 						ack   <= '1';
 						i     <= i + 1;
-					elsif i = 15 then 
+					elsif i = 15 and cont = '0' then 
+						-- last word : go idle
+						dout  <= size(31 downto 0);
+						ack   <= '1';
+						state <= C_IDLE;
+						ready <= '1';
+						i     <= 0;
+					elsif i = 30 then 
+						-- here we generate 2 words for the complete 
+						-- message size (number of bits received)
+						dout  <= size(31 downto 0);
+						state <= C_SIZE_FILL;
+						ack   <= '1';
+						i     <= i + 1;
+					elsif i = 31 then 
 						-- last word : go idle
 						dout  <= size(31 downto 0);
 						ack   <= '1';
