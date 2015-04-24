@@ -174,8 +174,8 @@ begin
 					state <= C_NEXT_ROUND;
 					if 0 <= round and round < 16 then 
 						ack <= '1';
-					--elsif cont = '1' and round < 16 then 
-					--	ack <= '1';
+					elsif cont = '1' and round < 32 then 
+						ack <= '1';
 					end if;
 				else 
 					state <= C_PROCESS_WORD;
@@ -200,9 +200,9 @@ begin
 					hash( 95 downto  64) <= hash_round( 95 downto  64) + h2i;  -- c
 					hash( 63 downto  32) <= hash_round( 63 downto  32) + h3i;  -- d
 					hash( 31 downto   0) <= hash_round( 31 downto   0) + h4i;  -- e
-					--if cont = '0' then
+					if cont = '0' then
 						ready  <= '1';  -- end of operations
-					--end if;
+					end if;
 					state  <= C_IDLE;
 				end if;
 			when others =>  

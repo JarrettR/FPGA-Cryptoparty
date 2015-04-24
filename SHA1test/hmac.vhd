@@ -123,7 +123,7 @@ begin
 		if rising_edge(s_clk) then
 			bo_load <= '0';
 			if bo_start = '1' then
-				if bo_count > 13 then
+				if i > 14 then
 					cont <= '1';
 				end if;	
 				if bo_ack = '1' or bo_ready = '1' then
@@ -232,11 +232,11 @@ begin
 		bo_chunk(12)   <= X"55565758";
 		bo_chunk(13)   <= X"595a3031";
 		bo_chunk(14)   <= X"32333435";
-		bo_chunk(15)   <= X"00363738";
+		bo_chunk(15)   <= X"35363738";
 		bo_chunk(16)   <= X"71727374";
 		bo_chunk(17)   <= X"75767778";
 		bo_chunk(18)   <= X"41424344";
-		bo_count      <= 11;
+		bo_count      <= 19;
 		bo_last_bytes <= "00";
 		--cont <= '1';
 		bo_start      <= '1';

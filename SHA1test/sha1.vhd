@@ -74,7 +74,7 @@ architecture sha1_arch of sha1 is
 	
 	signal h     : std_logic_vector(159 downto 0);
 	signal hashin     : std_logic_vector(159 downto 0);
-	--signal cont  : std_logic := '0';
+	signal continue  : std_logic := '0';
 	
 begin
 
@@ -116,6 +116,7 @@ begin
 		elsif rising_edge(clk) then
 			load_prep <= load;  -- not combinatorial
 			h <= hashin; 
+			--continue <= cont; 
 
 			case state is
 			when C_IDLE =>
