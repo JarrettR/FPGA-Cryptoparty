@@ -123,7 +123,7 @@ begin
 		if rising_edge(s_clk) then
 			bo_load <= '0';
 			if bo_start = '1' then
-				if i > 14 then
+				if i > 16 then
 					cont <= '1';
 				end if;	
 				if bo_ack = '1' or bo_ready = '1' then

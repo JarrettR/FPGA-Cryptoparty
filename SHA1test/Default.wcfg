@@ -48,14 +48,6 @@
       <obj_property name="ElementShortName">i</obj_property>
       <obj_property name="ObjectShortName">i</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/bo_ack" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">bo_ack</obj_property>
-      <obj_property name="ObjectShortName">bo_ack</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/bo_load" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">bo_load</obj_property>
-      <obj_property name="ObjectShortName">bo_load</obj_property>
-   </wvobject>
    <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_prep_object/state" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">state</obj_property>
       <obj_property name="ObjectShortName">state</obj_property>
@@ -115,5 +107,13 @@
    <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/h0i" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">h0i[31:0]</obj_property>
       <obj_property name="ObjectShortName">h0i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/hmac/cont" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">cont</obj_property>
+      <obj_property name="ObjectShortName">cont</obj_property>
+   </wvobject>
+   <wvobject fp_name="/hmac/sha1_bo/i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">i</obj_property>
+      <obj_property name="ObjectShortName">i</obj_property>
    </wvobject>
 </wave_config>

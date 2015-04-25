@@ -8,6 +8,7 @@ use ieee.numeric_std.all;
 -- https://github.com/accpnt/sha1crack/blob/master/modules/u_sha1/
 -- Will soon be replacing it with custom SHA1 stuff that does
 -- exactly what I need with no wasted clocks or slices
+-- SEVERLY HACKED UP AND INEFFICIENT NOW
 
 entity sha1 is
 	port(
@@ -75,6 +76,7 @@ architecture sha1_arch of sha1 is
 	signal h     : std_logic_vector(159 downto 0);
 	signal hashin     : std_logic_vector(159 downto 0);
 	signal continue  : std_logic := '0';
+	signal i          : natural := 0;
 	
 begin
 
@@ -124,6 +126,9 @@ begin
 				if start = '1' and ready_prep = '1' and ready_chunk = '1' then 
 					state <= C_PREPROCESS_MSG;
 					ready <= '0';
+				--elsif cont = '1' then
+				--	state <= C_PREPROCESS_MSG;
+				--	ready <= '0';
 				else 
 					state <= C_IDLE;
 				end if;
@@ -131,6 +136,8 @@ begin
 				ready <= '0';
 				load_chunk <= '0';
 				if ack_prep = '1' and ready_prep = '0' then 
+				
+					i <= i + 1;
 					load_chunk <= '1';
 					state <= C_PROCESS_WORD;
 				elsif ack_prep = '1' and ready_prep = '1' then 
