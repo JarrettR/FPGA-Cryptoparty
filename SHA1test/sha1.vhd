@@ -62,6 +62,7 @@ architecture sha1_arch of sha1 is
 
 	-- types
 	type state_type is (C_IDLE, C_PREPROCESS_MSG, C_PROCESS_WORD, C_WAIT_FOR_HASH);
+	type msg_buffer is array (0 to 15) of std_logic_vector(31 downto 0); 
 	
 	-- signals
 	signal load_prep   : std_logic := '0';
@@ -77,6 +78,7 @@ architecture sha1_arch of sha1 is
 	signal hashin     : std_logic_vector(159 downto 0);
 	signal continue  : std_logic := '0';
 	signal i          : natural := 0;
+	signal load_buffer      : msg_buffer := (others => (others => '0'));
 	
 begin
 
@@ -115,6 +117,7 @@ begin
 	begin
 		if rst = '0' then
 			ready <= '1';
+			i <= 0;
 		elsif rising_edge(clk) then
 			load_prep <= load;  -- not combinatorial
 			h <= hashin; 
@@ -136,8 +139,10 @@ begin
 				ready <= '0';
 				load_chunk <= '0';
 				if ack_prep = '1' and ready_prep = '0' then 
-				
 					i <= i + 1;
+					if i > 15 then
+						load_buffer(i - 16) <= msg_prep;
+					end if;
 					load_chunk <= '1';
 					state <= C_PROCESS_WORD;
 				elsif ack_prep = '1' and ready_prep = '1' then 

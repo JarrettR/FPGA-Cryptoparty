@@ -13,7 +13,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="26" />
    <wvobject fp_name="/hmac/bo_start" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">bo_start</obj_property>
       <obj_property name="ObjectShortName">bo_start</obj_property>
@@ -115,5 +115,9 @@
    <wvobject fp_name="/hmac/sha1_bo/i" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">i</obj_property>
       <obj_property name="ObjectShortName">i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/hmac/sha1_bo/load_buffer" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">load_buffer[0:15]</obj_property>
+      <obj_property name="ObjectShortName">load_buffer[0:15]</obj_property>
    </wvobject>
 </wave_config>

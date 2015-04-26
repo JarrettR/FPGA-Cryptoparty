@@ -244,6 +244,14 @@ begin
 		wait until bo_ready = '1'; 
 		bo_start      <= '0';
 		wait until s_clk = '1';
+		
+		
+		wait for 30 ns;
+		bo_start      <= '1';
+		wait for 5 ns;
+		wait until bo_ready = '1'; 
+		bo_start      <= '0';
+		wait until s_clk = '1';
 
 		
 	end process bo_process;
