@@ -153,31 +153,27 @@ begin
 	
 	bi_process : process
 	begin
-		wait for 5 ns;
+		wait for 20 ns;
 	   
 		-- SHA1("abcdefghijklmnopqrstuvwx") = d717e22e 1659305f ad6ef088 64923db6 4aba9c08
 		--bi_chunk(0)   <= X"61626364";
 		--bi_chunk(1)   <= X"65666768";
 		
 		--ABCDE, 12345678
-		bi_chunk(0)   <= X"61626364" xor X"36363636";
-		bi_chunk(1)   <= X"65000000" xor X"36363636";
-		bi_chunk(2)   <= X"00000000" xor X"36363636";
-		bi_chunk(3)   <= X"00000000" xor X"36363636";
-		bi_chunk(4)   <= X"00000000" xor X"36363636";
-		bi_chunk(5)   <= X"00000000" xor X"36363636";
-		bi_chunk(6)   <= X"00000000" xor X"36363636";
-		bi_chunk(7)   <= X"00000000" xor X"36363636";
-		bi_chunk(8)   <= X"00000000" xor X"36363636";
-		bi_chunk(9)   <= X"00000000" xor X"36363636";
-		bi_chunk(10)   <= X"00000000" xor X"36363636";
-		bi_chunk(11)   <= X"00000000" xor X"36363636";
-		bi_chunk(12)   <= X"00000000" xor X"36363636";
-		bi_chunk(13)   <= X"00000000" xor X"36363636";
+		bi_chunk(0)   <= X"61626364";
+		bi_chunk(1)   <= X"65666768";
+		bi_chunk(2)   <= X"696a6b6c";
+		bi_chunk(3)   <= X"6d6e6f70";
+		bi_chunk(4)   <= X"71727374";
+		bi_chunk(5)   <= X"75767778";
+		bi_chunk(6)   <= X"797a3031";
+		bi_chunk(7)   <= X"41424344";
+		bi_chunk(8)   <= X"45464748";
+		bi_chunk(9)   <= X"494a4b4f";
 		--bi_chunk(14)   <= X"00000000" xor X"36363636";
 		--bi_chunk(15)   <= X"00000000" xor X"36363636";
-		bi_count      <= 1;
-		bi_last_bytes <= "00";
+		bi_count      <= 10;
+		bi_last_bytes <= "11";
 		bi_start      <= '1';
 		wait until bi_ready = '1'; 
 		bi_start      <= '0';
@@ -236,7 +232,7 @@ begin
 		bo_chunk(16)   <= X"71727374";
 		bo_chunk(17)   <= X"75767778";
 		bo_chunk(18)   <= X"41424344";
-		bo_count      <= 19;
+		bo_count      <= 10;
 		bo_last_bytes <= "00";
 		--cont <= '1';
 		bo_start      <= '1';
@@ -246,12 +242,12 @@ begin
 		wait until s_clk = '1';
 		
 		
-		wait for 30 ns;
-		bo_start      <= '1';
-		wait for 5 ns;
-		wait until bo_ready = '1'; 
-		bo_start      <= '0';
-		wait until s_clk = '1';
+		--wait for 30 ns;
+		--bo_start      <= '1';
+		--wait for 5 ns;
+		--wait until bo_ready = '1'; 
+		--bo_start      <= '0';
+		--wait until s_clk = '1';
 
 		
 	end process bo_process;

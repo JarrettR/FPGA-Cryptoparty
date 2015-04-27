@@ -3,121 +3,78 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="C:/Users/User/Documents/GitHub/FPGA-Cryptoparty/SHA1test/hmac_isim_beh.wdb" id="1" type="auto">
+      <db_ref path="C:/Users/User/Documents/GitHub/FPGA-Cryptoparty/SHA1test/raw_sha1_isim_beh.wdb" id="1" type="auto">
          <top_modules>
-            <top_module name="hmac" />
-            <top_module name="numeric_std" />
+            <top_module name="raw_sha1" />
             <top_module name="std_logic_1164" />
             <top_module name="std_logic_arith" />
             <top_module name="std_logic_unsigned" />
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="26" />
-   <wvobject fp_name="/hmac/bo_start" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">bo_start</obj_property>
-      <obj_property name="ObjectShortName">bo_start</obj_property>
+   <WVObjectSize size="16" />
+   <wvobject fp_name="/raw_sha1/s_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">s_clk</obj_property>
+      <obj_property name="ObjectShortName">s_clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/bo_last_word" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">bo_last_word</obj_property>
-      <obj_property name="ObjectShortName">bo_last_word</obj_property>
+   <wvobject fp_name="/raw_sha1/s_rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">s_rst</obj_property>
+      <obj_property name="ObjectShortName">s_rst</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/bo_msg" type="array" db_ref_id="1">
-      <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="ElementShortName">bo_msg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">bo_msg[31:0]</obj_property>
-      <obj_property name="label">bo_msg[31:0]</obj_property>
+   <wvobject fp_name="/raw_sha1/bi_start" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_start</obj_property>
+      <obj_property name="ObjectShortName">bi_start</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/bo_hash" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">bo_hash[159:0]</obj_property>
-      <obj_property name="ObjectShortName">bo_hash[159:0]</obj_property>
+   <wvobject fp_name="/raw_sha1/bi_load" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_load</obj_property>
+      <obj_property name="ObjectShortName">bi_load</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/bo_ready" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">bo_ready</obj_property>
-      <obj_property name="ObjectShortName">bo_ready</obj_property>
+   <wvobject fp_name="/raw_sha1/bi_msg" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_msg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">bi_msg[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_prep_object/dout" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">dout[31:0]</obj_property>
-      <obj_property name="ObjectShortName">dout[31:0]</obj_property>
+   <wvobject fp_name="/raw_sha1/bi_hash" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_hash[159:0]</obj_property>
+      <obj_property name="ObjectShortName">bi_hash[159:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/cont" type="logic" db_ref_id="1">
+   <wvobject fp_name="/raw_sha1/bi_ack" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_ack</obj_property>
+      <obj_property name="ObjectShortName">bi_ack</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/bi_ready" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_ready</obj_property>
+      <obj_property name="ObjectShortName">bi_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/bi_chunk" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bi_chunk[0:18]</obj_property>
+      <obj_property name="ObjectShortName">bi_chunk[0:18]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/cont" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">cont</obj_property>
       <obj_property name="ObjectShortName">cont</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_prep_object/i" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">i</obj_property>
-      <obj_property name="ObjectShortName">i</obj_property>
+   <wvobject fp_name="/raw_sha1/sha1_bi/w" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">w[511:0]</obj_property>
+      <obj_property name="ObjectShortName">w[511:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_prep_object/state" type="other" db_ref_id="1">
+   <wvobject fp_name="/raw_sha1/sha1_bi/h0" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">h0[31:0]</obj_property>
+      <obj_property name="ObjectShortName">h0[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/sha1_bi/hash_round" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">hash_round[159:0]</obj_property>
+      <obj_property name="ObjectShortName">hash_round[159:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/sha1_bi/state" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">state</obj_property>
       <obj_property name="ObjectShortName">state</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/state" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">state</obj_property>
-      <obj_property name="ObjectShortName">state</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/h" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">h[159:0]</obj_property>
-      <obj_property name="ObjectShortName">h[159:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/load" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">load</obj_property>
-      <obj_property name="ObjectShortName">load</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/ack" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">ack</obj_property>
-      <obj_property name="ObjectShortName">ack</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/msg" type="array" db_ref_id="1">
+   <wvobject fp_name="/raw_sha1/sha1_bi/msg" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">msg[31:0]</obj_property>
       <obj_property name="ObjectShortName">msg[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/round" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">round</obj_property>
-      <obj_property name="ObjectShortName">round</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/ready_extend" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">ready_extend</obj_property>
-      <obj_property name="ObjectShortName">ready_extend</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/ready_round" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">ready_round</obj_property>
-      <obj_property name="ObjectShortName">ready_round</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/ready_round_q1" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">ready_round_q1</obj_property>
-      <obj_property name="ObjectShortName">ready_round_q1</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/load_pulse" type="logic" db_ref_id="1">
+   <wvobject fp_name="/raw_sha1/sha1_bi/load_pulse" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">load_pulse</obj_property>
       <obj_property name="ObjectShortName">load_pulse</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/load_q" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">load_q</obj_property>
-      <obj_property name="ObjectShortName">load_q</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/state" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">state</obj_property>
-      <obj_property name="ObjectShortName">state</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/a" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">a[31:0]</obj_property>
-      <obj_property name="ObjectShortName">a[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/sha1_chunk_object/h0i" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">h0i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">h0i[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/cont" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">cont</obj_property>
-      <obj_property name="ObjectShortName">cont</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/i" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">i</obj_property>
-      <obj_property name="ObjectShortName">i</obj_property>
-   </wvobject>
-   <wvobject fp_name="/hmac/sha1_bo/load_buffer" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">load_buffer[0:15]</obj_property>
-      <obj_property name="ObjectShortName">load_buffer[0:15]</obj_property>
    </wvobject>
 </wave_config>
