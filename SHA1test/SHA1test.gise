@@ -96,7 +96,7 @@
     <transform xil_pn:end_ts="1428794148" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1428794148">
       <status xil_pn:value="SuccessfullyRun"/>
     </transform>
-    <transform xil_pn:end_ts="1430097017" xil_pn:in_ck="3297069554522708505" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1430097017">
+    <transform xil_pn:end_ts="1430190374" xil_pn:in_ck="3297069554522708505" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1430190374">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="hmac.vhd"/>
@@ -119,7 +119,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1430090772" xil_pn:in_ck="3297069554522708505" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1430090772">
+    <transform xil_pn:end_ts="1430185652" xil_pn:in_ck="3297069554522708505" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1430185652">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
@@ -134,7 +134,7 @@
       <outfile xil_pn:name="sha1_test.vhd"/>
       <outfile xil_pn:name="wrapper.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1430090779" xil_pn:in_ck="3297069554522708505" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="1685178905892920922" xil_pn:start_ts="1430090772">
+    <transform xil_pn:end_ts="1430185659" xil_pn:in_ck="3297069554522708505" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="1685178905892920922" xil_pn:start_ts="1430185652">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
@@ -149,7 +149,7 @@
       <outfile xil_pn:name="raw_sha1_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1430090780" xil_pn:in_ck="3980711233972646664" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="2917580748302024423" xil_pn:start_ts="1430090779">
+    <transform xil_pn:end_ts="1430185660" xil_pn:in_ck="3980711233972646664" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="2917580748302024423" xil_pn:start_ts="1430185659">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForPredecessor"/>
@@ -190,7 +190,9 @@
       <status xil_pn:value="FailedRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
       <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputChanged"/>
       <status xil_pn:value="OutputRemoved"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
       <outfile xil_pn:name="hmac.lso"/>
