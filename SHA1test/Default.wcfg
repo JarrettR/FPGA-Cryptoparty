@@ -12,7 +12,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="15" />
+   <WVObjectSize size="17" />
    <wvobject fp_name="/raw_sha1/s_clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">s_clk</obj_property>
       <obj_property name="ObjectShortName">s_clk</obj_property>
@@ -72,5 +72,13 @@
    <wvobject fp_name="/raw_sha1/sha1_bo/a" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">a[31:0]</obj_property>
       <obj_property name="ObjectShortName">a[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/sha1_bo/round" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">round</obj_property>
+      <obj_property name="ObjectShortName">round</obj_property>
+   </wvobject>
+   <wvobject fp_name="/raw_sha1/sha1_bo/w_round" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">w_round[31:0]</obj_property>
+      <obj_property name="ObjectShortName">w_round[31:0]</obj_property>
    </wvobject>
 </wave_config>

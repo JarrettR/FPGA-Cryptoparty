@@ -136,6 +136,7 @@ begin
 				else	--second half
 					wait until bo_ready = '1';
 					i := 0;
+					bo_msg <= bo_chunk(16);
 					if cont <= '0' then
 						cont <= '1';
 					end if;
