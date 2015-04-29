@@ -4,7 +4,7 @@
 --
 -- Create Date:   12:34:53 04/26/2015
 -- Design Name:   
--- Module Name:   C:/Users/User/Documents/GitHub/FPGA-Cryptoparty/SHA1test/raw_sha1.vhd
+-- Module Name:   C:/Users/User/Documents/GitHub/FPGA-Cryptoparty/SHA1test/hmac.vhd
 -- Project Name:  SHA1test
 -- Target Device:  
 -- Tool versions:  
@@ -32,10 +32,10 @@ USE ieee.std_logic_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 --USE ieee.numeric_std.ALL;
  
-ENTITY raw_sha1 IS
-END raw_sha1;
+ENTITY hmac IS
+END hmac;
  
-ARCHITECTURE behavioural OF raw_sha1 IS 
+ARCHITECTURE behavioural OF hmac IS 
  
     -- Component Declaration for the Unit Under Test (UUT)
  
@@ -139,6 +139,8 @@ begin
 					bo_msg <= bo_chunk(16);
 					if cont <= '0' then
 						cont <= '1';
+					--else
+					--	s_rst <= '0';
 					end if;
 				end if;
 				bo_load <= '1';
@@ -258,6 +260,7 @@ begin
 		bo_start      <= '0';
 		wait until s_clk = '1';
 		
+		wait;
 
 
 		
