@@ -33,6 +33,17 @@ USE ieee.std_logic_1164.ALL;
 --USE ieee.numeric_std.ALL;
  
 ENTITY hmac IS
+	port(
+		clk   : in  std_logic;
+		rst   : in  std_logic;
+		secret     : in std_logic_vector(511 downto 0);
+		value     : in std_logic_vector(160 downto 0);
+		load  : in  std_logic;
+		ack   : out std_logic;
+		msg   : in  std_logic_vector( 31 downto 0);
+		hash  : out std_logic_vector(159 downto 0);
+		ready : out std_logic
+		);
 END hmac;
  
 ARCHITECTURE behavioural OF hmac IS 
@@ -58,18 +69,17 @@ ARCHITECTURE behavioural OF hmac IS
 	type state_type is (STATE_IDLE, STATE_LOAD, STATE_PROCESS); 
 	
 	-- signals
-	signal s_clk        : std_logic := '0';
-	signal s_rst        : std_logic := '0';
 	
 	-- bi
---	signal bi_start      : std_logic := '0';
---	signal bi_load       : std_logic := '0';
---	signal bi_msg        : std_logic_vector(31 downto 0) := (others => '0');
---	signal bi_hash       : std_logic_vector(159 downto 0) := (others => '0');
---	signal bi_ack        : std_logic := '0';
---	signal bi_ready      : std_logic := '0';
---	
---	signal bi_chunk      : chunk := (others => (others => '0'));
+	signal bi_start      : std_logic := '0';
+	signal bi_load       : std_logic := '0';
+	signal bi_msg        : std_logic_vector(31 downto 0) := (others => '0');
+	signal bi_hash       : std_logic_vector(159 downto 0) := (others => '0');
+	signal bi_ack        : std_logic := '0';
+	signal bi_ready      : std_logic := '0';
+	
+	signal bi_chunk      : chunk := (others => (others => '0'));
+	signal bi_cont  : std_logic := '0';
 	
 	-- bo
 	signal bo_start      : std_logic := '0';
@@ -80,40 +90,23 @@ ARCHITECTURE behavioural OF hmac IS
 	signal bo_ready      : std_logic := '0';
 	
 	signal bo_chunk      : chunk := (others => (others => '0'));
-	signal cont  : std_logic := '0';
+	signal bo_cont  : std_logic := '0';
 	signal state : state_type := STATE_IDLE;
 
 begin
---	sha1_bi : sha1_chunk 
---		port map (
---			s_clk, s_rst, bi_hash, cont, bi_load, bi_ack, bi_msg, bi_hash, bi_ready
---		);
+	sha1_bi : sha1_chunk 
+		port map (
+			clk, rst, bi_hash, bi_cont, bi_load, bi_ack, bi_msg, bi_hash, bi_ready
+		);
 	sha1_bo : sha1_chunk 
 		port map (
-			s_clk, s_rst, bo_hash, cont, bo_load, bo_ack, bo_msg, bo_hash, bo_ready
+			clk, rst, bo_hash, bo_cont, bo_load, bo_ack, bo_msg, bo_hash, bo_ready
 		);
 
-	rst_process: process
-	begin
-		s_rst <= '0';
-		wait for 10 ns;
-		s_rst <= '1';
-		wait;
-	end process rst_process;
-  
-	clk_process: process
-	begin
-		s_clk <= '0'; 
-		wait for 5 ns;
-		s_clk <= '1';
-		wait for 5 ns;
-	end process clk_process;
-	
-	
-	testcase: process
+	bo_sha: process
 		variable i : natural := 0;
 	begin
-		wait until rising_edge(s_clk);
+		wait until rising_edge(clk);
 		bo_load <= '0';
 		
 		case state is
@@ -127,7 +120,7 @@ begin
 		when STATE_LOAD =>
 			if bo_ready = '1' or bo_ack = '1' then
 				if i < 16 then	--First half
-					if cont <= '0' then
+					if bo_cont <= '0' then
 						bo_msg <= bo_chunk(i);
 					else
 						bo_msg <= bo_chunk(i + 16);
@@ -137,8 +130,8 @@ begin
 					wait until bo_ready = '1';
 					i := 0;
 					bo_msg <= bo_chunk(16);
-					if cont <= '0' then
-						cont <= '1';
+					if bo_cont <= '0' then
+						bo_cont <= '1';
 					--else
 					--	s_rst <= '0';
 					end if;
@@ -149,99 +142,91 @@ begin
 		when others =>
 		end case;
 		
-	end process testcase;
+	end process bo_sha;
 
 
 
 	
---	bi_process : process
---	begin
---		wait for 25 ns;
---	   
---		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
---
---
---		--
---		bi_chunk(0)   <= X"61626364";
---		bi_chunk(1)   <= X"65666768";
---		bi_chunk(2)   <= X"696a6b6c";
---		bi_chunk(3)   <= X"6d6e6f70";
---		bi_chunk(4)   <= X"71727374";
---		bi_chunk(5)   <= X"75767778";
---		bi_chunk(6)   <= X"797a3031";
---		bi_chunk(7)   <= X"41424344";
---		bi_chunk(8)   <= X"45464748";
---		bi_chunk(9)   <= X"494a4b4c";
---		bi_chunk(10)   <= X"80000000";
---		bi_chunk(11)   <= X"00000000";
---		bi_chunk(12)   <= X"00000000";
---		bi_chunk(13)   <= X"00000000";
---		bi_chunk(14)   <= X"00000000"; --Size 1
---		bi_chunk(15)   <= X"00000140"; --Size 2
---		
---		bi_start      <= '1';
---		wait until bi_ready = '1'; 
---		bi_start      <= '0';
---		wait until s_clk = '1';
---
---		wait;
---		
---	end process bi_process;
+	bi_process : process
+	begin
+		wait for 25 ns;
+	   
+		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
+
+
+		--
+		bi_chunk(0)   <= secret(511 downto 480) xor X"36363636";
+		bi_chunk(1)   <= secret(479 downto 448) xor X"36363636";
+		bi_chunk(2)   <= secret(447 downto 416) xor X"36363636";
+		bi_chunk(3)   <= secret(415 downto 384) xor X"36363636";
+		bi_chunk(4)   <= secret(383 downto 352) xor X"36363636";
+		bi_chunk(5)   <= secret(351 downto 330) xor X"36363636";
+		bi_chunk(6)   <= secret(329 downto 298) xor X"36363636";
+		bi_chunk(7)   <= secret(297 downto 266) xor X"36363636";
+		bi_chunk(8)   <= secret(265 downto 234) xor X"36363636";
+		bi_chunk(9)   <= secret(233 downto 202) xor X"36363636";
+		bi_chunk(10)   <= secret(201 downto 170) xor X"36363636";
+		bi_chunk(11)   <= secret(169 downto 128) xor X"36363636";
+		bi_chunk(12)   <= secret(127 downto 96) xor X"36363636";
+		bi_chunk(13)   <= secret(95 downto 64) xor X"36363636";
+		bi_chunk(14)   <= secret(63 downto 32) xor X"36363636";
+		bi_chunk(15)   <= secret(31 downto 0) xor X"36363636";
+		
+		bi_chunk(16)   <= X"80000000";
+		bi_chunk(17)   <= X"00000000";
+		bi_chunk(18)   <= X"00000000";
+		bi_chunk(19)   <= X"00000000";
+		bi_chunk(20)   <= X"00000000";
+		bi_chunk(21)   <= X"00000000";
+		bi_chunk(12)   <= X"00000000";
+		bi_chunk(13)   <= X"00000000";
+		bi_chunk(14)   <= X"00000000";
+		bi_chunk(15)   <= X"00000000";
+		bi_chunk(26)   <= X"00000000";
+		bi_chunk(27)   <= X"00000000";
+		bi_chunk(28)   <= X"00000000";
+		bi_chunk(29)   <= X"00000000";
+		bi_chunk(30)   <= X"00000000";
+		bi_chunk(31)   <= X"00000200";
+		
+		bi_start      <= '1';
+		wait until bi_ready = '1'; 
+		bi_start      <= '0';
+		wait until clk = '1';
+
+	end process bi_process;
 	
 	
 	bo_process : process
 	begin
-		wait for 20 ns;
+		wait until bi_cont = '1'; 
+		wait until bi_ready = '1'; 
 	   
 
 
---		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
-		bo_chunk(0)   <= X"61626364";
-		bo_chunk(1)   <= X"65666768";
-		bo_chunk(2)   <= X"696a6b6c";
-		bo_chunk(3)   <= X"6d6e6f70";
-		bo_chunk(4)   <= X"71727374";
-		bo_chunk(5)   <= X"75767778";
-		bo_chunk(6)   <= X"797a3031";
-		bo_chunk(7)   <= X"41424344";
-		bo_chunk(8)   <= X"45464748";
-		bo_chunk(9)   <= X"494a4b4c";
-		bo_chunk(10)   <= X"80000000";
-		bo_chunk(11)   <= X"00000000";
-		bo_chunk(12)   <= X"00000000";
-		bo_chunk(13)   <= X"00000000";
-		bo_chunk(14)   <= X"00000000"; --Size 1
-		bo_chunk(15)   <= X"00000140"; --Size 2
+		bo_chunk(0)   <= secret(511 downto 480) xor X"5C5C5C5C";
+		bo_chunk(1)   <= secret(479 downto 448) xor X"5C5C5C5C";
+		bo_chunk(2)   <= secret(447 downto 416) xor X"5C5C5C5C";
+		bo_chunk(3)   <= secret(415 downto 384) xor X"5C5C5C5C";
+		bo_chunk(4)   <= secret(383 downto 352) xor X"5C5C5C5C";
+		bo_chunk(5)   <= secret(351 downto 330) xor X"5C5C5C5C";
+		bo_chunk(6)   <= secret(329 downto 298) xor X"5C5C5C5C";
+		bo_chunk(7)   <= secret(297 downto 266) xor X"5C5C5C5C";
+		bo_chunk(8)   <= secret(265 downto 234) xor X"5C5C5C5C";
+		bo_chunk(9)   <= secret(233 downto 202) xor X"5C5C5C5C";
+		bo_chunk(10)   <= secret(201 downto 170) xor X"5C5C5C5C";
+		bo_chunk(11)   <= secret(169 downto 128) xor X"5C5C5C5C";
+		bo_chunk(12)   <= secret(127 downto 96) xor X"5C5C5C5C";
+		bo_chunk(13)   <= secret(95 downto 64) xor X"5C5C5C5C";
+		bo_chunk(14)   <= secret(63 downto 32) xor X"5C5C5C5C";
+		bo_chunk(15)   <= secret(31 downto 0) xor X"5C5C5C5C";
 
---6162636465666768696a6b6c6d6e6f707172737
---475767778797a30314142434445464748494a4b
---4c4d4e4f505152535455565758595a30313233343535363738717273747576777841424344
-
-		--First a5909...
-		--Final d717e22e 1659305f ad6ef088 64923db6 4aba9c08
---		bo_chunk(0)   <= X"61626364";
---		bo_chunk(1)   <= X"65666768";
---		bo_chunk(2)   <= X"696a6b6c";
---		bo_chunk(3)   <= X"6d6e6f70";
---		bo_chunk(4)   <= X"71727374";
---		bo_chunk(5)   <= X"75767778";
---		bo_chunk(6)   <= X"797a3031";
---		bo_chunk(7)   <= X"41424344";
---		bo_chunk(8)   <= X"45464748";
---		bo_chunk(9)   <= X"494a4b4c";
---		bo_chunk(10)   <= X"4d4e4f50";
---		bo_chunk(11)   <= X"51525354";
---		bo_chunk(12)   <= X"55565758";
---		bo_chunk(13)   <= X"595a3031";
---		bo_chunk(14)   <= X"32333435";
---		bo_chunk(15)   <= X"35363738";
-
-		bo_chunk(16)   <= X"71727374";
-		bo_chunk(17)   <= X"75767778";
-		bo_chunk(18)   <= X"41424344";
-		bo_chunk(19)   <= X"80000000";
-		bo_chunk(20)   <= X"00000000";
-		bo_chunk(21)   <= X"00000000";
+		bo_chunk(16)   <= bi_hash(159 downto 128);
+		bo_chunk(17)   <= bi_hash(127 downto 96);
+		bo_chunk(18)   <= bi_hash(95 downto 64);
+		bo_chunk(19)   <= bi_hash(63 downto 32);
+		bo_chunk(20)   <= bi_hash(31 downto 0);
+		bo_chunk(21)   <= X"80000000";
 		bo_chunk(22)   <= X"00000000";
 		bo_chunk(23)   <= X"00000000";
 		bo_chunk(24)   <= X"00000000";
@@ -250,15 +235,15 @@ begin
 		bo_chunk(27)   <= X"00000000";
 		bo_chunk(28)   <= X"00000000";
 		bo_chunk(29)   <= X"00000000";
-		bo_chunk(30)   <= X"00000000";
-		bo_chunk(31)   <= X"00000260";
+		bo_chunk(30)   <= X"00000000"; --Size 1
+		bo_chunk(31)   <= X"00000270"; --Size 2
 		
 		--cont <= '1';
 		bo_start      <= '1';
 		wait for 5 ns;
 		wait until bo_ready = '1'; 
 		bo_start      <= '0';
-		wait until s_clk = '1';
+		wait until clk = '1';
 		
 		wait;
 

@@ -41,41 +41,91 @@ ARCHITECTURE behavior OF hmac_test IS
  
     COMPONENT hmac
     PORT(
+		clk   : in  std_logic;
+		rst   : in  std_logic;
+		secret     : in std_logic_vector(511 downto 0);
+		value     : in std_logic_vector(160 downto 0);
+		load  : in  std_logic;
+		ack   : out std_logic;
+		hash  : out std_logic_vector(159 downto 0);
+		ready : out std_logic
         );
     END COMPONENT;
-    
-   -- No clocks detected in port list. Replace <clock> below with 
-   -- appropriate port name 
- 
-   constant <clock>_period : time := 10 ns;
- 
-BEGIN
- 
-	-- Instantiate the Unit Under Test (UUT)
-   uut: hmac PORT MAP (
-        );
+     
+	-- types
+	type chunk is array (0 to 31) of std_logic_vector(31 downto 0);
+	type state_type is (STATE_IDLE, STATE_LOAD, STATE_PROCESS); 
+	
+	-- signals
+	signal clk        : std_logic := '0';
+	signal rst        : std_logic := '0';
+	
 
-   -- Clock process definitions
-   <clock>_process :process
-   begin
-		<clock> <= '0';
-		wait for <clock>_period/2;
-		<clock> <= '1';
-		wait for <clock>_period/2;
-   end process;
- 
+	signal start      : std_logic := '0';
+	signal load       : std_logic := '0';
+	signal secret        : std_logic_vector(511 downto 0) := (others => '0');
+	signal value       : std_logic_vector(160 downto 0) := (others => '0');
+	signal hash       : std_logic_vector(159 downto 0) := (others => '0');
+	signal ack        : std_logic := '0';
+	signal ready      : std_logic := '0';
+	
+	signal chunk      : chunk := (others => (others => '0'));
+	signal cont  : std_logic := '0';
+	signal state : state_type := STATE_IDLE;
 
-   -- Stimulus process
-   stim_proc: process
-   begin		
-      -- hold reset state for 100 ns.
-      wait for 100 ns;	
+begin
 
-      wait for <clock>_period*10;
+	hmac_x1 : hmac 
+		port map (
+			clk, rst, secret, value, load, ack, hash, ready
+		);
 
-      -- insert stimulus here 
+	rst_process: process
+	begin
+		rst <= '0';
+		wait for 10 ns;
+		rst <= '1';
+		wait;
+	end process rst_process;
+  
+	clk_process: process
+	begin
+		clk <= '0'; 
+		wait for 5 ns;
+		clk <= '1';
+		wait for 5 ns;
+	end process clk_process;
+	
+	
+--	testcase: process
+--		variable i : natural := 0;
+--	begin
+--		wait until rising_edge(s_clk);
+--		bo_load <= '0';
+--		
+--
+--	end process testcase;
 
-      wait;
-   end process;
 
-END;
+	bo_process : process
+	begin
+		wait for 20 ns;
+	   
+
+
+--		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
+		bo_chunk(0)   <= X"61626364";
+
+		--cont <= '1';
+		bo_start      <= '1';
+		wait for 5 ns;
+		wait until bo_ready = '1'; 
+		bo_start      <= '0';
+		wait until s_clk = '1';
+		
+		wait;
+
+
+		
+	end process bo_process;
+end behavioural;
