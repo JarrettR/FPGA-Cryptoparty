@@ -35,7 +35,7 @@ USE ieee.std_logic_1164.ALL;
 ENTITY hmac_test IS
 END hmac_test;
  
-ARCHITECTURE behavior OF hmac_test IS 
+ARCHITECTURE behavioural OF hmac_test IS 
  
     -- Component Declaration for the Unit Under Test (UUT)
  
@@ -69,7 +69,7 @@ ARCHITECTURE behavior OF hmac_test IS
 	signal ack        : std_logic := '0';
 	signal ready      : std_logic := '0';
 	
-	signal chunk      : chunk := (others => (others => '0'));
+	signal word      : chunk := (others => (others => '0'));
 	signal cont  : std_logic := '0';
 	signal state : state_type := STATE_IDLE;
 
@@ -114,14 +114,14 @@ begin
 
 
 --		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
-		bo_chunk(0)   <= X"61626364";
+		word(0)   <= X"61626364";
 
 		--cont <= '1';
-		bo_start      <= '1';
+		start      <= '1';
 		wait for 5 ns;
-		wait until bo_ready = '1'; 
-		bo_start      <= '0';
-		wait until s_clk = '1';
+		wait until ready = '1'; 
+		start      <= '0';
+		wait until clk = '1';
 		
 		wait;
 

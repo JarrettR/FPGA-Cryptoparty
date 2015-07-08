@@ -23,6 +23,7 @@
 
   <files xmlns="http://www.xilinx.com/XMLSchema">
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
     <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="hmac.cmd_log"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="hmac.lso"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="hmac.prj"/>
@@ -32,12 +33,17 @@
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="hmac_envsettings.html"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="hmac_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="hmac_summary.html"/>
-    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="hmac_test_stx_beh.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="hmac_test_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="hmac_test_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="hmac_test_isim_beh.wdb"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="hmac_test_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="hmac_xst.xrpt"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="sha1_chunk_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="webtalk_pn.xml"/>
-    <file xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
   </files>
 
@@ -46,7 +52,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1431205976" xil_pn:in_ck="-2074957754808014701" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1431205975">
+    <transform xil_pn:end_ts="1431237309" xil_pn:in_ck="-2074957754808014701" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1431237309">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="hmac.vhd"/>
@@ -54,6 +60,56 @@
       <outfile xil_pn:name="sha1_chunk.vhd"/>
       <outfile xil_pn:name="sha1_test.vhd"/>
       <outfile xil_pn:name="wrapper.vhd"/>
+    </transform>
+    <transform xil_pn:end_ts="1431232790" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="-326081098818531920" xil_pn:start_ts="1431232790">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1431232790" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="1863912814439465518" xil_pn:start_ts="1431232790">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1431232790" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-8866161499470359870" xil_pn:start_ts="1431232790">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1431237038" xil_pn:in_ck="-2074957754808014701" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1431237038">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="hmac.vhd"/>
+      <outfile xil_pn:name="hmac_test.vhd"/>
+      <outfile xil_pn:name="sha1_chunk.vhd"/>
+      <outfile xil_pn:name="sha1_test.vhd"/>
+      <outfile xil_pn:name="wrapper.vhd"/>
+    </transform>
+    <transform xil_pn:end_ts="1431237049" xil_pn:in_ck="-2074957754808014701" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-7824631852936805922" xil_pn:start_ts="1431237038">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="fuse.log"/>
+      <outfile xil_pn:name="hmac_test_beh.prj"/>
+      <outfile xil_pn:name="hmac_test_isim_beh.exe"/>
+      <outfile xil_pn:name="isim"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="xilinxsim.ini"/>
+    </transform>
+    <transform xil_pn:end_ts="1431237050" xil_pn:in_ck="-5168005424804225177" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="7157274039292281611" xil_pn:start_ts="1431237049">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="hmac_test_isim_beh.wdb"/>
+      <outfile xil_pn:name="isim.cmd"/>
+      <outfile xil_pn:name="isim.log"/>
     </transform>
     <transform xil_pn:end_ts="1430267419" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1430267419">
       <status xil_pn:value="SuccessfullyRun"/>
@@ -83,12 +139,14 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1430267434" xil_pn:in_ck="-7293980823154291601" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="8977764323430523067" xil_pn:start_ts="1430267419">
+    <transform xil_pn:end_ts="1431234544" xil_pn:in_ck="-7293980823154291601" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="8977764323430523067" xil_pn:start_ts="1431234526">
       <status xil_pn:value="FailedRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
       <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
       <outfile xil_pn:name="hmac.lso"/>
       <outfile xil_pn:name="hmac.prj"/>
@@ -96,6 +154,8 @@
       <outfile xil_pn:name="hmac.xst"/>
       <outfile xil_pn:name="hmac_beh.prj"/>
       <outfile xil_pn:name="hmac_stx_beh.prj"/>
+      <outfile xil_pn:name="hmac_test_beh.prj"/>
+      <outfile xil_pn:name="hmac_test_stx_beh.prj"/>
       <outfile xil_pn:name="hmac_xst.xrpt"/>
       <outfile xil_pn:name="webtalk_pn.xml"/>
       <outfile xil_pn:name="xst"/>

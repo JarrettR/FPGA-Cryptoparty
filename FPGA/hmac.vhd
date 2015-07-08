@@ -40,7 +40,6 @@ ENTITY hmac IS
 		value     : in std_logic_vector(160 downto 0);
 		load  : in  std_logic;
 		ack   : out std_logic;
-		msg   : in  std_logic_vector( 31 downto 0);
 		hash  : out std_logic_vector(159 downto 0);
 		ready : out std_logic
 		);
@@ -102,6 +101,8 @@ begin
 		port map (
 			clk, rst, bo_hash, bo_cont, bo_load, bo_ack, bo_msg, bo_hash, bo_ready
 		);
+		
+		hash <= bo_hash;
 
 	bo_sha: process
 		variable i : natural := 0;
@@ -160,13 +161,13 @@ begin
 		bi_chunk(2)   <= secret(447 downto 416) xor X"36363636";
 		bi_chunk(3)   <= secret(415 downto 384) xor X"36363636";
 		bi_chunk(4)   <= secret(383 downto 352) xor X"36363636";
-		bi_chunk(5)   <= secret(351 downto 330) xor X"36363636";
-		bi_chunk(6)   <= secret(329 downto 298) xor X"36363636";
-		bi_chunk(7)   <= secret(297 downto 266) xor X"36363636";
-		bi_chunk(8)   <= secret(265 downto 234) xor X"36363636";
-		bi_chunk(9)   <= secret(233 downto 202) xor X"36363636";
-		bi_chunk(10)   <= secret(201 downto 170) xor X"36363636";
-		bi_chunk(11)   <= secret(169 downto 128) xor X"36363636";
+		bi_chunk(5)   <= secret(351 downto 320) xor X"36363636";
+		bi_chunk(6)   <= secret(319 downto 288) xor X"36363636";
+		bi_chunk(7)   <= secret(287 downto 256) xor X"36363636";
+		bi_chunk(8)   <= secret(255 downto 224) xor X"36363636";
+		bi_chunk(9)   <= secret(223 downto 192) xor X"36363636";
+		bi_chunk(10)   <= secret(191 downto 160) xor X"36363636";
+		bi_chunk(11)   <= secret(159 downto 128) xor X"36363636";
 		bi_chunk(12)   <= secret(127 downto 96) xor X"36363636";
 		bi_chunk(13)   <= secret(95 downto 64) xor X"36363636";
 		bi_chunk(14)   <= secret(63 downto 32) xor X"36363636";
@@ -209,13 +210,13 @@ begin
 		bo_chunk(2)   <= secret(447 downto 416) xor X"5C5C5C5C";
 		bo_chunk(3)   <= secret(415 downto 384) xor X"5C5C5C5C";
 		bo_chunk(4)   <= secret(383 downto 352) xor X"5C5C5C5C";
-		bo_chunk(5)   <= secret(351 downto 330) xor X"5C5C5C5C";
-		bo_chunk(6)   <= secret(329 downto 298) xor X"5C5C5C5C";
-		bo_chunk(7)   <= secret(297 downto 266) xor X"5C5C5C5C";
-		bo_chunk(8)   <= secret(265 downto 234) xor X"5C5C5C5C";
-		bo_chunk(9)   <= secret(233 downto 202) xor X"5C5C5C5C";
-		bo_chunk(10)   <= secret(201 downto 170) xor X"5C5C5C5C";
-		bo_chunk(11)   <= secret(169 downto 128) xor X"5C5C5C5C";
+		bo_chunk(5)   <= secret(351 downto 320) xor X"5C5C5C5C";
+		bo_chunk(6)   <= secret(319 downto 288) xor X"5C5C5C5C";
+		bo_chunk(7)   <= secret(287 downto 256) xor X"5C5C5C5C";
+		bo_chunk(8)   <= secret(255 downto 224) xor X"5C5C5C5C";
+		bo_chunk(9)   <= secret(223 downto 192) xor X"5C5C5C5C";
+		bo_chunk(10)   <= secret(191 downto 160) xor X"5C5C5C5C";
+		bo_chunk(11)   <= secret(159 downto 128) xor X"5C5C5C5C";
 		bo_chunk(12)   <= secret(127 downto 96) xor X"5C5C5C5C";
 		bo_chunk(13)   <= secret(95 downto 64) xor X"5C5C5C5C";
 		bo_chunk(14)   <= secret(63 downto 32) xor X"5C5C5C5C";
