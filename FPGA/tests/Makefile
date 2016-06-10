@@ -28,12 +28,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-# Default to verilog
+# Fuck verilog
 TOPLEVEL_LANG ?= vhdl
+
+SIM ?= ghdl
 
 WPWD=$(shell sh -c 'pwd -W')
 PWD=$(shell pwd)
-COCOTB=$(PWD)/../../..
+COCOTB=$(PWD)/../../cocotb
 
 ifeq ($(OS),Msys)
 WPWD=$(shell sh -c 'pwd -W')
@@ -45,12 +47,12 @@ endif
 
 ifeq ($(TOPLEVEL_LANG),vhdl)
     VHDL_SOURCES = $(WPWD)/../hdl/sha1_chunk.vhd
-    TOPLEVEL =  sha1_chunk_vhd
+    TOPLEVEL =  sha1_chunk
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
 
-MODULE=sha1_chunk_vhd
+MODULE=sha1_chunk
 
 CUSTOM_COMPILE_DEPS = hal
 

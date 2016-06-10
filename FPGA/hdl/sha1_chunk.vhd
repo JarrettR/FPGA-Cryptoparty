@@ -1,13 +1,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
 
 entity sha1_chunk is
 	port(
 		clk   : in  std_logic;
-		rst   : in  std_logic;
 		h     : in std_logic_vector(159 downto 0);
-		cont  : in std_logic;
+		start  : in std_logic;
 		load  : in  std_logic;
 		ack   : out std_logic;
 		msg   : in  std_logic_vector( 31 downto 0);
@@ -21,11 +20,11 @@ architecture sha1_chunk_arch of sha1_chunk is
 	-- components
 	
 	-- constants
-	constant h0 : std_logic_vector(31 downto 0) := X"67452301";  -- H0 (a)
-	constant h1 : std_logic_vector(31 downto 0) := X"EFCDAB89";  -- H1 (b)
-	constant h2 : std_logic_vector(31 downto 0) := X"98BADCFE";  -- H2 (c)
-	constant h3 : std_logic_vector(31 downto 0) := X"10325476";  -- H3 (d)
-	constant h4 : std_logic_vector(31 downto 0) := X"C3D2E1F0";  -- H4 (e)
+	constant h0i : std_logic_vector(31 downto 0) := X"67452301";  -- H0 (a)
+	constant h1i : std_logic_vector(31 downto 0) := X"EFCDAB89";  -- H1 (b)
+	constant h2i : std_logic_vector(31 downto 0) := X"98BADCFE";  -- H2 (c)
+	constant h3i : std_logic_vector(31 downto 0) := X"10325476";  -- H3 (d)
+	constant h4i : std_logic_vector(31 downto 0) := X"C3D2E1F0";  -- H4 (e)
 	
 	constant k0 : std_logic_vector(31 downto 0) := X"5A827999";  -- round  0 .. 19
 	constant k1 : std_logic_vector(31 downto 0) := X"6ED9EBA1";  -- round 20 .. 39
@@ -42,11 +41,11 @@ architecture sha1_chunk_arch of sha1_chunk is
 --	signal h2i         : std_logic_vector(31 downto 0) := h(95 downto 64);
 --	signal h3i         : std_logic_vector(31 downto 0) := h(63 downto 32);
 --	signal h4i         : std_logic_vector(31 downto 0) := h(31 downto 0);
-	signal h0i         : std_logic_vector(31 downto 0) := h0;
-	signal h1i         : std_logic_vector(31 downto 0) := h1;
-	signal h2i         : std_logic_vector(31 downto 0) := h2;
-	signal h3i         : std_logic_vector(31 downto 0) := h3;
-	signal h4i         : std_logic_vector(31 downto 0) := h4;
+	signal h0         : std_logic_vector(31 downto 0) := h0i;
+	signal h1         : std_logic_vector(31 downto 0) := h1i;
+	signal h2         : std_logic_vector(31 downto 0) := h2i;
+	signal h3         : std_logic_vector(31 downto 0) := h3i;
+	signal h4         : std_logic_vector(31 downto 0) := h4i;
 	
 	signal round        : natural := 0;
 	signal w_round      : std_logic_vector( 31 downto 0) := (others => '0');
@@ -78,33 +77,23 @@ begin
 	load_pulse   <= load and (not load_q);
 	
 	-- control process
-	sha1_chunk_process : process(clk, rst)
+	sha1_chunk_process : process(clk)
 	begin
-		if cont = '1' then
-			h0i <= h(159 downto 128);
-			h1i <= h(127 downto 96);
-			h2i <= h(95 downto 64);
-			h3i <= h(63 downto 32);
-			h4i <= h(31 downto 0);
+		if start = '0' then
+			h0 <= h(159 downto 128);
+			h1 <= h(127 downto 96);
+			h2 <= h(95 downto 64);
+			h3 <= h(63 downto 32);
+			h4 <= h(31 downto 0);
 		else
-			h0i <= h0;
-			h1i <= h1;
-			h2i <= h2;
-			h3i <= h3;
-			h4i <= h4;
+			h0 <= h0i;
+			h1 <= h1i;
+			h2 <= h2i;
+			h3 <= h3i;
+			h4 <= h4i;
 		end if;
 		
-		if rst = '0' then
-			ready <= '0';
-			state <= C_IDLE;
-			a <= h0i; 
-			b <= h1i;
-			c <= h2i;
-			d <= h3i;
-			e <= h4i;
-			ack <= '0';
-			hash  <= (others => '0');
-		elsif rising_edge(clk) then
+		if rising_edge(clk) then
 			-- pulse detector delay
 			load_q <= load;
 		
@@ -113,11 +102,11 @@ begin
 			when C_IDLE =>
 				ready <= '1'; 
 				ack <= '0';
-				a <= h0i; 
-				b <= h1i;
-				c <= h2i;
-				d <= h3i;
-				e <= h4i;
+				a <= h0; 
+				b <= h1;
+				c <= h2;
+				d <= h3;
+				e <= h4;
 				if load_pulse = '1' then
 					state <= C_PROCESS_WORD;
 					round <= 0;
@@ -160,7 +149,7 @@ begin
 				end if;
 			
 				a_rol <= a(26 downto 0) & a(31 downto 27);  -- a leftrotate 5
-				t     <= a_rol + ((f + k) + (e + w_round));
+				t     <= std_logic_vector(unsigned(a_rol) + ((unsigned(f) + unsigned(k)) + (unsigned(e) + unsigned(w_round))));
 					
 				hash_round(159 downto 128) <= t;  -- a
 				hash_round(127 downto  96) <= a;  -- b
@@ -174,7 +163,7 @@ begin
 					state <= C_NEXT_ROUND;
 					if 0 <= round and round < 16 then 
 						ack <= '1';
-					elsif cont = '1' and round < 32 then 
+					elsif start = '0' and round < 32 then 
 						ack <= '1';
 					end if;
 				else 
@@ -195,12 +184,12 @@ begin
 					round  <= round + 1;
 					state  <= C_EXTEND_CHUNK;
 				elsif round = 79 then
-					hash(159 downto 128) <= hash_round(159 downto 128) + h0i;  -- a
-					hash(127 downto  96) <= hash_round(127 downto  96) + h1i;  -- b
-					hash( 95 downto  64) <= hash_round( 95 downto  64) + h2i;  -- c
-					hash( 63 downto  32) <= hash_round( 63 downto  32) + h3i;  -- d
-					hash( 31 downto   0) <= hash_round( 31 downto   0) + h4i;  -- e
-					if cont = '0' then
+					hash(159 downto 128) <= std_logic_vector(unsigned(hash_round(159 downto 128)) + unsigned(h0));  -- a
+					hash(127 downto  96) <= std_logic_vector(unsigned(hash_round(127 downto  96)) + unsigned(h1));  -- b
+					hash( 95 downto  64) <= std_logic_vector(unsigned(hash_round( 95 downto  64)) + unsigned(h2));  -- c
+					hash( 63 downto  32) <= std_logic_vector(unsigned(hash_round( 63 downto  32)) + unsigned(h3));  -- d
+					hash( 31 downto   0) <= std_logic_vector(unsigned(hash_round( 31 downto   0)) + unsigned(h4));  -- e
+					if start = '1' then
 						ready  <= '1';  -- end of operations
 					end if;
 					state  <= C_IDLE;
