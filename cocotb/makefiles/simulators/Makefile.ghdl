@@ -54,7 +54,7 @@ endif
 
 # Compilation phase
 analyse: $(VHDL_SOURCES) $(SIM_BUILD)
-	cd $(SIM_BUILD) && $(CMD) -a $(VHDL_SOURCES) && $(GHDL) -e $(TOPLEVEL)
+	cd $(SIM_BUILD) && $(CMD) -a --ieee=synopsys $(VHDL_SOURCES) && $(GHDL) -e $(TOPLEVEL)
 
 results.xml: analyse  $(COCOTB_LIBS) $(COCOTB_VPI_LIB)
 	PYTHONPATH=$(LIB_DIR):$(SIM_ROOT):$(PWD):$(PYTHONPATH) LD_LIBRARY_PATH=$(LIB_DIR):$(LD_LIBRARY_PATH) MODULE=$(MODULE) \
