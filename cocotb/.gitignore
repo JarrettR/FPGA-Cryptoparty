@@ -1,0 +1,36 @@
+*.py[cod]
+
+# C extensions
+*.so
+
+# C objects
+*.o
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+sdist
+obj
+develop-eggs
+.installed.cfg
+__pycache__
+
+# Vim tmp files
+*.swp
+*~
+
+# Waveforms
+*.vcd
+
+# Results
+results.xml
+combined_results.xml
+
+# VCS files
+*.tab
+sim_build
+ucli.key
