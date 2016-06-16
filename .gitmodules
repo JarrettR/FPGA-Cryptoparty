@@ -1,0 +1,3 @@
+[submodule "tools/cocotb"]
+	path = tools/cocotb
+	url = https://github.com/potentialventures/cocotb

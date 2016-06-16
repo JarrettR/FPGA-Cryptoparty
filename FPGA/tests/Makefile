@@ -35,7 +35,7 @@ SIM ?= ghdl
 
 WPWD=$(shell sh -c 'pwd -W')
 PWD=$(shell pwd)
-COCOTB=$(PWD)/../../cocotb
+COCOTB=$(PWD)/../../tools/cocotb
 
 ifeq ($(OS),Msys)
 WPWD=$(shell sh -c 'pwd -W')
