@@ -1,268 +1,126 @@
---------------------------------------------------------------------------------
--- Company: 
--- Engineer:
---
--- Create Date:   12:34:53 04/26/2015
--- Design Name:   
--- Module Name:   C:/Users/User/Documents/GitHub/FPGA-Cryptoparty/SHA1test/raw_sha1.vhd
--- Project Name:  SHA1test
--- Target Device:  
--- Tool versions:  
--- Description:   
--- 
--- VHDL Test Bench Created by ISE for module: sha1_chunk
--- 
--- Dependencies:
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
---
--- Notes: 
--- This testbench has been automatically generated using types std_logic and
--- std_logic_vector for the ports of the unit under test.  Xilinx recommends
--- that these types always be used for the top-level I/O of a design in order
--- to guarantee that the testbench will bind correctly to the post-implementation 
--- simulation model.
---------------------------------------------------------------------------------
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
- 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---USE ieee.numeric_std.ALL;
- 
-ENTITY sha1_test IS
-END sha1_test;
- 
-ARCHITECTURE behavioural OF sha1_test IS 
- 
-    -- Component Declaration for the Unit Under Test (UUT)
- 
-    COMPONENT sha1_chunk
-    PORT(
-         clk : IN  std_logic;
-         rst : IN  std_logic;
-         h : IN  std_logic_vector(159 downto 0);
-         cont : IN  std_logic;
-         load : IN  std_logic;
-         ack : OUT  std_logic;
-         msg : IN  std_logic_vector(31 downto 0);
-         hash : OUT  std_logic_vector(159 downto 0);
-         ready : OUT  std_logic
-        );
-    END COMPONENT;
-    
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity sha1_test is
+	port(
+        clk                             : in    std_ulogic;
+        avalon_st_sink_data             : in    std_ulogic_vector(31 downto 0);
+        avalon_st_sink_empty             : in    std_ulogic_vector(2 downto 0);
+        avalon_st_sink_valid            : in    std_ulogic;
+        avalon_st_sink_startofpacket    : in    std_ulogic;
+        avalon_st_sink_endofpacket      : in    std_ulogic;
+        avalon_st_source_startofpacket    : out    std_ulogic;
+        avalon_st_source_endofpacket      : out    std_ulogic;
+        avalon_st_source_empty        : out    std_ulogic;
+        avalon_st_source_data           : out    std_ulogic_vector(31 downto 0);
+        avalon_st_source_valid          : out    std_ulogic;
+
+        csr_address             : in    std_ulogic_vector(1 downto 0);
+        csr_readdata            : out   std_ulogic_vector(31 downto 0);
+        csr_readdatavalid       : out   std_ulogic;
+        csr_read                : in    std_ulogic;
+        csr_write               : in    std_ulogic;
+        csr_waitrequest         : out   std_ulogic;
+        csr_writedata           : in    std_ulogic_vector(31 downto 0)
+	);
+end entity sha1_test;
+
+-- iterative
+architecture sha1_chunk_arch of sha1_test is
+	-- components
+	
+	-- constants
+	constant h0i : std_logic_vector(31 downto 0) := X"67452301";  -- H0 (a)
+	constant h1i : std_logic_vector(31 downto 0) := X"EFCDAB89";  -- H1 (b)
+	constant h2i : std_logic_vector(31 downto 0) := X"98BADCFE";  -- H2 (c)
+	constant h3i : std_logic_vector(31 downto 0) := X"10325476";  -- H3 (d)
+	constant h4i : std_logic_vector(31 downto 0) := X"C3D2E1F0";  -- H4 (e)
+	
+	constant k0 : std_logic_vector(31 downto 0) := X"5A827999";  -- round  0 .. 19
+	constant k1 : std_logic_vector(31 downto 0) := X"6ED9EBA1";  -- round 20 .. 39
+	constant k2 : std_logic_vector(31 downto 0) := X"8F1BBCDC";  -- round 40 .. 59
+	constant k3 : std_logic_vector(31 downto 0) := X"CA62C1D6";  -- round 60 .. 79
+	
 	-- types
-	type chunk is array (0 to 31) of std_logic_vector(31 downto 0);
-	type state_type is (STATE_IDLE, STATE_LOAD, STATE_PROCESS); 
+	type state_type is (C_IDLE, C_EXTEND_CHUNK, C_PROCESS_WORD, C_NEXT_ROUND);
 	
 	-- signals
-	signal s_clk        : std_logic := '0';
-	signal s_rst        : std_logic := '0';
 	
-	-- bi
---	signal bi_start      : std_logic := '0';
---	signal bi_load       : std_logic := '0';
---	signal bi_msg        : std_logic_vector(31 downto 0) := (others => '0');
---	signal bi_hash       : std_logic_vector(159 downto 0) := (others => '0');
---	signal bi_ack        : std_logic := '0';
---	signal bi_ready      : std_logic := '0';
---	
---	signal bi_chunk      : chunk := (others => (others => '0'));
+	signal h0         : std_logic_vector(31 downto 0) := h0i;
+	signal h1         : std_logic_vector(31 downto 0) := h1i;
+	signal h2         : std_logic_vector(31 downto 0) := h2i;
+	signal h3         : std_logic_vector(31 downto 0) := h3i;
+	signal h4         : std_logic_vector(31 downto 0) := h4i;
+    
+    
+	signal h     : std_logic_vector(159 downto 0) := (others => '0');
 	
-	-- bo
-	signal bo_start      : std_logic := '0';
-	signal bo_load       : std_logic := '0';
-	signal bo_msg        : std_logic_vector(31 downto 0) := (others => '0');
-	signal bo_hash       : std_logic_vector(159 downto 0) := (others => '0');
-	signal bo_ack        : std_logic := '0';
-	signal bo_ready      : std_logic := '0';
+	signal round        : natural := 0;
+	signal w_round      : std_logic_vector( 31 downto 0) := (others => '0');
+	signal w_round_temp : std_logic_vector( 31 downto 0) := (others => '0');
+	signal w            : std_logic_vector(511 downto 0) := (others => '0');
+	signal hash_round   : std_logic_vector(159 downto 0) := h0 & h1 & h2 & h3 & h4;
 	
-	signal bo_chunk      : chunk := (others => (others => '0'));
-	signal cont  : std_logic := '0';
-	signal state : state_type := STATE_IDLE;
-
+	signal a         : std_logic_vector(31 downto 0) := (others => '0');
+	signal b         : std_logic_vector(31 downto 0) := (others => '0');
+	signal c         : std_logic_vector(31 downto 0) := (others => '0');
+	signal d         : std_logic_vector(31 downto 0) := (others => '0');
+	signal e         : std_logic_vector(31 downto 0) := (others => '0');
+	signal a_rol     : std_logic_vector(31 downto 0) := (others => '0');
+	signal f         : std_logic_vector(31 downto 0) := (others => '0');
+	signal k         : std_logic_vector(31 downto 0) := (others => '0');
+	signal t         : std_logic_vector(31 downto 0) := (others => '0');
+	
+	signal ready_extend   : std_logic := '0';
+	signal ready_round    : std_logic := '0';
+	signal ready_round_q1 : std_logic := '0';
+	signal load_pulse     : std_logic := '0';
+	signal load_q         : std_logic := '0';
+	
+	signal state : state_type := C_IDLE;
 begin
---	sha1_bi : sha1_chunk 
---		port map (
---			s_clk, s_rst, bi_hash, cont, bi_load, bi_ack, bi_msg, bi_hash, bi_ready
---		);
-	sha1_bo : sha1_chunk 
-		port map (
-			s_clk, s_rst, bo_hash, cont, bo_load, bo_ack, bo_msg, bo_hash, bo_ready
-		);
-
-	rst_process: process
+	-- combinatorial
+	-- w[i]  = (w[i-3] xor w[i-8] xor w[i-14] xor w[i-16]) leftrotate 1
+	w_round_temp <= w( 95 downto  64) xor w(255 downto 224) xor w(447 downto 416) xor w(511 downto 480);
+	--load_pulse   <= load and (not load_q);
+	-- control process
+	sha1_chunk_process : process(clk)
 	begin
-		s_rst <= '0';
-		wait for 10 ns;
-		s_rst <= '1';
-		wait;
-	end process rst_process;
-  
-	clk_process: process
-	begin
-		s_clk <= '0'; 
-		wait for 5 ns;
-		s_clk <= '1';
-		wait for 5 ns;
-	end process clk_process;
-	
-	
-	testcase: process
-		variable i : natural := 0;
-	begin
-		wait until rising_edge(s_clk);
-		bo_load <= '0';
+		if Avalon_ST_Sink_valid = '1' then
+            Avalon_ST_Source_valid <= '1';
+        end if;
+		if Avalon_ST_Sink_startofpacket = '0' then
+			h0 <= h(159 downto 128);
+			h1 <= h(127 downto 96);
+			h2 <= h(95 downto 64);
+			h3 <= h(63 downto 32);
+			h4 <= h(31 downto 0);
+		else
+			h0 <= h0i;
+			h1 <= h1i;
+			h2 <= h2i;
+			h3 <= h3i;
+			h4 <= h4i;
+		end if;
 		
-		case state is
-		when STATE_IDLE =>
-			if bo_ready = '1' and bo_start = '1' then
-				i := 0;
-				bo_msg <= bo_chunk(0);
-				bo_load <= '1';
-				state <= STATE_LOAD;
-			end if;
-		when STATE_LOAD =>
-			if bo_ready = '1' or bo_ack = '1' then
-				if i < 16 then	--First half
-					if cont <= '0' then
-						bo_msg <= bo_chunk(i);
-					else
-						bo_msg <= bo_chunk(i + 16);
-					end if;
-					i := i + 1;
-				else	--second half
-					wait until bo_ready = '1';
-					i := 0;
-					bo_msg <= bo_chunk(16);
-					if cont <= '0' then
-						cont <= '1';
-					--else
-					--	s_rst <= '0';
-					end if;
+		if rising_edge(clk) then
+        
+			-- state machine
+			case state is
+			when C_IDLE =>
+				a <= h0; 
+				b <= h1;
+				c <= h2;
+				d <= h3;
+				e <= h4;
+				if load_pulse = '1' then
+					state <= C_PROCESS_WORD;
+					round <= 0;
 				end if;
-				bo_load <= '1';
-			end if;
-					
-		when others =>
-		end case;
-		
-	end process testcase;
-
-
-
-	
---	bi_process : process
---	begin
---		wait for 25 ns;
---	   
---		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
---
---
---		--
---		bi_chunk(0)   <= X"61626364";
---		bi_chunk(1)   <= X"65666768";
---		bi_chunk(2)   <= X"696a6b6c";
---		bi_chunk(3)   <= X"6d6e6f70";
---		bi_chunk(4)   <= X"71727374";
---		bi_chunk(5)   <= X"75767778";
---		bi_chunk(6)   <= X"797a3031";
---		bi_chunk(7)   <= X"41424344";
---		bi_chunk(8)   <= X"45464748";
---		bi_chunk(9)   <= X"494a4b4c";
---		bi_chunk(10)   <= X"80000000";
---		bi_chunk(11)   <= X"00000000";
---		bi_chunk(12)   <= X"00000000";
---		bi_chunk(13)   <= X"00000000";
---		bi_chunk(14)   <= X"00000000"; --Size 1
---		bi_chunk(15)   <= X"00000140"; --Size 2
---		
---		bi_start      <= '1';
---		wait until bi_ready = '1'; 
---		bi_start      <= '0';
---		wait until s_clk = '1';
---
---		wait;
---		
---	end process bi_process;
-	
-	
-	bo_process : process
-	begin
-		wait for 20 ns;
-	   
-
-
---		-- SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
-		bo_chunk(0)   <= X"61626364";
-		bo_chunk(1)   <= X"65666768";
-		bo_chunk(2)   <= X"696a6b6c";
-		bo_chunk(3)   <= X"6d6e6f70";
-		bo_chunk(4)   <= X"71727374";
-		bo_chunk(5)   <= X"75767778";
-		bo_chunk(6)   <= X"797a3031";
-		bo_chunk(7)   <= X"41424344";
-		bo_chunk(8)   <= X"45464748";
-		bo_chunk(9)   <= X"494a4b4c";
-		bo_chunk(10)   <= X"80000000";
-		bo_chunk(11)   <= X"00000000";
-		bo_chunk(12)   <= X"00000000";
-		bo_chunk(13)   <= X"00000000";
-		bo_chunk(14)   <= X"00000000"; --Size 1
-		bo_chunk(15)   <= X"00000140"; --Size 2
-
---6162636465666768696a6b6c6d6e6f707172737
---475767778797a30314142434445464748494a4b
---4c4d4e4f505152535455565758595a30313233343535363738717273747576777841424344
-
-		--First a5909...
-		--Final d717e22e 1659305f ad6ef088 64923db6 4aba9c08
---		bo_chunk(0)   <= X"61626364";
---		bo_chunk(1)   <= X"65666768";
---		bo_chunk(2)   <= X"696a6b6c";
---		bo_chunk(3)   <= X"6d6e6f70";
---		bo_chunk(4)   <= X"71727374";
---		bo_chunk(5)   <= X"75767778";
---		bo_chunk(6)   <= X"797a3031";
---		bo_chunk(7)   <= X"41424344";
---		bo_chunk(8)   <= X"45464748";
---		bo_chunk(9)   <= X"494a4b4c";
---		bo_chunk(10)   <= X"4d4e4f50";
---		bo_chunk(11)   <= X"51525354";
---		bo_chunk(12)   <= X"55565758";
---		bo_chunk(13)   <= X"595a3031";
---		bo_chunk(14)   <= X"32333435";
---		bo_chunk(15)   <= X"35363738";
-
-		bo_chunk(16)   <= X"71727374";
-		bo_chunk(17)   <= X"75767778";
-		bo_chunk(18)   <= X"41424344";
-		bo_chunk(19)   <= X"80000000";
-		bo_chunk(20)   <= X"00000000";
-		bo_chunk(21)   <= X"00000000";
-		bo_chunk(22)   <= X"00000000";
-		bo_chunk(23)   <= X"00000000";
-		bo_chunk(24)   <= X"00000000";
-		bo_chunk(25)   <= X"00000000";
-		bo_chunk(26)   <= X"00000000";
-		bo_chunk(27)   <= X"00000000";
-		bo_chunk(28)   <= X"00000000";
-		bo_chunk(29)   <= X"00000000";
-		bo_chunk(30)   <= X"00000000";
-		bo_chunk(31)   <= X"00000260";
-		
-		--cont <= '1';
-		bo_start      <= '1';
-		wait for 5 ns;
-		wait until bo_ready = '1'; 
-		bo_start      <= '0';
-		wait until s_clk = '1';
-		
-		wait;
-
-
-		
-	end process bo_process;
-end behavioural;
+			when others =>  
+				round <= 0;
+			end case;
+		end if;
+	end process sha1_chunk_process;
+end sha1_chunk_arch;

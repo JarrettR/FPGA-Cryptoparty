@@ -46,13 +46,13 @@ PYTHONPATH := $(PWD)/../cosim:$(PYTHONPATH)
 endif
 
 ifeq ($(TOPLEVEL_LANG),vhdl)
-    VHDL_SOURCES = $(WPWD)/../hdl/sha1_chunk.vhd
-    TOPLEVEL =  sha1_chunk
+    VHDL_SOURCES = $(WPWD)/../hdl/sha1_test.vhd
+    TOPLEVEL = sha1_test
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
 
-MODULE=sha1_chunk
+MODULE=test_sha1
 
 CUSTOM_COMPILE_DEPS = hal
 

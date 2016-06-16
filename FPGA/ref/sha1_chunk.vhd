@@ -4,9 +4,10 @@ use ieee.numeric_std.all;
 
 entity sha1_chunk is
 	port(
-		clk   : in  std_logic;
+        clk                     : in    std_ulogic;
+        reset_n                 : in    std_ulogic;
+        stream_in_data          : in    std_ulogic_vector(31 downto 0);
 		h     : in std_logic_vector(159 downto 0);
-		start  : in std_logic;
 		load  : in  std_logic;
 		ack   : out std_logic;
 		msg   : in  std_logic_vector( 31 downto 0);
@@ -79,7 +80,7 @@ begin
 	-- control process
 	sha1_chunk_process : process(clk)
 	begin
-		if start = '0' then
+		if reset_n = '1' then
 			h0 <= h(159 downto 128);
 			h1 <= h(127 downto 96);
 			h2 <= h(95 downto 64);
@@ -111,8 +112,8 @@ begin
 					state <= C_PROCESS_WORD;
 					round <= 0;
 					ready <= '0';
-					w_round <= msg;
-					w(511 downto 0) <= w(479 downto   0) & msg;
+					w_round <= stream_in_data;
+					w(511 downto 0) <= w(479 downto   0) & stream_in_data;
 				end if;
 			when C_EXTEND_CHUNK =>  -- extend takes 1 clk to be processed
 				ready <= '0';
@@ -120,8 +121,8 @@ begin
 				if 0 <= round and round < 16 then
 					if load_pulse = '1' then
 						-- if we're still loading the message
-						w_round <= msg;
-						w(511 downto 0) <= w(479 downto   0) & msg;
+						w_round <= stream_in_data;
+						w(511 downto 0) <= w(479 downto   0) & stream_in_data;
 						state <= C_PROCESS_WORD;
 					else
 						state <= C_EXTEND_CHUNK;
@@ -163,7 +164,7 @@ begin
 					state <= C_NEXT_ROUND;
 					if 0 <= round and round < 16 then 
 						ack <= '1';
-					elsif start = '0' and round < 32 then 
+					elsif reset_n = '1' and round < 32 then 
 						ack <= '1';
 					end if;
 				else 
@@ -189,7 +190,7 @@ begin
 					hash( 95 downto  64) <= std_logic_vector(unsigned(hash_round( 95 downto  64)) + unsigned(h2));  -- c
 					hash( 63 downto  32) <= std_logic_vector(unsigned(hash_round( 63 downto  32)) + unsigned(h3));  -- d
 					hash( 31 downto   0) <= std_logic_vector(unsigned(hash_round( 31 downto   0)) + unsigned(h4));  -- e
-					if start = '1' then
+					if reset_n = '0' then
 						ready  <= '1';  -- end of operations
 					end if;
 					state  <= C_IDLE;

@@ -69,28 +69,19 @@ def stream_out_config_setter(dut, stream_out, stream_in):
 class SHA1TB(object):
 
     def __init__(self, dut, debug=False):
+    
         self.dut = dut
-        self.stream_in = AvalonSTDriver(dut, "stream_in", dut.clk)
-        self.backpressure = BitDriver(self.dut.stream_out_ready, self.dut.clk)
-        self.stream_out = AvalonSTMonitor(dut, "stream_out", dut.clk,
-                                          config={'firstSymbolInHighOrderBits':
-                                                  True})
-
+        self.stream_in  = AvalonSTDriver(dut, "avalon_st_sink", dut.clk)
+        self.stream_out = AvalonSTMonitor(dut, "avalon_st_source", dut.clk)
         self.csr = AvalonMaster(dut, "csr", dut.clk)
 
-        cocotb.fork(stream_out_config_setter(dut, self.stream_out,
-                                             self.stream_in))
-
-        # Create a scoreboard on the stream_out bus
-        self.pkts_sent = 0
         self.expected_output = []
         self.scoreboard = Scoreboard(dut)
         self.scoreboard.add_interface(self.stream_out, self.expected_output)
 
-        # Reconstruct the input transactions from the pins
-        # and send them to our 'model'
-        self.stream_in_recovered = AvalonSTMonitor(dut, "stream_in", dut.clk,
-                                                   callback=self.model)
+        # Reconstruct the input transactions from the pins and send them to our 'model'
+        self.stream_in_recovered = AvalonSTMonitor(dut, "avalon_st_sink", dut.clk, callback=self.model)
+
 
         # Set verbosity on our various interfaces
         level = logging.DEBUG if debug else logging.WARNING
@@ -104,13 +95,12 @@ class SHA1TB(object):
 
     @cocotb.coroutine
     def reset(self, duration=10000):
-        self.dut.log.debug("Resetting DUT")
-        self.dut.reset_n <= 0
-        self.stream_in.bus.valid <= 0
+        self.dut.log.debug("startofpacket DUT")
+        self.stream_in.bus.startofpacket <= 0
         yield Timer(duration)
         yield RisingEdge(self.dut.clk)
-        self.dut.reset_n <= 1
-        self.dut.log.debug("Out of reset")
+        self.dut.startofpacket <= 0
+        self.dut.log.debug("Out of startofpacket")
 
 
 @cocotb.coroutine
@@ -128,7 +118,7 @@ def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
 
     cocotb.fork(clock_gen(dut.clk))
     yield RisingEdge(dut.clk)
-    tb = EndianSwapperTB(dut)
+    tb = SHA1TB(dut)
 
     yield tb.reset()
     dut.stream_out_ready <= 1
@@ -136,10 +126,6 @@ def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
     # Start off any optional coroutines
     if config_coroutine is not None:
         cocotb.fork(config_coroutine(tb.csr))
-    if idle_inserter is not None:
-        tb.stream_in.set_valid_generator(idle_inserter())
-    if backpressure_inserter is not None:
-        tb.backpressure.start(backpressure_inserter())
 
     # Send in the packets
     for transaction in data_in():
@@ -180,10 +166,6 @@ factory.add_option("data_in",
                    [random_packet_sizes])
 factory.add_option("config_coroutine",
                    [None, randomly_switch_config])
-factory.add_option("idle_inserter",
-                   [None, wave, intermittent_single_cycles, random_50_percent])
-factory.add_option("backpressure_inserter",
-                   [None, wave, intermittent_single_cycles, random_50_percent])
 factory.generate_tests()
 
 import cocotb.wavedrom
@@ -196,7 +178,7 @@ def wavedrom_test(dut):
     """
     cocotb.fork(clock_gen(dut.clk))
     yield RisingEdge(dut.clk)
-    tb = EndianSwapperTB(dut)
+    tb = SHA1TB(dut, True)
     yield tb.reset()
 
     with cocotb.wavedrom.trace(dut.reset_n, tb.csr.bus, clk=dut.clk) as waves:
