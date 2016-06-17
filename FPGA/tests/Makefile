@@ -31,6 +31,16 @@
 # Fuck verilog
 TOPLEVEL_LANG ?= vhdl
 
+
+CMD_BIN := ghdl
+
+ifdef GHDL_BIN_DIR
+    GHDL := $(shell which $(GHDL_BIN_DIR)/$(CMD_BIN) 2>/dev/null)
+else
+    # auto-detect bin dir from system path
+    GHDL := $(shell which $(CMD_BIN) 2>/dev/null)
+endif
+
 SIM ?= ghdl
 
 WPWD=$(shell sh -c 'pwd -W')
