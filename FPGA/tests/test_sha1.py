@@ -1,124 +1,76 @@
-
+# Simple tests for an adder module
 import cocotb
-from cocotb.triggers import Timer, RisingEdge, ReadOnly
+from cocotb.triggers import Timer, RisingEdge
 from cocotb.result import TestFailure
-from cocotb.monitors import BusMonitor
-from cocotb.scoreboard import Scoreboard
-
 import random
 
-clock_period = 100
 
-
-class StreamBusMonitor(BusMonitor):
-    """
-    streaming bus monitor
-    """
-    _signals = ["valid", "data"]
-
-    @cocotb.coroutine
-    def _monitor_recv(self):
-        """Watch the pins and reconstruct transactions"""
-
-        while True:
-            yield RisingEdge(self.clock)
-            yield ReadOnly()
-            if self.bus.valid.value:
-                self._recv(int(self.bus.data.value))
-
+def adder_model(a, b):
+    """ model of adder """
+    return a + b
 
 @cocotb.coroutine
-def clock_gen(signal, period=10000):
+def clock_gen(signal):
     while True:
         signal <= 0
-        yield Timer(period/2)
+        yield Timer(5000)
         signal <= 1
-        yield Timer(period/2)
+        yield Timer(5000)
+    
+@cocotb.test()
+def stream_passthrough(dut):
+    """Test for basic input and output stream"""
+    yield Timer(2)
+    input = random.randint(0, 255)
 
+    dut.dat_i = input
+    
 
-@cocotb.coroutine
-def value_test(dut, num):
-    """ Test n*num/n = num """
+    yield RisingEdge(dut.clk_i)
 
-    data_width = int(dut.DATA_WIDTH.value)
-    bus_width = int(dut.BUS_WIDTH.value)
-    dut.log.info('Detected DATA_WIDTH = %d, BUS_WIDTH = %d' %
-                 (data_width, bus_width))
-
-    cocotb.fork(clock_gen(dut.clk, period=clock_period))
-
-    dut.rst <= 1
-    for i in range(bus_width):
-        dut.i_data[i] <= 0
-    dut.i_valid <= 0
-    yield RisingEdge(dut.clk)
-    yield RisingEdge(dut.clk)
-    dut.rst <= 0
-
-    for i in range(bus_width):
-        dut.i_data[i] <= num
-    dut.i_valid <= 1
-    yield RisingEdge(dut.clk)
-    dut.i_valid <= 0
-    yield RisingEdge(dut.clk)
-    got = int(dut.o_data.value)
-
-    if got != num:
+    if int(dut.x) != adder_model(A, B):
         raise TestFailure(
-            'Mismatch detected: got %d, exp %d!' % (got, num))
+            "Adder result is incorrect: %s != 15" % str(dut.x))
+    else:  # these last two lines are not strictly necessary
+        dut.log.info("Ok!")
+        
+        
+@cocotb.test()
+def adder_basic_test(dut):
+    """Test for 5 + 10"""
+    yield Timer(2)
+    A = 5
+    B = 10
+
+    dut.a = A
+    dut.b = B
+
+    yield Timer(2)
+
+    if int(dut.x) != adder_model(A, B):
+        raise TestFailure(
+            "Adder result is incorrect: %s != 15" % str(dut.x))
+    else:  # these last two lines are not strictly necessary
+        dut.log.info("Ok!")
 
 
 @cocotb.test()
-def mean_basic_test(dut):
-    """ Test n*5/n = 5 """
-    yield value_test(dut, 5)
+def adder_randomised_test(dut):
+    """Test for adding 2 random numbers multiple times"""
+    yield Timer(2)
 
+    for i in range(10):
+        A = random.randint(0, 15)
+        B = random.randint(0, 15)
 
-@cocotb.test()
-def mean_overflow_test(dut):
-    """ Test for overflow n*max_val/n = max_val """
-    data_width = int(dut.DATA_WIDTH.value)
-    yield value_test(dut, 2**data_width - 1)
+        dut.a = A
+        dut.b = B
 
+        yield Timer(2)
 
-@cocotb.test()
-def mean_randomised_test(dut):
-    """ Test mean of random numbers multiple times """
-
-    # dut_in = StreamBusMonitor(dut, "i", dut.clk)  # this doesn't work:
-    # VPI Error vpi_get_value():
-    # ERROR - Cannot get a value for an object of type vpiArrayVar.
-
-    dut_out = StreamBusMonitor(dut, "o", dut.clk)
-
-    exp_out = []
-    scoreboard = Scoreboard(dut)
-    scoreboard.add_interface(dut_out, exp_out)
-
-    data_width = int(dut.DATA_WIDTH.value)
-    bus_width = int(dut.BUS_WIDTH.value)
-    dut.log.info('Detected DATA_WIDTH = %d, BUS_WIDTH = %d' %
-                 (data_width, bus_width))
-
-    cocotb.fork(clock_gen(dut.clk, period=clock_period))
-
-    dut.rst <= 1
-    for i in range(bus_width):
-        dut.i_data[i] = 0
-    dut.i_valid <= 0
-    yield RisingEdge(dut.clk)
-    yield RisingEdge(dut.clk)
-    dut.rst <= 0
-
-    for j in range(10):
-        nums = []
-        for i in range(bus_width):
-            x = random.randint(0, 2**data_width - 1)
-            dut.i_data[i] = x
-            nums.append(x)
-        dut.i_valid <= 1
-
-        nums_mean = sum(nums) // bus_width
-        exp_out.append(nums_mean)
-        yield RisingEdge(dut.clk)
-        dut.i_valid <= 0
+        if int(dut.x) != adder_model(A, B):
+            raise TestFailure(
+                "Randomised test failed with: %s + %s = %s" %
+                (int(dut.a), int(dut.b), int(dut.x)))
+        else:  # these last two lines are not strictly necessary
+            dut.log.info("Ok!")
