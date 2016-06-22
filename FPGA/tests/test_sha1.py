@@ -63,14 +63,6 @@ class ShaTB(object):
 def adder_model(a, b):
     """ model of adder """
     return a + b
-
-@cocotb.coroutine
-def clock_gen(signal):
-    while True:
-        signal <= 0
-        yield Timer(5000)
-        signal <= 1
-        yield Timer(5000)
         
 @cocotb.coroutine
 def clock_gen(signal):
