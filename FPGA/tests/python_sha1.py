@@ -35,6 +35,7 @@ class Sha1Model(object):
         self.addWord(0x696a6b6c)
         self.addWord(0x65666768)
         self.addWord(0x61626364)
+        #Out: 9b47122a88a9a7f65ce5540c1fc5954567c48404
         
         self.W = self.processInput()
         
@@ -129,6 +130,8 @@ class Sha1Model(object):
         print 'H4: {:08X}'.format(self.H4)
         
         print 'W:  ' + self.formatW()
+        
+        print 'Final output: %08x%08x%08x%08x%08x' % (self.H0, self.H1, self.H2, self.H3, self.H4)
         
         return "All vars printed"
         
