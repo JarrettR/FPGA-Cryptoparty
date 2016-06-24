@@ -24,12 +24,12 @@ begin
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
-            w <= w(0 to 511-32) & dat_i;
+            w <= dat_i & w(0 to 511-32);
             
            
             
-            dat_o <= w; 
         end if;
     end process;	
+    dat_o <= w; 
 
 end RTL; 

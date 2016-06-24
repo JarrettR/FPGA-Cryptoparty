@@ -15,27 +15,29 @@ def load_data_test(dut):
     
     mockObject = Sha1Model()
 
-    for i in range(18):
+    for i in range(16):
         dut.log.info(str(i))
-        mockOut = ''
-        for x in mockObject.W:
-            mockOut += "{:x}".format(int(x))
-        dut.log.info(mockOut)
-        dut.log.info(str(dut.dat_o))
         input = random.randint(0, 0xffffffff)
-        mockObject.addWord(input)
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
+        mockObject.addWord(input)
+        mockOut = ''
+        for x in mockObject.W:
+            mockOut += "{:x}".format(x)
+        dut.log.info(mockOut)
+        dut.log.info(convert_hex(dut.dat_o))
+        
     
-    mockOut = ''.join(str(x) for x in mockObject.W)
+    #mockOut = ''.join(str(x) for x in mockObject.W)
     
+        yield RisingEdge(dut.clk_i)
     
-    dut.log.info("{:x}".format(int(mockOut)))
-    dut.log.info("{:x}".format(int(str(dut.dat_o), 2)))
+    dut.log.info("{:x}".format(int(str(mockOut), 16)))
+    dut.log.info(convert_hex(dut.dat_o))
     
-    if int(dut.dat_o) != int(mockOut):
+    if convert_hex(dut.dat_o) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(str(int(dut.dat_o)), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.dat_o), mockOut))
     else:  # these last two lines are not strictly necessary
         dut.log.info("Ok!")
         
@@ -89,6 +91,24 @@ def clock_gen(signal):
         yield Timer(5000)
         signal <= 1
         yield Timer(5000)
+        
+        
+def convert_hex(input):
+    input = str(input)
+    replaceCount = []
+    while 'UUUU' in input: 
+        replaceCount.append(input.find('UUUU') / 4)
+        input = input.replace('UUUU', '1111', 1)
+    
+    output = list("{:x}".format(int(str(input), 2)))
+    
+    for x in replaceCount:
+        if len(output) > x:
+            output[x] = 'U'
+        else:
+            output.append('U')
+        
+    return "".join(output)
         
         
  
