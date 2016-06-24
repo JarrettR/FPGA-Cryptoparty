@@ -44,7 +44,6 @@ class Sha1Model(object):
         print self.displayAll()
         return "Finished"
         
-        return
 
     def addWord(self, input):
         self.rolW(16)

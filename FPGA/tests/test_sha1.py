@@ -6,18 +6,40 @@ from cocotb.result import TestFailure
 import random
 from wishbone_monitor import WishboneSlave
 from wishbone_driver import Wishbone, WishboneMaster
+from python_sha1 import Sha1Model
 
 @cocotb.test()
-def wavedrom_test(dut):
-    """
-    I don't know what I'm doing!
-    """
-    cocotb.fork(clock_gen(dut.clk_i))
-    yield RisingEdge(dut.clk_i)
-    tb = ShaTB(dut)
-    yield tb.reset()
+def load_data_test(dut):
+    """Test for basic Wishbone operation"""
+    cocotb.fork(Clock(dut.clk_i, 1000).start())
     
+    mockObject = Sha1Model()
 
+    for i in range(18):
+        dut.log.info(str(i))
+        mockOut = ''
+        for x in mockObject.W:
+            mockOut += "{:x}".format(int(x))
+        dut.log.info(mockOut)
+        dut.log.info(str(dut.dat_o))
+        input = random.randint(0, 0xffffffff)
+        mockObject.addWord(input)
+        dut.dat_i <= input
+        yield RisingEdge(dut.clk_i)
+    
+    mockOut = ''.join(str(x) for x in mockObject.W)
+    
+    
+    dut.log.info("{:x}".format(int(mockOut)))
+    dut.log.info("{:x}".format(int(str(dut.dat_o), 2)))
+    
+    if int(dut.dat_o) != int(mockOut):
+        raise TestFailure(
+            "Adder result is incorrect: {0} != {1}".format(str(int(dut.dat_o)), mockOut))
+    else:  # these last two lines are not strictly necessary
+        dut.log.info("Ok!")
+        
+        
  
 class ShaTB(object):
 
@@ -60,10 +82,6 @@ class ShaTB(object):
 
 
 
-def adder_model(a, b):
-    """ model of adder """
-    return a + b
-        
 @cocotb.coroutine
 def clock_gen(signal):
     while True:
@@ -72,76 +90,5 @@ def clock_gen(signal):
         signal <= 1
         yield Timer(5000)
         
-@cocotb.test()
-def simple_wb_test(dut):
-    """Test for basic Wishbone operation"""
-    cocotb.fork(Clock(dut.clk_i, 1000).start())
-
-
-    for i in range(10):
-        input = random.randint(0, 255)
-        dut.dat_i <= input
-        yield RisingEdge(dut.clk_i)
-        dut.log.info(str(dut.dat_o))
         
-        
-@cocotb.test()
-def stream_passthrough(dut):
-    """Test for basic input and output stream"""
-    yield Timer(2)
-    input = random.randint(0, 255)
-
-    dut.dat_i <= input
-    
-    dut.a = 5
-    dut.b = 6
-    
-    yield Timer(2)
-    #yield RisingEdge(dut.clk_i)
-
-    if int(dut.dat_o) != input:
-        raise TestFailure(
-            "Adder result is incorrect: %s != %s" % str(dut.dat_o), str(input))
-    else:  # these last two lines are not strictly necessary
-        dut.log.info("Ok!")
-        
-        
-@cocotb.test()
-def adder_basic_test(dut):
-    """Test for 5 + 10"""
-    yield Timer(2)
-    A = 5
-    B = 10
-
-    dut.a = A
-    dut.b = B
-
-    yield Timer(2)
-
-    if int(dut.x) != adder_model(A, B):
-        raise TestFailure(
-            "Adder result is incorrect: %s != 15" % str(dut.x))
-    else:  # these last two lines are not strictly necessary
-        dut.log.info("Ok!")
-
-
-@cocotb.test()
-def adder_randomised_test(dut):
-    """Test for adding 2 random numbers multiple times"""
-    yield Timer(2)
-
-    for i in range(10):
-        A = random.randint(0, 15)
-        B = random.randint(0, 15)
-
-        dut.a = A
-        dut.b = B
-
-        yield Timer(2)
-
-        if int(dut.x) != adder_model(A, B):
-            raise TestFailure(
-                "Randomised test failed with: %s + %s = %s" %
-                (int(dut.a), int(dut.b), int(dut.x)))
-        else:  # these last two lines are not strictly necessary
-            dut.log.info("Ok!")
+ 
