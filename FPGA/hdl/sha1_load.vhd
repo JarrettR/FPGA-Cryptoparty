@@ -10,26 +10,28 @@ port(
     rst_i          : in    std_ulogic;
     dat_i          : in    std_ulogic_vector(0 to 31);
     sot_in         : in    std_ulogic;
-    dat_o          : out    std_ulogic_vector(0 to 511)
+    dat_o          : out    std_ulogic_vector(0 to 31)
     
     );
 end sha1_load;
 
 architecture RTL of sha1_load is
-
-    signal w		:	std_ulogic_vector(0 to 511);
+    type AA is array(0 to 79) of std_ulogic_vector(0 to 31);
+    signal w: AA;
 
 begin
 
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
-            w <= dat_i & w(0 to 511-32);
+            --w <= dat_i & w(0 to 511-32);
             
-           
+            w(0) <= dat_i;
+            w(1) <= w(0);
+            w(2) <= w(1);
             
         end if;
     end process;	
-    dat_o <= w; 
+    dat_o <= w(2); 
 
 end RTL; 

@@ -15,25 +15,34 @@ def load_data_test(dut):
     
     mockObject = Sha1Model()
 
-    for i in range(16):
+    for i in range(80):
+        #print "Round: "
+        #print i
         dut.log.info(str(i))
+        #input = 0xffffffff 
         input = random.randint(0, 0xffffffff)
+        mockObject.addWord(input)
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
-        mockObject.addWord(input)
-        mockOut = ''
-        for x in mockObject.W:
-            mockOut += "{:x}".format(x)
+        mockOut = "{:08x}".format(mockObject.W[2])
+        #iWord = 0
+        #for x in mockObject.W:
+            #print len(x)
+            #iWord += 1
+            #mockOut += "{:08x}".format(x)
+            #print iWord 
+            #print mockOut
         dut.log.info(mockOut)
         dut.log.info(convert_hex(dut.dat_o))
         
     
     #mockOut = ''.join(str(x) for x in mockObject.W)
     
-        yield RisingEdge(dut.clk_i)
+    yield RisingEdge(dut.clk_i)
     
-    dut.log.info("{:x}".format(int(str(mockOut), 16)))
-    dut.log.info(convert_hex(dut.dat_o))
+    #out = "{:x}".format(int(str(mockOut), 16))
+    #dut.log.info(len(out))
+    #dut.log.info(convert_hex(dut.dat_o))
     
     if convert_hex(dut.dat_o) != mockOut:
         raise TestFailure(
