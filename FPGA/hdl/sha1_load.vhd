@@ -27,11 +27,14 @@ begin
             --w <= dat_i & w(0 to 511-32);
             
             w(0) <= dat_i;
-            w(1) <= w(0);
-            w(2) <= w(1);
+            --w(1) <= w(0);
+            --w(2) <= w(1);
+            for i in 1 to 15 loop
+                w(i) <= w(i - 1);
+            end loop;
             
         end if;
     end process;	
-    dat_o <= w(2); 
+    dat_o <= w(15); 
 
 end RTL; 
