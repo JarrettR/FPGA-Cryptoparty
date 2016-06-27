@@ -37,7 +37,7 @@ class Sha1Model(object):
         self.addWord(0x61626364)
         #Out: 9b47122a88a9a7f65ce5540c1fc5954567c48404
         
-        self.W = self.processInput()
+        self.processInput()
         
         self.processBuffer()
         
@@ -54,7 +54,7 @@ class Sha1Model(object):
         for t in range(16, 80):
             W[t] = self.CSL(self.W[t - 3] ^ self.W[t - 8]  ^ self.W[t - 14]  ^ self.W[t - 16], 1)
             #print 't: ' + str(t) + ' ' + str(W[t])
-        return W
+        self.W = W
         
     def rolW(self, size = 80):
         self.W[1:size] = self.W[0:size - 1]

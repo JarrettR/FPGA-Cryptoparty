@@ -46,7 +46,8 @@ PYTHONPATH := $(PWD)/../cosim:$(PYTHONPATH)
 endif
 
 ifeq ($(TOPLEVEL_LANG),vhdl)
-    VHDL_SOURCES = $(WPWD)/../hdl/sha1_load.vhd
+    VHDL_SOURCES = $(WPWD)/../hdl/sha1_p_input.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/sha1_load.vhd
     TOPLEVEL = sha1_load
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")

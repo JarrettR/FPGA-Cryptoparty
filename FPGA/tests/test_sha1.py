@@ -35,7 +35,7 @@ def load_data_test(dut):
 @cocotb.test()
 def process_data_test(dut):
     """Test input data properly processed during first stage"""
-    cocotb.fork(Clock(dut.clk_i, 1000).start())
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
     
     mockObject = Sha1Model()
 
@@ -45,11 +45,19 @@ def process_data_test(dut):
         mockObject.addWord(input)
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
-        mockOut = "{:08x}".format(mockObject.W[79])
+        #dut.log.info(convert_hex(dut.dat_o))
+    
+    
+    mockObject.processInput()
+    #mockObject.displayAll()
+    mockOut = "{:08x}".format(mockObject.W[17])
 
     yield RisingEdge(dut.clk_i)
+    
+    print convert_hex(dut.dat_o)
+    print convert_hex(dut.dat_o).zfill(8)
 
-    if convert_hex(dut.dat_o) != mockOut:
+    if convert_hex(dut.dat_o).zfill(8) != mockOut:
         raise TestFailure(
             "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.dat_o), mockOut))
     else:
