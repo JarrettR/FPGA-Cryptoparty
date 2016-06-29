@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use work.sha1_pkg.all;
 
 
-entity sha1_load is
+entity sha1_scheduler is
 
 port(
     clk_i          : in    std_ulogic;
@@ -17,13 +17,21 @@ port(
     dat_5_o          : out    std_ulogic_vector(0 to 31)
     
     );
-end sha1_load;
+end sha1_scheduler;
 
-architecture RTL of sha1_load is
-    component sha1_p_input
-      port (clk_i: in std_ulogic;
-        dat_1_i, dat_2_i, dat_3_i, dat_4_i: in std_ulogic_vector(0 to 31);
-      dat_o : out std_ulogic_vector(0 to 31));
+architecture RTL of sha1_scheduler is
+    component sha1_load
+      port (
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        dat_i          : in    w_input;
+        sot_in         : in    std_ulogic;
+        dat_1_o          : out    std_ulogic_vector(0 to 31);
+        dat_2_o          : out    std_ulogic_vector(0 to 31);
+        dat_3_o          : out    std_ulogic_vector(0 to 31);
+        dat_4_o          : out    std_ulogic_vector(0 to 31);
+        dat_5_o          : out    std_ulogic_vector(0 to 31)
+    );
     end component;
     
     --type w_type is array(0 to 79) of std_ulogic_vector(0 to 31);

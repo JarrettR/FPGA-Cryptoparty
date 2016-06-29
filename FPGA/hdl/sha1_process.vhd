@@ -26,7 +26,12 @@ architecture RTL of sha1_load is
     signal w_temp: w_type;
 
 begin
-
+    GEN_REG: for i in 16 to 79 generate
+        w_temp(i) <= (w(i - 3)(1 to 31) & w(i - 3)(0)) XOR
+            (w(i - 8)(1 to 31) & w(i - 8)(0)) XOR
+            (w(i - 14)(1 to 31) & w(i - 14)(0)) XOR
+            (w(i - 16)(1 to 31) & w(i - 16)(0));
+    end generate GEN_REG;
     
     process(clk_i)   
     begin
@@ -38,7 +43,10 @@ begin
                 w(i) <= w(i - 1);
             end loop;
             for i in 16 to 79 loop
-                w(i) <= w_temp(i);
+                w(i) <= (w(i - 3)(1 to 31) & w(i - 3)(0)) XOR
+                    (w(i - 8)(1 to 31) & w(i - 8)(0)) XOR
+                    (w(i - 14)(1 to 31) & w(i - 14)(0)) XOR
+                    (w(i - 16)(1 to 31) & w(i - 16)(0));
             end loop;
             
         end if;

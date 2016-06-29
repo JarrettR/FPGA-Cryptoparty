@@ -48,7 +48,8 @@ endif
 ifeq ($(TOPLEVEL_LANG),vhdl)
     VHDL_SOURCES = $(WPWD)/../hdl/sha1_pkg.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_load.vhd
-    TOPLEVEL = sha1_load
+    VHDL_SOURCES += $(WPWD)/../hdl/sha1_scheduler.vhd
+    TOPLEVEL = sha1_scheduler
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
