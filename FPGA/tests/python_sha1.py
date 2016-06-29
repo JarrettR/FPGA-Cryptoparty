@@ -53,7 +53,8 @@ class Sha1Model(object):
         W = self.W
         for t in range(16, 80):
             W[t] = self.CSL(self.W[t - 3] ^ self.W[t - 8]  ^ self.W[t - 14]  ^ self.W[t - 16], 1)
-            #print 't: ' + str(t) + ' ' + str(W[t])
+            #print 't: ' + str(t) + ' ' + "{:08x}".format(W[t])
+            
         self.W = W
         
     def rolW(self, size = 80):
