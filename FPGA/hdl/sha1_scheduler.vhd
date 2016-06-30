@@ -10,7 +10,7 @@ port(
     rst_i          : in    std_ulogic;
     dat_i          : in    std_ulogic_vector(0 to 31);
     sot_in         : in    std_ulogic;
-    dat_1_o          : out    std_ulogic_vector(0 to 31);
+    dat_1_o          : out    w_type;
     dat_2_o          : out    std_ulogic_vector(0 to 31);
     dat_3_o          : out    std_ulogic_vector(0 to 31);
     dat_4_o          : out    std_ulogic_vector(0 to 31);
@@ -24,56 +24,42 @@ architecture RTL of sha1_scheduler is
       port (
         clk_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
+        dat_i          : in    std_ulogic_vector(0 to 31);
+        sot_in         : in    std_ulogic;
+        dat_w_o        : out    w_input
+    );
+    end component;
+    component sha1_p_input
+      port (
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
         dat_i          : in    w_input;
         sot_in         : in    std_ulogic;
-        dat_1_o          : out    std_ulogic_vector(0 to 31);
-        dat_2_o          : out    std_ulogic_vector(0 to 31);
-        dat_3_o          : out    std_ulogic_vector(0 to 31);
-        dat_4_o          : out    std_ulogic_vector(0 to 31);
-        dat_5_o          : out    std_ulogic_vector(0 to 31)
+        dat_w_o        : out    w_type
     );
     end component;
     
-    --type w_type is array(0 to 79) of std_ulogic_vector(0 to 31);
     signal w: w_type;
-    signal w_temp: w_type;
+    signal w_temp: w_input;
+    signal i : integer range 0 to 15;
 
 begin
+
+    LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_temp);
+    PINPUT1: sha1_p_input port map (clk_i,rst_i,w_temp,sot_in,w);
+    
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
-            for i in 1 to 15 loop
-                w(i) <= w_temp(i - 1);
-            end loop;
-            --w <= w_temp;
+            if i = 15 or sot_in = '1' then
+                i <= 0;
+            else
+                i <= i + 1;
+            end if;
         end if;
     end process;
-    dat_1_o <= w_temp(11);
-    dat_2_o <= w_temp(12);
-    dat_3_o <= w_temp(13);	
-    dat_4_o <= w_temp(14);	
-    dat_5_o <= w_temp(15);	
     
-    w_temp(0) <= dat_i;
-    w_temp(1) <= w(1);
-    w_temp(2) <= w(2);
-    w_temp(3) <= w(3);
-    w_temp(4) <= w(4);
-    w_temp(5) <= w(5);
-    w_temp(6) <= w(6);
-    w_temp(7) <= w(7);
-    w_temp(8) <= w(8);
-    w_temp(9) <= w(9);
-    w_temp(10) <= w(10);
-    w_temp(11) <= w(11);
-    w_temp(12) <= w(12);
-    w_temp(13) <= w(13);
-    w_temp(14) <= w(14);
-    w_temp(15) <= w(15);
+    dat_5_o <= w_temp(15);
     
-    --dat_o <= "00110011001100110011001100110011" XOR "11001100110011001100110011001100" XOR "11001100110011001100110011001100" XOR "00110011001100110011001100110011";
-    --dat_o <= w(16 - 3) XOR w(16 - 8) XOR w(16 - 14) XOR w(16 - 16);
-    --dat_o <= w(15)(3 to 31) & w(15)(0 to 2); --w(15); 
-    --dat_o <= w(20); 
 
 end RTL; 
