@@ -3,6 +3,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge
 from cocotb.result import TestFailure
+from cocotb.log import SimLog
 import random
 from wishbone_monitor import WishboneSlave
 from wishbone_driver import Wishbone, WishboneMaster
@@ -11,6 +12,8 @@ from python_sha1 import Sha1Model
 @cocotb.test()
 def load_data_test(dut):
     """Test for data properly shifted in"""
+    
+    log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
     mockObject = Sha1Model()
@@ -21,22 +24,18 @@ def load_data_test(dut):
         mockObject.addWord(input)
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
-        dut.log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o))
+        #log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o))
 
-    mockObject.processInput()
-    mockObject.displayAll()
-    mockOut = "{:08x}".format(mockObject.W[16])
+    #mockObject.displayAll()
+    mockOut = "{:08x}".format(mockObject.W[15])
 
-    #yield RisingEdge(dut.clk_i)
-    #yield RisingEdge(dut.clk_i)
-    
-    print convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_4_o) + " " + convert_hex(dut.dat_5_o)
+    #print convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_4_o) + " " + convert_hex(dut.dat_5_o)
 
-    if convert_hex(dut.dat_1_o).zfill(8) != mockOut:
+    if convert_hex(dut.dat_5_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.dat_1_o), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.dat_5_o), mockOut))
     else:
-        dut.log.info("Ok!")
+        log.info("Ok!")
         
         
 #@cocotb.test()

@@ -42,27 +42,17 @@ begin
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
-            for i in 1 to 79 loop
-                if i < 16 then
-                    w(i) <= w_temp(i - 1);
-                else
-                    --These are all one register behind where you'd expect, because they haven't been shifted yet
-                    --w(i) <= "11111111111111111111111111111111";
-                    w(i) <= w_temp(i);
-                    --w(i) <= (w(i - 3)(1 to 31) & w(i - 3)(0)) XOR
-                    --    (w(i - 8)(1 to 31) & w(i - 8)(0)) XOR
-                    --    (w(i - 14)(1 to 31) & w(i - 14)(0)) XOR
-                    --    (w(i - 16)(1 to 31) & w(i - 16)(0));
-                end if;
+            for i in 1 to 15 loop
+                w(i) <= w_temp(i - 1);
             end loop;
             --w <= w_temp;
         end if;
     end process;
-    dat_1_o <= w_temp(15);
-    dat_2_o <= w_temp(16);
-    dat_3_o <= w_temp(17);	
-    dat_4_o <= w_temp(18);	
-    dat_5_o <= w_temp(19);	
+    dat_1_o <= w_temp(11);
+    dat_2_o <= w_temp(12);
+    dat_3_o <= w_temp(13);	
+    dat_4_o <= w_temp(14);	
+    dat_5_o <= w_temp(15);	
     
     w_temp(0) <= dat_i;
     w_temp(1) <= w(1);
@@ -80,10 +70,6 @@ begin
     w_temp(13) <= w(13);
     w_temp(14) <= w(14);
     w_temp(15) <= w(15);
-    w_temp(16) <= w(16);
-    w_temp(17) <= w(17);
-    w_temp(18) <= w(18);
-    w_temp(19) <= w(19);
     
     --dat_o <= "00110011001100110011001100110011" XOR "11001100110011001100110011001100" XOR "11001100110011001100110011001100" XOR "00110011001100110011001100110011";
     --dat_o <= w(16 - 3) XOR w(16 - 8) XOR w(16 - 14) XOR w(16 - 16);
