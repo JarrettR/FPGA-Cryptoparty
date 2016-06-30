@@ -36,6 +36,7 @@ SIM ?= ghdl
 WPWD=$(shell sh -c 'pwd -W')
 PWD=$(shell pwd)
 COCOTB=$(PWD)/../../tools/cocotb
+GPROF2DOT=$(PWD)/../../tools/gprof2dot
 
 ifeq ($(OS),Msys)
 WPWD=$(shell sh -c 'pwd -W')
@@ -73,7 +74,7 @@ hal:
 test_profile.pstat: sim
 
 callgraph.svg: test_profile.pstat
-	gprof2dot.py -f pstats $< | dot -Tsvg -o $@
+	$(GPROF2DOT)/gprof2dot.py -f pstats $< | dot -Tsvg -o $@
 
 .PHONY: profile
 profile:

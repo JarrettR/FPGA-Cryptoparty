@@ -4,3 +4,6 @@
 [submodule "tools/ghdl"]
 	path = tools/ghdl
 	url = https://github.com/tgingold/ghdl
+[submodule "tools/gprof2dot"]
+	path = tools/gprof2dot
+	url = https://github.com/jrfonseca/gprof2dot
