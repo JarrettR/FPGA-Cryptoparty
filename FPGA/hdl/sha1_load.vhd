@@ -24,9 +24,15 @@ begin
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
-            for i in 1 to 15 loop
-                w(i) <= w_temp(i - 1);
-            end loop;
+            if rst_i = '1' then
+                for i in 0 to 15 loop
+                    w(i) <= "00000000000000000000000000000000";
+                end loop;
+            else
+                for i in 1 to 15 loop
+                    w(i) <= w_temp(i - 1);
+                end loop;
+            end if;
         end if;
     end process;
     dat_w_o <= w_temp;

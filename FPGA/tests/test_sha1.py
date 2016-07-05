@@ -1,42 +1,90 @@
-# Simple tests for an adder module
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge
 from cocotb.result import TestFailure
 from cocotb.log import SimLog
+from cocotb.wavedrom import Wavedrom
 import random
 from python_sha1 import Sha1Model
 
-@cocotb.test()
-def load_data_test(dut):
-    """Test for data properly shifted in"""
-    
-    log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 10000).start())
-    
-    mockObject = Sha1Model()
-
-    for i in range(16):
+@cocotb.coroutine
+def load_data(dut, log, mockObject, words):
+    for i in range(words):
         #input = 0xffffffff 
         input = random.randint(0, 0xffffffff)
         mockObject.addWord(input)
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
-        #log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o))
+        log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.sha1_p_input_o) + " " + convert_hex(dut.sha1_load_o))
+
+        
+@cocotb.coroutine
+def reset(dut):
+    dut.rst_i <= 1
+    yield RisingEdge(dut.clk_i)
+    dut.rst_i <= 0
+    yield RisingEdge(dut.clk_i)
+    #log.info("Reset!")
+
+@cocotb.test()
+def load_data_test(dut):
+    """Test for data properly shifted in"""
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+    
+    yield reset(dut)
+    yield load_data(dut, log, mockObject, 16)
 
     #mockObject.displayAll()
     mockOut = "{:08x}".format(mockObject.W[15])
 
     #print convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_4_o) + " " + convert_hex(dut.dat_5_o)
 
-    if convert_hex(dut.dat_5_o).zfill(8) != mockOut:
+    if convert_hex(dut.sha1_load_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.dat_5_o), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.sha1_load_o), mockOut))
     else:
         log.info("Ok!")
         
         
 @cocotb.test()
+def reset_test(dut):
+    """Testing synchronous reset"""
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+    
+    yield reset(dut)
+    if convert_hex(dut.dat_1_o) != '0':
+        raise TestFailure(
+            "Reset failed!")
+    yield load_data(dut, log, mockObject, 18)
+    if convert_hex(dut.dat_1_o) == '0':
+        raise TestFailure(
+            "Data not populated!")
+    else:
+        log.info("Testing reset")
+    yield reset(dut)
+    if convert_hex(dut.dat_1_o) != '0':
+        raise TestFailure(
+            "Reset failed!")
+    else:
+        log.info("Reset Ok!")
+    yield load_data(dut, log, mockObject, 25)
+
+    mockOut = "{:08x}".format(mockObject.W[15])
+
+    if convert_hex(dut.sha1_load_o).zfill(8) != mockOut:
+        raise TestFailure(
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.sha1_load_o), mockOut))
+    else:
+        log.info("Ok!")
+        
+        
+#@cocotb.test()
 def process_input_test(dut):
     """Test input data properly processed during first stage"""
     log = SimLog("cocotb.%s" % dut._name)
@@ -44,16 +92,8 @@ def process_input_test(dut):
     
     mockObject = Sha1Model()
 
-    for i in range(80):
-        #input = 0xffffffff 
-        input = random.randint(0, 0xffffffff)
-        mockObject.addWord(input)
-        dut.dat_i <= input
-        yield RisingEdge(dut.clk_i)
-        #dut.log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o))
-        
-    
-    
+    yield load_data(dut, log, mockObject, 80)
+
     mockObject.processInput()
     mockObject.displayAll()
     mockOut = "{:08x}".format(mockObject.W[16])
@@ -61,66 +101,15 @@ def process_input_test(dut):
     #yield RisingEdge(dut.clk_i)
     #yield RisingEdge(dut.clk_i)
     
-    print convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_4_o) + " " + convert_hex(dut.dat_5_o)
+    print convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.sha1_p_input_o) + " " + convert_hex(dut.sha1_load_o)
 
-    if convert_hex(dut.dat_2_o).zfill(8) != mockOut:
+    if convert_hex(dut.sha1_p_input_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.dat_2_o), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.sha1_p_input_o), mockOut))
     else:
         log.info("Ok!")
         
-        
- 
-class ShaTB(object):
 
-    def __init__(self, dut, debug=False):
-        self.dut = dut
-        self.stream_in = Wishbone(dut, "stream_in", dut.clk_i)
-        self.stream_out = WishboneSlave(dut, "stream_out", dut.clk_i, config={'firstSymbolInHighOrderBits': True})
-
-        self.csr = WishboneMaster(dut, "csr", dut.clk_i)
-
-        # Create a scoreboard on the stream_out bus
-        self.pkts_sent = 0
-        self.expected_output = []
-        self.scoreboard = Scoreboard(dut)
-        self.scoreboard.add_interface(self.stream_out, self.expected_output)
-
-        # Reconstruct the input transactions from the pins
-        # and send them to our 'model'
-        self.stream_in_recovered = WishboneSlave(dut, "stream_in", dut.clk_i, callback=self.model)
-
-        # Set verbosity on our various interfaces
-        level = logging.DEBUG if debug else logging.WARNING
-        self.stream_in.log.setLevel(level)
-        self.stream_in_recovered.log.setLevel(level)
-
-    def model(self, transaction):
-        """Model the DUT based on the input transaction"""
-        self.expected_output.append(transaction)
-        self.pkts_sent += 1
-
-    @cocotb.coroutine
-    def reset(self, duration=10000):
-        self.dut.log.debug("Resetting DUT")
-        self.dut.reset_n <= 0
-        self.stream_in.bus.valid <= 0
-        yield Timer(duration)
-        yield RisingEdge(self.dut.clk_i)
-        self.dut.reset_n <= 1
-        self.dut.log.debug("Out of reset")
-
-
-
-@cocotb.coroutine
-def clock_gen(signal):
-    while True:
-        signal <= 0
-        yield Timer(5000)
-        signal <= 1
-        yield Timer(5000)
-        
-        
 def convert_hex(input):
     input = str(input)
     replaceCount = []
@@ -140,3 +129,21 @@ def convert_hex(input):
         
         
  
+#Todo: Figure out
+#@cocotb.test()
+def wavedrom_test(dut):
+    """
+    Generate a JSON wavedrom diagram of a trace
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+    
+    yield load_data(dut, log, mockObject, 80)
+
+    with cocotb.wavedrom.trace(dut.rst_i, [dut.sha1_p_input_o, dut.sha1_load_o], clk=dut.clk_i) as waves:
+        yield RisingEdge(dut.clk_i)
+        yield RisingEdge(dut.clk_i)
+        yield RisingEdge(dut.clk_i)
+        log.info(waves.dumpj())

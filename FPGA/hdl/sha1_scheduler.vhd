@@ -10,11 +10,11 @@ port(
     rst_i          : in    std_ulogic;
     dat_i          : in    std_ulogic_vector(0 to 31);
     sot_in         : in    std_ulogic;
-    dat_1_o          : out    w_type;
+    dat_1_o          : out    std_ulogic_vector(0 to 31);
     dat_2_o          : out    std_ulogic_vector(0 to 31);
     dat_3_o          : out    std_ulogic_vector(0 to 31);
-    dat_4_o          : out    std_ulogic_vector(0 to 31);
-    dat_5_o          : out    std_ulogic_vector(0 to 31)
+    sha1_p_input_o   : out    std_ulogic_vector(0 to 31);
+    sha1_load_o      : out    std_ulogic_vector(0 to 31)
     
     );
 end sha1_scheduler;
@@ -34,32 +34,50 @@ architecture RTL of sha1_scheduler is
         clk_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
         dat_i          : in    w_input;
-        sot_in         : in    std_ulogic;
-        dat_w_o        : out    w_type
+        load_i         : in    std_ulogic;
+        dat_w_o        : out    w_full
     );
     end component;
-    
-    signal w: w_type;
+   
+    signal w_load: w_input;
+    signal w_pinput: w_full;
     signal w_temp: w_input;
-    signal i : integer range 0 to 15;
+    signal latch_pinput: std_ulogic;
+    signal i : integer range 0 to 80;
 
 begin
 
-    LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_temp);
-    PINPUT1: sha1_p_input port map (clk_i,rst_i,w_temp,sot_in,w);
+    LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
+    PINPUT1: sha1_p_input port map (clk_i,rst_i,w_temp,latch_pinput,w_pinput);
     
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
-            if i = 15 or sot_in = '1' then
+            if rst_i = '1' then
+                latch_pinput <= '0';
                 i <= 0;
+                for x in 0 to 15 loop
+                    w_temp(x) <= "00000000000000000000000000000000";
+                end loop;
             else
-                i <= i + 1;
+            
+                if i = 80 then
+                    i <= 0;
+                elsif i = 16 then
+                    latch_pinput <= '1';
+                    w_temp <= w_load;
+                    i <= i + 1;
+                else
+                    latch_pinput <= '0';
+                    i <= i + 1;
+                end if;
             end if;
         end if;
     end process;
     
-    dat_5_o <= w_temp(15);
+    sha1_load_o <= w_load(15);
+    sha1_p_input_o <= w_pinput(0);
+    dat_1_o <= w_temp(15);
     
 
 end RTL; 
