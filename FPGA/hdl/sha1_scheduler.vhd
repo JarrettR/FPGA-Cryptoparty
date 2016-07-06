@@ -13,8 +13,8 @@ port(
     dat_1_o          : out    std_ulogic_vector(0 to 31);
     dat_2_o          : out    std_ulogic_vector(0 to 31);
     dat_3_o          : out    std_ulogic_vector(0 to 31);
-    sha1_p_input_o   : out    std_ulogic_vector(0 to 31);
-    sha1_load_o      : out    std_ulogic_vector(0 to 31)
+    test_sha1_process_input_o   : out    std_ulogic_vector(0 to 31);
+    test_sha1_load_o      : out    std_ulogic_vector(0 to 31)
     
     );
 end sha1_scheduler;
@@ -60,13 +60,15 @@ begin
                     w_temp(x) <= "00000000000000000000000000000000";
                 end loop;
             else
-            
                 if i = 80 then
                     i <= 0;
                 elsif i = 16 then
                     latch_pinput <= '1';
                     w_temp <= w_load;
                     i <= i + 1;
+                --elsif i = 17 then
+                  --  latch_pinput <= '1';
+                    --i <= i + 1;
                 else
                     latch_pinput <= '0';
                     i <= i + 1;
@@ -75,8 +77,8 @@ begin
         end if;
     end process;
     
-    sha1_load_o <= w_load(15);
-    sha1_p_input_o <= w_pinput(0);
+    test_sha1_load_o <= w_load(15);
+    test_sha1_process_input_o <= w_pinput(15);
     dat_1_o <= w_temp(15);
     
 

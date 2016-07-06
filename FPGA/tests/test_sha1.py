@@ -15,7 +15,7 @@ def load_data(dut, log, mockObject, words):
         mockObject.addWord(input)
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
-        log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.sha1_p_input_o) + " " + convert_hex(dut.sha1_load_o))
+        log.info(str(i) + " {:08x} - ".format(input) + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.test_sha1_process_input_o) + " " + convert_hex(dut.test_sha1_load_o))
 
         
 @cocotb.coroutine
@@ -27,7 +27,7 @@ def reset(dut):
     #log.info("Reset!")
 
 @cocotb.test()
-def load_data_test(dut):
+def A_load_data_test(dut):
     """Test for data properly shifted in"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
@@ -42,15 +42,15 @@ def load_data_test(dut):
 
     #print convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_4_o) + " " + convert_hex(dut.dat_5_o)
 
-    if convert_hex(dut.sha1_load_o).zfill(8) != mockOut:
+    if convert_hex(dut.test_sha1_load_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.sha1_load_o), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
     else:
         log.info("Ok!")
         
         
 @cocotb.test()
-def reset_test(dut):
+def B_reset_test(dut):
     """Testing synchronous reset"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
@@ -73,25 +73,26 @@ def reset_test(dut):
             "Reset failed!")
     else:
         log.info("Reset Ok!")
-    yield load_data(dut, log, mockObject, 25)
+    yield load_data(dut, log, mockObject, 19)
 
     mockOut = "{:08x}".format(mockObject.W[15])
 
-    if convert_hex(dut.sha1_load_o).zfill(8) != mockOut:
+    if convert_hex(dut.test_sha1_load_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.sha1_load_o), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
     else:
         log.info("Ok!")
         
         
-#@cocotb.test()
-def process_input_test(dut):
+@cocotb.test()
+def C_process_input_test(dut):
     """Test input data properly processed during first stage"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
     mockObject = Sha1Model()
 
+    yield reset(dut)
     yield load_data(dut, log, mockObject, 80)
 
     mockObject.processInput()
@@ -101,11 +102,11 @@ def process_input_test(dut):
     #yield RisingEdge(dut.clk_i)
     #yield RisingEdge(dut.clk_i)
     
-    print convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.sha1_p_input_o) + " " + convert_hex(dut.sha1_load_o)
+    print convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.test_sha1_process_input_o) + " " + convert_hex(dut.test_sha1_load_o)
 
-    if convert_hex(dut.sha1_p_input_o).zfill(8) != mockOut:
+    if convert_hex(dut.test_sha1_process_input_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.sha1_p_input_o), mockOut))
+            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_process_input_o), mockOut))
     else:
         log.info("Ok!")
         
@@ -142,7 +143,7 @@ def wavedrom_test(dut):
     
     yield load_data(dut, log, mockObject, 80)
 
-    with cocotb.wavedrom.trace(dut.rst_i, [dut.sha1_p_input_o, dut.sha1_load_o], clk=dut.clk_i) as waves:
+    with cocotb.wavedrom.trace(dut.rst_i, [dut.test_sha1_process_input_o, dut.test_sha1_load_o], clk=dut.clk_i) as waves:
         yield RisingEdge(dut.clk_i)
         yield RisingEdge(dut.clk_i)
         yield RisingEdge(dut.clk_i)
