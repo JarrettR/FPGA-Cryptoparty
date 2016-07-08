@@ -93,19 +93,26 @@ def C_process_input_test(dut):
     mockObject = Sha1Model()
 
     yield reset(dut)
-    yield load_data(dut, log, mockObject, 17)
-
-    mockObject.processInput()
-    #mockObject.displayAll()
-    #mockOut = "{:08x}".format(mockObject.W[16])
-    yield load_data(dut, log, mockObject, 17)
-
-    mockObject.processInput()
-    yield load_data(dut, log, mockObject, 17)
+    yield load_data(dut, log, mockObject, 16)
 
     mockObject.processInput()
     mockObject.displayAll()
     mockOut = "{:08x}".format(mockObject.W[16])
+    
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    #mockObject.displayAll()
+    #mockOut = "{:08x}".format(mockObject.W[16])
 
     #yield RisingEdge(dut.clk_i)
     #yield RisingEdge(dut.clk_i)

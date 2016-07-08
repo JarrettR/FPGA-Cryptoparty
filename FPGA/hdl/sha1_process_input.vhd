@@ -10,7 +10,8 @@ port(
     rst_i          : in    std_ulogic;
     dat_i          : in    w_input;
     load_i         : in    std_ulogic;
-    dat_w_o          : out    w_full
+    dat_w_o          : out    w_full;
+    test_word          : out    std_ulogic_vector(0 to 31)
     );
 end sha1_process_input;
 
@@ -30,21 +31,20 @@ begin
                 --    w_hold(x) <= "00000000000000000000000000000000";
                 --end loop;
             else
-                if (load_i = '1') then
+                if load_i = '1' then
                     w_hold <= dat_i;
                     i <= 0;
-                end if;
-                if i = 80 then
+                elsif i = 80 then
                     i <= 0;
                 elsif i < 16 then
                     w(i) <= w_hold(i);
                     i <= i + 1;
                 else
-                    w(i) <= w(i - 16);
-                    --w(i) <= (w(i - 3)(1 to 31) & w(i - 3)(0)) XOR
-                    --    (w(i - 8)(1 to 31) & w(i - 8)(0)) XOR
-                    --    (w(i - 14)(1 to 31) & w(i - 14)(0)) XOR
-                    --    (w(i - 16)(1 to 31) & w(i - 16)(0));
+                    --w(i) <= w(i - 16);
+                    w(i) <= (w(i - 3)(1 to 31) & w(i - 3)(0)) XOR
+                        (w(i - 8)(1 to 31) & w(i - 8)(0)) XOR
+                        (w(i - 14)(1 to 31) & w(i - 14)(0)) XOR
+                        (w(i - 16)(1 to 31) & w(i - 16)(0));
                     i <= i + 1;
                 end if;
                 --w <= w_temp;
@@ -53,6 +53,7 @@ begin
     end process;
 
     dat_w_o <= w;
+    test_word <= w_hold(15);
     --dat_o <= "00110011001100110011001100110011" XOR "11001100110011001100110011001100" XOR "11001100110011001100110011001100" XOR "00110011001100110011001100110011";
     --dat_w_o <= w(16 - 3) XOR w(16 - 8) XOR w(16 - 14) XOR w(16 - 16);
     --dat_w_o <= w(15)(3 to 31) & w(15)(0 to 2); --w(15); 

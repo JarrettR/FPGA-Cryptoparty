@@ -35,20 +35,22 @@ architecture RTL of sha1_scheduler is
         rst_i          : in    std_ulogic;
         dat_i          : in    w_input;
         load_i         : in    std_ulogic;
-        dat_w_o        : out    w_full
+        dat_w_o        : out    w_full;
+        test_word          : out    std_ulogic_vector(0 to 31)
     );
     end component;
    
     signal w_load: w_input;
     signal w_processed_input: w_full;
     signal w_temp: w_input;
+    signal w_tst: std_ulogic_vector(0 to 31);
     signal latch_pinput: std_ulogic;
     signal i : integer range 0 to 80;
 
 begin
 
     LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
-    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_temp,latch_pinput,w_processed_input);
+    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_temp,latch_pinput,w_processed_input,w_tst);
     
     process(clk_i)   
     begin
@@ -64,14 +66,18 @@ begin
                     i <= 0;
                 --elsif i = 0 then
                 --    latch_pinput <= '1';
-                 --   i <= i + 1;
+                --    i <= i + 1;
                 elsif i = 16 then
                     latch_pinput <= '1';
                     w_temp <= w_load;
-                    i <= 0;
+                    --i <= 0;
+                    i <= i + 1;
                 --elsif i = 17 then
                   --  latch_pinput <= '1';
                     --i <= i + 1;
+                --elsif i = 2 then
+                --    latch_pbuffer <= '1';
+                --    i <= i + 1;
                 else
                     latch_pinput <= '0';
                     i <= i + 1;
@@ -81,8 +87,8 @@ begin
     end process;
     
     dat_1_o <= w_temp(15);
-    test_sha1_process_input_o <= w_processed_input(15);
-    test_sha1_load_o <= w_load(15);
+    test_sha1_process_input_o <= w_processed_input(79);
+    test_sha1_load_o <= w_tst; --w_load(15);
     --w_temp <= w_load;
     
 
