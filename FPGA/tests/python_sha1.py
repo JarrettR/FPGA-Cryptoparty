@@ -1,5 +1,34 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import cocotb
+from cocotb.decorators import coroutine
+from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
+from cocotb.drivers import BusDriver, ValidatedBusDriver
+from cocotb.utils import hexdump
+from cocotb.binary import BinaryValue
+from cocotb.result import ReturnValue, TestError
+
+
+class Sha1Driver(BusDriver):
+    """
+    SHA1 Driver
+    """
+    _signals = ["dat_i", "load_i", "rst_i"]
+    _optional_signals = []
+
+    def __init__(self, entity, name, clock):
+        BusDriver.__init__(self, entity, name, clock)
+        
+        word   = BinaryValue(bits=32)
+        single = BinaryValue(bits=1)
+
+        word.binstr   = ("x" * 32)
+        single.binstr = ("x")
+
+        self.bus.load_i <= single
+        self.bus.rst_i <= single
+        self.bus.dat_i <= word
+
 
 class Sha1Model(object):
     K0 = 0x5A827999       #( 0 <= t <= 19)

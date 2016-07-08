@@ -5,7 +5,7 @@ from cocotb.result import TestFailure
 from cocotb.log import SimLog
 from cocotb.wavedrom import Wavedrom
 import random
-from python_sha1 import Sha1Model
+from python_sha1 import Sha1Model, Sha1Driver
 
 @cocotb.coroutine
 def load_data(dut, log, mockObject, words):
@@ -103,14 +103,6 @@ def C_process_input_test(dut):
     mockObject.processInput()
     yield load_data(dut, log, mockObject, 16)
     mockObject.processInput()
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
     #mockObject.displayAll()
     #mockOut = "{:08x}".format(mockObject.W[16])
 
@@ -144,9 +136,7 @@ def convert_hex(input):
     return "".join(output)
         
         
- 
-#Todo: Figure out
-#@cocotb.test()
+@cocotb.test()
 def wavedrom_test(dut):
     """
     Generate a JSON wavedrom diagram of a trace
@@ -154,11 +144,11 @@ def wavedrom_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
-    mockObject = Sha1Model()
+    shaObject = Sha1Driver()
     
     yield load_data(dut, log, mockObject, 80)
 
-    with cocotb.wavedrom.trace(dut.rst_i, [dut.test_sha1_process_input_o, dut.test_sha1_load_o], clk=dut.clk_i) as waves:
+    with cocotb.wavedrom.trace(dut.rst_i, shaObject.bus, clk=dut.clk_i) as waves:
         yield RisingEdge(dut.clk_i)
         yield RisingEdge(dut.clk_i)
         yield RisingEdge(dut.clk_i)
