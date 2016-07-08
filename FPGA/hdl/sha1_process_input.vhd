@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use work.sha1_pkg.all;
 
 
-entity sha1_p_input is
+entity sha1_process_input is
 
 port(
     clk_i          : in    std_ulogic;
@@ -12,9 +12,9 @@ port(
     load_i         : in    std_ulogic;
     dat_w_o          : out    w_full
     );
-end sha1_p_input;
+end sha1_process_input;
 
-architecture RTL of sha1_p_input is
+architecture RTL of sha1_process_input is
     
     signal w: w_full;
     signal w_hold: w_input;
