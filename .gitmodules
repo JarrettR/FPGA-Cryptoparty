@@ -7,3 +7,6 @@
 [submodule "tools/gprof2dot"]
 	path = tools/gprof2dot
 	url = https://github.com/jrfonseca/gprof2dot
+[submodule "tools/wavedrom"]
+	path = tools/wavedrom
+	url = git@github.com:drom/wavedrom.git
