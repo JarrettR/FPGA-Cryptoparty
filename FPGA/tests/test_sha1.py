@@ -117,6 +117,26 @@ def C_process_input_test(dut):
     else:
         log.info("Ok!")
         
+        
+@cocotb.test()
+def D_wavedrom_test(dut):
+    """
+    Generate a JSON wavedrom diagram of a trace
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+    shaObject = Sha1Driver(dut, None, dut.clk_i)
+    
+    yield load_data(dut, log, mockObject, 80)
+
+    with cocotb.wavedrom.trace(dut.rst_i, shaObject.bus, clk=dut.clk_i) as waves:
+    
+        yield load_data(dut, log, mockObject, 80)
+        log.info(waves.dumpj())
+        waves.write('wavedrom.json')
+        
 
 def convert_hex(input):
     input = str(input)
@@ -134,22 +154,3 @@ def convert_hex(input):
             output.append('U')
         
     return "".join(output)
-        
-        
-@cocotb.test()
-def wavedrom_test(dut):
-    """
-    Generate a JSON wavedrom diagram of a trace
-    """
-    log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 10000).start())
-    
-    shaObject = Sha1Driver()
-    
-    yield load_data(dut, log, mockObject, 80)
-
-    with cocotb.wavedrom.trace(dut.rst_i, shaObject.bus, clk=dut.clk_i) as waves:
-        yield RisingEdge(dut.clk_i)
-        yield RisingEdge(dut.clk_i)
-        yield RisingEdge(dut.clk_i)
-        log.info(waves.dumpj())

@@ -7,6 +7,7 @@ entity sha1_scheduler is
 
 port(
     clk_i          : in    std_ulogic;
+    load_i          : in    std_ulogic;
     rst_i          : in    std_ulogic;
     dat_i          : in    std_ulogic_vector(0 to 31);
     sot_in         : in    std_ulogic;
@@ -88,7 +89,7 @@ begin
     
     dat_1_o <= w_temp(15);
     test_sha1_process_input_o <= w_processed_input(16);
-    test_sha1_load_o <= w_tst; --w_load(15);
+    test_sha1_load_o <= w_load(15);
     --w_temp <= w_load;
     
 
