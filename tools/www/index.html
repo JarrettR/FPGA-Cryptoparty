@@ -1,0 +1,33 @@
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>WaveDrom Output</title>
+
+        <script src="skins/default.js" type="text/javascript"></script>
+        <script src="wavedrom.min.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            function loadWave() {
+                var txtFile = new XMLHttpRequest();
+                txtFile.open("GET", "wavedrom.json", true);
+                txtFile.onreadystatechange = function() {
+                    if (txtFile.readyState === 4) { // Makes sure the document is ready to parse.
+                        if (txtFile.status === 200) { // Makes sure the file exists.
+                            allText = txtFile.responseText;
+                            var customTextElement2 = document.getElementById('inputWave');
+                            customTextElement2.innerHTML = txtFile.responseText;
+                            WaveDrom.ProcessAll();
+                        }
+                    }
+                }
+                txtFile.send(null);
+
+            }       
+        </script>
+        </head>
+
+    <body onload="loadWave()">
+    <script type="WaveDrom" id="inputWave"></script>
+    </body>
+</html>
+

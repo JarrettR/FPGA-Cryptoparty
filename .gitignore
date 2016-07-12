@@ -1,7 +1,6 @@
 *.json
 *.pyc
 *.cf
-*.html
 *.tcl
 *.wdb
 *.xmsgs
