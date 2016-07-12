@@ -9,7 +9,7 @@ Some discussion, and a few approaches that have been experimented with are [here
 
 Currently, this is being developed on the [GHDL](https://github.com/tgingold/ghdl) simulator with the [Cocotb](https://github.com/potentialventures/cocotb) testing framework.
 
-To begin, first install GHDL, repo located in `tools/ghdl` of this repository, and then Cocotb in `tools/cocotb`.
+To begin, run `sh install.sh`, which should first install GHDL, repo located in `tools/ghdl` of this repository, and then Cocotb in `tools/cocotb`.
 
 
 To run tests, type `cd FPGA/tests && make`
