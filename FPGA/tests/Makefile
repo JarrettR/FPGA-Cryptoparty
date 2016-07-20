@@ -37,6 +37,7 @@ WPWD=$(shell sh -c 'pwd -W')
 PWD=$(shell pwd)
 COCOTB=$(PWD)/../../tools/cocotb
 GPROF2DOT=$(PWD)/../../tools/gprof2dot
+WWW=$(PWD)/../../tools/www
 
 ifeq ($(OS),Msys)
 WPWD=$(shell sh -c 'pwd -W')

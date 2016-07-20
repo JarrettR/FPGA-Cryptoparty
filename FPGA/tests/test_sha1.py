@@ -129,13 +129,13 @@ def D_wavedrom_test(dut):
     mockObject = Sha1Model()
     shaObject = Sha1Driver(dut, None, dut.clk_i)
     
-    yield load_data(dut, log, mockObject, 80)
+    #yield load_data(dut, log, mockObject, 80)
 
-    with cocotb.wavedrom.trace(dut.rst_i, shaObject.bus, clk=dut.clk_i) as waves:
+    with cocotb.wavedrom.trace(dut.rst_i, dut.dat_i, clk=dut.clk_i) as waves:
     
         yield load_data(dut, log, mockObject, 80)
-        log.info(waves.dumpj())
-        waves.write('wavedrom.json')
+        log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3}))
+        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3})
         
 
 def convert_hex(input):
