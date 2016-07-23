@@ -5,6 +5,7 @@ from cocotb.result import TestFailure
 from cocotb.log import SimLog
 from cocotb.wavedrom import Wavedrom
 import random
+from shutil import copyfile
 from python_sha1 import Sha1Model, Sha1Driver
 
 @cocotb.coroutine
@@ -84,8 +85,36 @@ def B_reset_test(dut):
         log.info("Ok!")
         
         
+
+        
+        
 @cocotb.test()
-def C_process_input_test(dut):
+def C_wavedrom_test(dut):
+    """
+    Generate a JSON wavedrom diagram of a trace
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+    shaObject = Sha1Driver(dut, None, dut.clk_i)
+    
+    #yield load_data(dut, log, mockObject, 80)
+
+    with cocotb.wavedrom.trace(dut.rst_i, dut.dat_i, dut.pinput1.load_i, clk=dut.clk_i) as waves:
+    
+        yield load_data(dut, log, mockObject, 80)
+        log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3}))
+        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3})
+        
+        #hackhack todo: do a better solution for this
+        src = 'wavedrom.json'
+        dst = '/home/www/projects/fpga/wavedrom.json'
+        copyfile(src, dst)
+
+        
+@cocotb.test()
+def D_process_input_test(dut):
     """Test input data properly processed during first stage"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
@@ -110,7 +139,8 @@ def C_process_input_test(dut):
     #yield RisingEdge(dut.clk_i)
     
     print convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.test_sha1_process_input_o) + " " + convert_hex(dut.test_sha1_load_o)
-
+    print dut.pinput1.load_i.value.binstr
+    
     if convert_hex(dut.test_sha1_process_input_o).zfill(8) != mockOut:
         raise TestFailure(
             "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_process_input_o), mockOut))
@@ -118,26 +148,6 @@ def C_process_input_test(dut):
         log.info("Ok!")
         
         
-@cocotb.test()
-def D_wavedrom_test(dut):
-    """
-    Generate a JSON wavedrom diagram of a trace
-    """
-    log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 10000).start())
-    
-    mockObject = Sha1Model()
-    shaObject = Sha1Driver(dut, None, dut.clk_i)
-    
-    #yield load_data(dut, log, mockObject, 80)
-
-    with cocotb.wavedrom.trace(dut.rst_i, dut.dat_i, clk=dut.clk_i) as waves:
-    
-        yield load_data(dut, log, mockObject, 80)
-        log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3}))
-        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3})
-        
-
 def convert_hex(input):
     input = str(input)
     replaceCount = []
