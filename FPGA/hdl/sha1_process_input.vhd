@@ -18,7 +18,11 @@ end sha1_process_input;
 architecture RTL of sha1_process_input is
     
     signal w: w_full;
+    signal w_con: w_full;
     signal w_hold: w_input;
+    signal test_word_1: std_ulogic_vector(0 to 31);
+    signal test_word_2: std_ulogic_vector(0 to 31);
+    signal test_word_3: std_ulogic_vector(0 to 31);
     signal i : integer range 0 to 80;
 
 begin
@@ -33,7 +37,7 @@ begin
             else
                 if load_i = '1' then
                     w_hold <= dat_i;
-                    i <= 0;
+                    i <= i + 1;
                 elsif i = 80 then
                     i <= 0;
                 elsif i < 16 then
@@ -41,10 +45,10 @@ begin
                     i <= i + 1;
                 else
                     --w(i) <= w(i - 16);
-                    w(i) <= (w(i - 3)(1 to 31) & w(i - 3)(0)) XOR
-                        (w(i - 8)(1 to 31) & w(i - 8)(0)) XOR
-                        (w(i - 14)(1 to 31) & w(i - 14)(0)) XOR
-                        (w(i - 16)(1 to 31) & w(i - 16)(0));
+                    w(i) <= (w_con(i - 3)(1 to 31) & w_con(i - 3)(0)) XOR
+                        (w_con(i - 8)(1 to 31) & w_con(i - 8)(0)) XOR
+                        (w_con(i - 14)(1 to 31) & w_con(i - 14)(0)) XOR
+                        (w_con(i - 16)(1 to 31) & w_con(i - 16)(0));
                     i <= i + 1;
                 end if;
                 --w <= w_temp;
@@ -53,7 +57,10 @@ begin
     end process;
 
     dat_w_o <= w;
-    test_word <= w_hold(15);
+    w_con <= w;
+    test_word_1 <= w_hold(15);
+    test_word_2 <= w(16);
+    test_word_3 <= dat_i(0);
     --dat_o <= "00110011001100110011001100110011" XOR "11001100110011001100110011001100" XOR "11001100110011001100110011001100" XOR "00110011001100110011001100110011";
     --dat_w_o <= w(16 - 3) XOR w(16 - 8) XOR w(16 - 14) XOR w(16 - 16);
     --dat_w_o <= w(15)(3 to 31) & w(15)(0 to 2); --w(15); 

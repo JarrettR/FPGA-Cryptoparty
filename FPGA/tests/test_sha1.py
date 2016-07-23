@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import Timer, RisingEdge
+from cocotb.triggers import Timer, RisingEdge, FallingEdge
 from cocotb.result import TestFailure
 from cocotb.log import SimLog
 from cocotb.wavedrom import Wavedrom
@@ -101,11 +101,15 @@ def C_wavedrom_test(dut):
     
     #yield load_data(dut, log, mockObject, 80)
 
-    with cocotb.wavedrom.trace(dut.rst_i, dut.dat_i, dut.pinput1.load_i, clk=dut.clk_i) as waves:
+    with cocotb.wavedrom.trace(dut.rst_i, dut.dat_i, dut.pinput1.i, dut.pinput1.load_i, dut.pinput1.test_word_1, dut.pinput1.test_word_2, dut.pinput1.test_word_3, clk=dut.clk_i) as waves:
     
+        yield RisingEdge(dut.clk_i)
+        yield reset(dut)
+        #yield RisingEdge(dut.clk_i)
+        #yield RisingEdge(dut.clk_i)
         yield load_data(dut, log, mockObject, 80)
-        log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3}))
-        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':0}, config = {'hscale':3})
+        log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':-2}, config = {'hscale':3}))
+        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-2}, config = {'hscale':3})
         
         #hackhack todo: do a better solution for this
         src = 'wavedrom.json'
@@ -155,7 +159,11 @@ def convert_hex(input):
         replaceCount.append(input.find('UUUU') / 4)
         input = input.replace('UUUU', '1111', 1)
     
-    output = list("{:x}".format(int(str(input), 2)))
+    try:
+        output = list("{:x}".format(int(str(input), 2)))
+    except:
+        output = list("{}".format(str(input)))
+    
     
     for x in replaceCount:
         if len(output) > x:
