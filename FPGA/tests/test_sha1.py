@@ -92,7 +92,7 @@ def B_reset_test(dut):
         
         
 @cocotb.test()
-def C_wavedrom_test(dut):
+def D_wavedrom_test(dut):
     """
     Generate a JSON wavedrom diagram of a trace
     """
@@ -103,8 +103,22 @@ def C_wavedrom_test(dut):
     shaObject = Sha1Driver(dut, None, dut.clk_i)
     
     #yield load_data(dut, log, mockObject, 80)
+    
+    args = [
+            dut.rst_i,
+            dut.dat_i,
+            dut.i,
+            dut.pinput1.i,
+            dut.pinput1.load_i,
+            dut.pinput1.test_word_1,
+            dut.pinput1.test_word_2,
+            dut.pinput1.test_word_3,
+            dut.pinput1.test_word_4,
+            dut.pinput1.test_word_5,
+            dut.pinput1.valid_o
+            ]
 
-    with cocotb.wavedrom.trace(dut.rst_i, dut.dat_i, dut.i, dut.pinput1.i, dut.pinput1.load_i, dut.pinput1.test_word_1, dut.pinput1.test_word_2, dut.pinput1.test_word_3, dut.pinput1.test_word_4, clk=dut.clk_i) as waves:
+    with cocotb.wavedrom.trace(*args, clk=dut.clk_i) as waves:
     
         yield RisingEdge(dut.clk_i)
         yield reset(dut)
@@ -118,7 +132,7 @@ def C_wavedrom_test(dut):
             log.info("{:08x}".format(mockObject.W[16 - 16]))
             log.info("{:08x}".format(mockObject.W[16]))
             
-        yield load_data(dut, log, mockObject, 8)
+        yield load_data(dut, log, mockObject, 70)
         
         if _debug == True:
             log.info(dut.pinput1.test_word_1.value.hex())
@@ -138,7 +152,7 @@ def C_wavedrom_test(dut):
 
         
 @cocotb.test()
-def D_process_input_test(dut):
+def C_process_first_input_test(dut):
     """Test input data properly processed during first stage"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
@@ -153,31 +167,18 @@ def D_process_input_test(dut):
     
     yield load_data(dut, log, mockObject, 16)
     mockObject.processInput()
-    yield load_data(dut, log, mockObject, 3)
+    yield load_data(dut, log, mockObject, 68)
     
     mockOut = "0x{:08x}".format(mockObject.W[16])
     
-    if dut.pinput1.test_word_5.value.hex() != mockOut:
+    if dut.pinput1.test_word_1.value.hex() != mockOut:
         raise TestFailure(
-            "First load incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), mockOut))
+            "First load incorrect: {0} != {1}".format(dut.pinput1.test_word_1.value.hex(), mockOut))
+    elif dut.pinput1.test_word_5.value.hex() != "0x{:08x}".format(mockObject.W[79]):
+        raise TestFailure(
+            "First load incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), "0x{:08x}".format(mockObject.W[79])))
     else:
         log.info("First load ok!")
-        
-    yield load_data(dut, log, mockObject, 13)
-    mockObject.processInput()
-    yield load_data(dut, log, mockObject, 3)
-    mockOut = "0x{:08x}".format(mockObject.W[16])
-    #mockObject.displayAll()
-
-    
-    #print convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_1_o) + " " + convert_hex(dut.test_sha1_process_input_o) + " " + convert_hex(dut.test_sha1_load_o)
-    #print dut.pinput1.load_i.value.binstr
-    
-    if dut.pinput1.test_word_5.value.hex() != mockOut:
-        raise TestFailure(
-            "Second load incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), mockOut))
-    else:
-        log.info("Ok!")
         
         
 def convert_hex(input):

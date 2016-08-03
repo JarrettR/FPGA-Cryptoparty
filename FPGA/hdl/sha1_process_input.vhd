@@ -69,11 +69,11 @@ begin
     dat_w_o <= w;
     w_hold <= dat_i;
     w_con <= w;
-    test_word_1 <= w_con(16 - 3);
-    test_word_2 <= w_con(16 - 8);
-    test_word_3 <= w_con(16 - 14);
-    test_word_4 <= w_con(16 - 16);
-    test_word_5 <= w_con(16);
+    test_word_1 <= w_con(16);
+    test_word_2 <= w_con(20);
+    test_word_3 <= w_con(60);
+    test_word_4 <= w_con(78);
+    test_word_5 <= w_con(79);
     --dat_o <= "00110011001100110011001100110011" XOR "11001100110011001100110011001100" XOR "11001100110011001100110011001100" XOR "00110011001100110011001100110011";
     --dat_w_o <= w(16 - 3) XOR w(16 - 8) XOR w(16 - 14) XOR w(16 - 16);
     --dat_w_o <= w(15)(3 to 31) & w(15)(0 to 2); --w(15); 

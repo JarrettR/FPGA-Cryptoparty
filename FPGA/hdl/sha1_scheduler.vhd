@@ -40,6 +40,16 @@ architecture RTL of sha1_scheduler is
     valid_o          : out    std_ulogic;
         test_word          : out    std_ulogic_vector(0 to 31)
     );
+    component sha1_process_buffer
+      port (
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        dat_i          : in    w_full;
+        load_i         : in    std_ulogic;
+        dat_w_o        : out    w_full;
+    valid_o          : out    std_ulogic;
+        test_word          : out    std_ulogic_vector(0 to 31)
+    );
     end component;
    
     signal w_load: w_input;
