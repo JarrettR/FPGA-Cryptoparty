@@ -37,12 +37,14 @@ architecture RTL of sha1_scheduler is
         dat_i          : in    w_input;
         load_i         : in    std_ulogic;
         dat_w_o        : out    w_full;
+    valid_o          : out    std_ulogic;
         test_word          : out    std_ulogic_vector(0 to 31)
     );
     end component;
    
     signal w_load: w_input;
     signal w_processed_input: w_full;
+    signal w_processed_valid: std_ulogic;
     signal w_temp: w_input;
     signal w_tst: std_ulogic_vector(0 to 31);
     signal latch_pinput: std_ulogic;
@@ -51,7 +53,7 @@ architecture RTL of sha1_scheduler is
 begin
 
     LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
-    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_temp,latch_pinput,w_processed_input,w_tst);
+    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_temp,latch_pinput,w_processed_input,w_processed_valid,w_tst);
     
     process(clk_i)   
     begin
