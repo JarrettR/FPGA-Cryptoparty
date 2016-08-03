@@ -8,7 +8,7 @@ import random
 from shutil import copyfile
 from python_sha1 import Sha1Model, Sha1Driver
 
-_debug = True
+_debug = False
 
 @cocotb.coroutine
 def load_data(dut, log, mockObject, words):

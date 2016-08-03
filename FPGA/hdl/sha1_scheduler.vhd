@@ -37,9 +37,9 @@ architecture RTL of sha1_scheduler is
         dat_i          : in    w_input;
         load_i         : in    std_ulogic;
         dat_w_o        : out    w_full;
-    valid_o          : out    std_ulogic;
-        test_word          : out    std_ulogic_vector(0 to 31)
+        valid_o        : out    std_ulogic
     );
+    end component;
     component sha1_process_buffer
       port (
         clk_i          : in    std_ulogic;
@@ -47,23 +47,24 @@ architecture RTL of sha1_scheduler is
         dat_i          : in    w_full;
         load_i         : in    std_ulogic;
         dat_w_o        : out    w_full;
-    valid_o          : out    std_ulogic;
-        test_word          : out    std_ulogic_vector(0 to 31)
+        valid_o        : out    std_ulogic
     );
     end component;
    
     signal w_load: w_input;
     signal w_processed_input: w_full;
     signal w_processed_valid: std_ulogic;
+    signal w_processed_buffer: w_full;
+    signal w_buffer_valid: std_ulogic;
     signal w_temp: w_input;
-    signal w_tst: std_ulogic_vector(0 to 31);
     signal latch_pinput: std_ulogic;
     signal i : integer range 0 to 80;
 
 begin
 
     LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
-    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_temp,latch_pinput,w_processed_input,w_processed_valid,w_tst);
+    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_temp,latch_pinput,w_processed_input,w_processed_valid);
+    PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input,w_processed_valid,w_processed_buffer,w_buffer_valid);
     
     process(clk_i)   
     begin
