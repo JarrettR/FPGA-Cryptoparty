@@ -25,7 +25,7 @@ architecture RTL of sha1_process_input is
     signal test_word_3: std_ulogic_vector(0 to 31);
     signal test_word_4: std_ulogic_vector(0 to 31);
     signal test_word_5: std_ulogic_vector(0 to 31);
-    signal i : integer range 15 to 80;
+    signal i : integer range 15 to 79;
 
 begin
     process(clk_i)   
@@ -44,10 +44,6 @@ begin
                     end loop;
                     i <= 16; --i + 1;
                     valid_o <= '0';
-                elsif i = 80 then
-                    i <= 15;
-                    valid_o <= '1';
-                    --Output signal here
                 elsif i < 16 then
                     i <= i + 1;
                     valid_o <= '0';
@@ -56,8 +52,13 @@ begin
                         (w_con(i - 8)(1 to 31) & w_con(i - 8)(0)) XOR
                         (w_con(i - 14)(1 to 31) & w_con(i - 14)(0)) XOR
                         (w_con(i - 16)(1 to 31) & w_con(i - 16)(0));
-                    i <= i + 1;
-                    valid_o <= '0';
+                    if i = 79 then
+                        i <= 15;
+                        valid_o <= '1';
+                    else
+                        i <= i + 1;
+                        valid_o <= '0';
+                    end if;
                 end if;
             end if;
         end if;
