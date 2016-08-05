@@ -92,7 +92,7 @@ def B_reset_test(dut):
         
         
 @cocotb.test()
-def D_wavedrom_test(dut):
+def Z_wavedrom_test(dut):
     """
     Generate a JSON wavedrom diagram of a trace
     """
@@ -103,6 +103,14 @@ def D_wavedrom_test(dut):
     shaObject = Sha1Driver(dut, None, dut.clk_i)
     
     #yield load_data(dut, log, mockObject, 80)
+    
+    yield RisingEdge(dut.clk_i)
+    yield reset(dut)
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    mockObject.processBuffer()
+    
+    yield load_data(dut, log, mockObject, 60)
     
     args = [
             dut.rst_i,
@@ -115,15 +123,19 @@ def D_wavedrom_test(dut):
             dut.pinput1.test_word_3,
             dut.pinput1.test_word_4,
             dut.pinput1.test_word_5,
-            dut.pinput1.valid_o
+            dut.pinput1.valid_o,
+            dut.pbuffer1.i,
+            dut.pbuffer1.load_i,
+            dut.pbuffer1.test_word_1,
+            dut.pbuffer1.test_word_2,
+            dut.pbuffer1.test_word_3,
+            dut.pbuffer1.test_word_4,
+            dut.pbuffer1.test_word_5,
+            dut.pbuffer1.valid_o
             ]
 
     with cocotb.wavedrom.trace(*args, clk=dut.clk_i) as waves:
     
-        yield RisingEdge(dut.clk_i)
-        yield reset(dut)
-        yield load_data(dut, log, mockObject, 16)
-        mockObject.processInput()
         
         if _debug == True:
             log.info("{:08x}".format(mockObject.W[16 - 3]))
@@ -132,7 +144,7 @@ def D_wavedrom_test(dut):
             log.info("{:08x}".format(mockObject.W[16 - 16]))
             log.info("{:08x}".format(mockObject.W[16]))
             
-        yield load_data(dut, log, mockObject, 70)
+        yield load_data(dut, log, mockObject, 90)
         
         if _debug == True:
             log.info(dut.pinput1.test_word_1.value.hex())
@@ -143,16 +155,16 @@ def D_wavedrom_test(dut):
             log.info(dut.pinput1.test_word_5)
             #log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':-2}, config = {'hscale':3}))
             
-        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-2}, config = {'hscale':3})
+        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-5}, config = {'hscale':3})
         
-        #hackhack todo: do a better solution for this
+        #Todo: do a better solution for this
         src = 'wavedrom.json'
         dst = '/home/www/projects/fpga/wavedrom.json'
         copyfile(src, dst)
 
         
 @cocotb.test()
-def C_process_first_input_test(dut):
+def D_process_first_input_test(dut):
     """Test input data properly processed during first stage"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
@@ -178,8 +190,50 @@ def C_process_first_input_test(dut):
         raise TestFailure(
             "First load incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), "0x{:08x}".format(mockObject.W[79])))
     else:
-        log.info("First load ok!")
+        log.info("First load ok!") 
+
         
+@cocotb.test()
+def E_process_second_input_test(dut):
+    """Test second set of input data processed"""
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+
+    yield reset(dut)
+    log.info("Second load not tested!")
+        
+        
+@cocotb.test()
+def F_process_first_buffer_test(dut):
+    """Test data after processing the first message buffer"""
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+
+    yield reset(dut)
+    #yield load_data(dut, log, mockObject, 16)
+
+    #mockObject.processInput()
+    #mockObject.displayAll()
+    
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    mockObject.processBuffer()
+    yield load_data(dut, log, mockObject, 68)
+    
+    mockOut = "{:08x}".format(mockObject.H0)
+    
+    if convert_hex(dut.pbuffer1.test_word_1.value) != mockOut:
+        raise TestFailure(
+            "First buffer incorrect: {0} != {1}".format(dut.pinput1.test_word_1.value.hex(), mockOut))
+    elif convert_hex(dut.pinput1.test_word_5.value) != "{:08x}".format(mockObject.W[79]):
+        raise TestFailure(
+            "First buffer incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), "{:08x}".format(mockObject.W[79])))
+    else:
+        log.info("First buffer ok!") 
         
 def convert_hex(input):
     input = str(input)
