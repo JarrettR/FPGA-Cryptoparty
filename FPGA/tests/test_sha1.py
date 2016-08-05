@@ -116,6 +116,7 @@ def Z_wavedrom_test(dut):
             dut.rst_i,
             dut.dat_i,
             dut.i,
+            dut.i_mux,
             dut.pinput1.i,
             dut.pinput1.load_i,
             dut.pinput1.test_word_1,
@@ -125,7 +126,9 @@ def Z_wavedrom_test(dut):
             dut.pinput1.test_word_5,
             dut.pinput1.valid_o,
             dut.pbuffer1.i,
+            dut.pbuffer1.rst_i,
             dut.pbuffer1.load_i,
+            dut.pbuffer1.new_i,
             dut.pbuffer1.test_word_1,
             dut.pbuffer1.test_word_2,
             dut.pbuffer1.test_word_3,
@@ -226,12 +229,9 @@ def F_process_first_buffer_test(dut):
     
     mockOut = "{:08x}".format(mockObject.H0)
     
-    if convert_hex(dut.pbuffer1.test_word_1.value) != mockOut:
+    if convert_hex(dut.pbuffer1.test_word_4.value) != mockOut:
         raise TestFailure(
-            "First buffer incorrect: {0} != {1}".format(dut.pinput1.test_word_1.value.hex(), mockOut))
-    elif convert_hex(dut.pinput1.test_word_5.value) != "{:08x}".format(mockObject.W[79]):
-        raise TestFailure(
-            "First buffer incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), "{:08x}".format(mockObject.W[79])))
+            "First buffer incorrect: {0} != {1}".format(dut.pinput1.test_word_4.value.hex(), mockOut))
     else:
         log.info("First buffer ok!") 
         

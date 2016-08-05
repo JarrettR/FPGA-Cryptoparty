@@ -11,7 +11,8 @@ port(
     rst_i          : in    std_ulogic;
     dat_i          : in    w_full;
     load_i         : in    std_ulogic;
-    dat_w_o        : out    w_full;
+    new_i         : in    std_ulogic;
+    dat_w_o        : out    w_output;
     valid_o        : out    std_ulogic
     );
 end sha1_process_buffer;
@@ -21,6 +22,7 @@ architecture RTL of sha1_process_buffer is
     signal w: w_full;
     signal w_con: w_full;
     signal w_hold: w_full;
+    signal running: std_ulogic;
     signal test_word_1: std_ulogic_vector(0 to 31);
     signal test_word_2: std_ulogic_vector(0 to 31);
     signal test_word_3: std_ulogic_vector(0 to 31);
@@ -56,6 +58,12 @@ architecture RTL of sha1_process_buffer is
 	signal h2         : std_ulogic_vector(0 to 31) := h2i;
 	signal h3         : std_ulogic_vector(0 to 31) := h3i;
 	signal h4         : std_ulogic_vector(0 to 31) := h4i;
+    
+	signal h0out         : std_ulogic_vector(0 to 31) := h0i;
+	signal h1out         : std_ulogic_vector(0 to 31) := h1i;
+	signal h2out         : std_ulogic_vector(0 to 31) := h2i;
+	signal h3out         : std_ulogic_vector(0 to 31) := h3i;
+	signal h4out         : std_ulogic_vector(0 to 31) := h4i;
 
 begin
     process(clk_i)   
@@ -63,6 +71,7 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 i <= 0;
+                running <= '0';
                 --Todo: Reset input too, if needed
                 --for x in 0 to 79 loop
                 --    w_hold(x) <= "00000000000000000000000000000000";
@@ -73,27 +82,34 @@ begin
                 h3 <= h3i;
                 h4 <= h4i;
             else
-                if i = 0 then
-                    h0 <= std_ulogic_vector(unsigned(h0) + unsigned(a));
-                    h1 <= std_ulogic_vector(unsigned(h1) + unsigned(b));
-                    h2 <= std_ulogic_vector(unsigned(h2) + unsigned(c));
-                    h3 <= std_ulogic_vector(unsigned(h3) + unsigned(d));
-                    h4 <= std_ulogic_vector(unsigned(h4) + unsigned(e));
-                end if;
                 if load_i = '1' then
+                    if new_i = '1' then
+                        h0 <= h0i;
+                        h1 <= h1i;
+                        h2 <= h2i;
+                        h3 <= h3i;
+                        h4 <= h4i;
+                        a <= h0i;
+                        b <= h1i;
+                        c <= h2i;
+                        d <= h3i;
+                        e <= h4i;
+                    --elsif i = 0 and new_i = '0' then
+                    --    h0 <= std_ulogic_vector(unsigned(h0) + unsigned(a));
+                    --    h1 <= std_ulogic_vector(unsigned(h1) + unsigned(b));
+                    --    h2 <= std_ulogic_vector(unsigned(h2) + unsigned(c));
+                    --    h3 <= std_ulogic_vector(unsigned(h3) + unsigned(d));
+                    --    h4 <= std_ulogic_vector(unsigned(h4) + unsigned(e));
+                    end if;
+                    
                     for x in 0 to 79 loop
                         w(x) <= w_hold(x);
                     end loop;
                     i <= 0;
                     valid_o <= '0';
-                    a <= h0;
-                    b <= h1;
-                    c <= h2;
-                    b <= h3;
-                    e <= h4;
+                    running <= '1';
                 else
                     --TEMP = S^5(A) + f(t;B,C,D) + E + W(t) + K(t);
-                    --E = D;  D = C;  C = S^30(B);  B = A; A = TEMP;
                     case i is
                        --f(t;B,C,D) = (B AND C) OR ((NOT B) AND D)
                         when 0 to 19 => a <= (b and c) or ((not b) and d);
@@ -107,13 +123,23 @@ begin
                     --E = D;  D = C;  C = S^30(B);  B = A; A = TEMP;
                     e <= d_con;
                     d <= c_con;
-                    c <= b_con(30 to 31) & b_con(0 to 29);
+                    c <= b_con;
                     b <= a_con;
                     --a <= temp;
                     
                     if i = 79 then
                         i <= 0;
                         valid_o <= '1';
+                        --h0 <= std_ulogic_vector(unsigned(h0) + unsigned(b xor c xor d));
+                        --h1 <= std_ulogic_vector(unsigned(h1) + unsigned(a_con));
+                        --h2 <= std_ulogic_vector(unsigned(h2) + unsigned(b_con));
+                        --h3 <= std_ulogic_vector(unsigned(h3) + unsigned(c_con));
+                        --h4 <= std_ulogic_vector(unsigned(h4) + unsigned(d_con));
+                        h0out <= b xor c xor d;
+                        h1out <= a_con;
+                        h2out <= b_con;
+                        h3out <= c_con;
+                        h4out <= d_con;
                     else
                         i <= i + 1;
                         valid_o <= '0';
@@ -123,20 +149,24 @@ begin
         end if;
     end process;
 
-    dat_w_o <= w;
+    dat_w_o(0) <= h0;
+    dat_w_o(1) <= h1;
+    dat_w_o(2) <= h2;
+    dat_w_o(3) <= h3;
+    dat_w_o(4) <= h4;
     w_hold <= dat_i;
+    
     w_con <= w;
     a_con <= a;
-    b_con <= b;
+    b_con <= b(30 to 31) & b(0 to 29);
     c_con <= c;
     d_con <= d;
     e_con <= e;
     
-    test_word_1 <= a;
-    test_word_2 <= b;
-    test_word_3 <= c;
-    test_word_4 <= h0;
-    test_word_5 <= h1;
-
+    test_word_1 <= w(78);
+    test_word_2 <= w(79);
+    test_word_3 <= a;
+    test_word_4 <= h0out;
+    test_word_5 <= h1out;
 
 end RTL; 

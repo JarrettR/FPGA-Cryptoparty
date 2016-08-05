@@ -25,14 +25,14 @@ architecture RTL of sha1_process_input is
     signal test_word_3: std_ulogic_vector(0 to 31);
     signal test_word_4: std_ulogic_vector(0 to 31);
     signal test_word_5: std_ulogic_vector(0 to 31);
-    signal i : integer range 15 to 79;
+    signal i : integer range 0 to 79;
 
 begin
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                i <= 15;
+                i <= 0;
                 --Todo: decide if reset is even wanted
                 --for x in 0 to 15 loop
                 --    w_hold(x) <= "00000000000000000000000000000000";
@@ -53,7 +53,7 @@ begin
                         (w_con(i - 14)(1 to 31) & w_con(i - 14)(0)) XOR
                         (w_con(i - 16)(1 to 31) & w_con(i - 16)(0));
                     if i = 79 then
-                        i <= 15;
+                        i <= 0;
                         valid_o <= '1';
                     else
                         i <= i + 1;
@@ -71,8 +71,8 @@ begin
     
     --Todo: remove test fixtures
     test_word_1 <= w_con(16);
-    test_word_2 <= w_con(20);
-    test_word_3 <= w_con(60);
+    test_word_2 <= w_con(76);
+    test_word_3 <= w_con(77);
     test_word_4 <= w_con(78);
     test_word_5 <= w_con(79);
 
