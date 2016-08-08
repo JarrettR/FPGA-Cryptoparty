@@ -39,6 +39,7 @@ begin
                 --end loop;
             else
                 if load_i = '1' then
+                    --Alt: Type-casting instead of using loop
                     for x in 0 to 15 loop
                         w(x) <= w_hold(x);
                     end loop;
@@ -71,8 +72,8 @@ begin
     
     --Todo: remove test fixtures
     test_word_1 <= w_con(16);
-    test_word_2 <= w_con(76);
-    test_word_3 <= w_con(77);
+    test_word_2 <= w_con(17);
+    test_word_3 <= w_con(18);
     test_word_4 <= w_con(78);
     test_word_5 <= w_con(79);
 

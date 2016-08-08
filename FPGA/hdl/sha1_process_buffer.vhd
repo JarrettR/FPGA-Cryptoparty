@@ -71,7 +71,7 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 i <= 0;
-                running <= '0';
+                --running <= '0';
                 --Todo: Reset input too, if needed
                 --for x in 0 to 79 loop
                 --    w_hold(x) <= "00000000000000000000000000000000";
@@ -106,8 +106,8 @@ begin
                         w(x) <= w_hold(x);
                     end loop;
                     i <= 0;
-                    valid_o <= '0';
-                    running <= '1';
+                    --valid_o <= '0';
+                    --running <= '1';
                 else
                     --TEMP = S^5(A) + f(t;B,C,D) + E + W(t) + K(t);
                     case i is
@@ -129,6 +129,7 @@ begin
                     
                     if i = 79 then
                         i <= 0;
+                        --Todo: AND 'running' signal with i = 79 to stop incorrect 'valid_o' outputs
                         valid_o <= '1';
                         --h0 <= std_ulogic_vector(unsigned(h0) + unsigned(b xor c xor d));
                         --h1 <= std_ulogic_vector(unsigned(h1) + unsigned(a_con));

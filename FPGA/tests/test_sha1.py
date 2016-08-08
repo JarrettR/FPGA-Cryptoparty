@@ -27,12 +27,15 @@ def reset(dut):
     dut.rst_i <= 1
     yield RisingEdge(dut.clk_i)
     dut.rst_i <= 0
-    yield RisingEdge(dut.clk_i)
+    #yield RisingEdge(dut.clk_i)
     #log.info("Reset!")
 
 @cocotb.test()
 def A_load_data_test(dut):
-    """Test for data properly shifted in"""
+    """
+    Test for data properly shifted in
+    w(0) gets loaded in LAST
+    """
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
@@ -48,7 +51,7 @@ def A_load_data_test(dut):
 
     if convert_hex(dut.test_sha1_load_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
+            "Load data is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
     else:
         log.info("Ok!")
         
@@ -62,9 +65,11 @@ def B_reset_test(dut):
     mockObject = Sha1Model()
     
     yield reset(dut)
-    if convert_hex(dut.dat_1_o) != '0':
+    yield RisingEdge(dut.clk_i)
+    
+    if dut.i.value != 0:
         raise TestFailure(
-            "Reset failed!")
+            "Reset 1 failed!")
     yield load_data(dut, log, mockObject, 18)
     if convert_hex(dut.dat_1_o) == '0':
         raise TestFailure(
@@ -72,9 +77,11 @@ def B_reset_test(dut):
     else:
         log.info("Testing reset")
     yield reset(dut)
-    if convert_hex(dut.dat_1_o) != '0':
+    yield RisingEdge(dut.clk_i)
+    
+    if dut.i.value != 0:
         raise TestFailure(
-            "Reset failed!")
+            "Reset 2 failed!")
     else:
         log.info("Reset Ok!")
     yield load_data(dut, log, mockObject, 19)
@@ -104,13 +111,6 @@ def Z_wavedrom_test(dut):
     
     #yield load_data(dut, log, mockObject, 80)
     
-    yield RisingEdge(dut.clk_i)
-    yield reset(dut)
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
-    mockObject.processBuffer()
-    
-    yield load_data(dut, log, mockObject, 60)
     
     args = [
             dut.rst_i,
@@ -139,6 +139,13 @@ def Z_wavedrom_test(dut):
 
     with cocotb.wavedrom.trace(*args, clk=dut.clk_i) as waves:
     
+        yield RisingEdge(dut.clk_i)
+        yield reset(dut)
+        yield load_data(dut, log, mockObject, 16)
+        mockObject.processInput()
+        mockObject.processBuffer()
+        
+        yield load_data(dut, log, mockObject, 60)
         
         if _debug == True:
             log.info("{:08x}".format(mockObject.W[16 - 3]))
@@ -158,9 +165,9 @@ def Z_wavedrom_test(dut):
             log.info(dut.pinput1.test_word_5)
             #log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':-2}, config = {'hscale':3}))
             
-        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-5}, config = {'hscale':3})
+        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-1}, config = {'hscale':5})
         
-        #Todo: do a better solution for this
+        #Todo: NGINX conf files are a way better solution for this
         src = 'wavedrom.json'
         dst = '/home/www/projects/fpga/wavedrom.json'
         copyfile(src, dst)
@@ -184,14 +191,14 @@ def D_process_first_input_test(dut):
     mockObject.processInput()
     yield load_data(dut, log, mockObject, 68)
     
-    mockOut = "0x{:08x}".format(mockObject.W[16])
+    mockOut = "{:08x}".format(mockObject.W[16])
     
-    if dut.pinput1.test_word_1.value.hex() != mockOut:
+    if convert_hex(dut.pinput1.test_word_1.value) != mockOut:
         raise TestFailure(
-            "First load incorrect: {0} != {1}".format(dut.pinput1.test_word_1.value.hex(), mockOut))
-    elif dut.pinput1.test_word_5.value.hex() != "0x{:08x}".format(mockObject.W[79]):
+            "First load incorrect: {0} != {1}".format(convert_hex(dut.pinput1.test_word_1.value), mockOut))
+    elif convert_hex(dut.pinput1.test_word_5.value) != "{:08x}".format(mockObject.W[79]):
         raise TestFailure(
-            "First load incorrect: {0} != {1}".format(dut.pinput1.test_word_5.value.hex(), "0x{:08x}".format(mockObject.W[79])))
+            "First load incorrect: {0} != {1}".format(convert_hex(dut.pinput1.test_word_5.value), "{:08x}".format(mockObject.W[79])))
     else:
         log.info("First load ok!") 
 
@@ -231,7 +238,7 @@ def F_process_first_buffer_test(dut):
     
     if convert_hex(dut.pbuffer1.test_word_4.value) != mockOut:
         raise TestFailure(
-            "First buffer incorrect: {0} != {1}".format(dut.pinput1.test_word_4.value.hex(), mockOut))
+            "First buffer incorrect: {0} != {1}".format(convert_hex(dut.pinput1.test_word_4.value), mockOut))
     else:
         log.info("First buffer ok!") 
         
