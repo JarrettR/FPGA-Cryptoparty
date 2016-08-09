@@ -122,6 +122,8 @@ class Sha1Model(object):
             C = self.CSL(B, 30)
             B = A 
             A = TEMP
+            
+            #print '{:d}, A - {:08X} '.format(t, A)
         
         #H0 = H0 + A, H1 = H1 + B, H2 = H2 + C, H3 = H3 + D, H4 = H4 + E.
         self.H0 = (self.H0 + A) & 0xFFFFFFFF
@@ -129,6 +131,7 @@ class Sha1Model(object):
         self.H2 = (self.H2 + C) & 0xFFFFFFFF
         self.H3 = (self.H3 + D) & 0xFFFFFFFF
         self.H4 = (self.H4 + E) & 0xFFFFFFFF
+        #print '{:d}, H0 - {:08X} '.format(t, self.H0)
         
         
     def func0(self, B, C, D):

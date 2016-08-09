@@ -8,7 +8,7 @@ import random
 from shutil import copyfile
 from python_sha1 import Sha1Model, Sha1Driver
 
-_debug = True
+_debug = False
 
 @cocotb.coroutine
 def load_data(dut, log, mockObject, words):
@@ -163,6 +163,7 @@ def Z_wavedrom_test(dut):
         
         if _debug == True:
             log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
+            log.info(convert_hex(dut.pbuffer1.test_word_4).zfill(8))
             #log.info(dut.pinput1.test_word_1.value.hex())
             #log.info(dut.pinput1.test_word_2.value.hex())
             #log.info(dut.pinput1.test_word_3.value.hex())
@@ -234,13 +235,14 @@ def F_process_first_buffer_test(dut):
     yield load_data(dut, log, mockObject, 16)
     mockObject.processInput()
     mockObject.processBuffer()
-    yield load_data(dut, log, mockObject, 68)
+    yield load_data(dut, log, mockObject, 65)
+    yield load_data(dut, log, mockObject, 85)
     
     mockOut = "{:08x}".format(mockObject.H0)
     
     if convert_hex(dut.pbuffer1.test_word_4.value) != mockOut:
         raise TestFailure(
-            "First buffer incorrect: {0} != {1}".format(convert_hex(dut.pinput1.test_word_4.value), mockOut))
+            "First buffer incorrect: {0} != {1}".format(convert_hex(dut.pbuffer1.test_word_4.value), mockOut))
     else:
         log.info("First buffer ok!") 
         
