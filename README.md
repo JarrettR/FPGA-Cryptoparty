@@ -10,7 +10,8 @@ Some discussion, and a few approaches that have been experimented with are [here
 Currently, this is being developed on the [GHDL](https://github.com/tgingold/ghdl) simulator with the [Cocotb](https://github.com/potentialventures/cocotb) testing framework.
 
 
-== To develop ==
+## To develop 
+
 Run `sh install.sh`, which should first install GHDL and then Cocotb, both located in the `tools` directory.
 Updating submodules is done by running `sh update-submodules.sh`, which may or may not break stuff.
 
