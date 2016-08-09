@@ -30,11 +30,11 @@ architecture RTL of sha1_process_buffer is
     signal test_word_5: std_ulogic_vector(0 to 31);
     signal i : integer range 0 to 79;
     
-    signal a: std_ulogic_vector(0 to 31);
-    signal b: std_ulogic_vector(0 to 31);
-    signal c: std_ulogic_vector(0 to 31);
-    signal d: std_ulogic_vector(0 to 31);
-    signal e: std_ulogic_vector(0 to 31);
+    signal a: unsigned(0 to 31);
+    signal b: unsigned(0 to 31);
+    signal c: unsigned(0 to 31);
+    signal d: unsigned(0 to 31);
+    signal e: unsigned(0 to 31);
     signal a_con: std_ulogic_vector(0 to 31);
     signal b_con: std_ulogic_vector(0 to 31);
     signal c_con: std_ulogic_vector(0 to 31);
@@ -89,11 +89,23 @@ begin
                         h2 <= h2i;
                         h3 <= h3i;
                         h4 <= h4i;
-                        a <= h0i;
-                        b <= h1i;
-                        c <= h2i;
-                        d <= h3i;
-                        e <= h4i;
+                        
+                        a <= unsigned(h0i);
+                        b <= unsigned(h1i);
+                        c <= unsigned(h2i);
+                        d <= unsigned(h3i);
+                        e <= unsigned(h4i);
+                        
+                        -- a <=  unsigned((h1i and h2i) or ((not h1i) and h3i)) +
+                            -- rotate_left(unsigned(h0i), 5) +
+                            -- unsigned(h4i) +
+                            -- unsigned(w_hold(0)) +
+                            -- unsigned(k0);  
+                        -- b <= unsigned(h0i);
+                        -- c <= rotate_left(unsigned(h1i), 30);
+                        -- d <= unsigned(h2i);
+                        -- e <= unsigned(h3i);
+                        
                     --elsif i = 0 and new_i = '0' then
                     --    h0 <= std_ulogic_vector(unsigned(h0) + unsigned(a));
                     --    h1 <= std_ulogic_vector(unsigned(h1) + unsigned(b));
@@ -110,21 +122,40 @@ begin
                     --running <= '1';
                 else
                     --TEMP = S^5(A) + f(t;B,C,D) + E + W(t) + K(t);
+                    --Alt: gotta be better way!
                     case i is
                        --f(t;B,C,D) = (B AND C) OR ((NOT B) AND D)
-                        when 0 to 19 => a <= (b and c) or ((not b) and d);
+                        --when 0 => a <= "00000000000000000000000000000000";
+                        when 0 to 19 => a <= unsigned((b_con and c_con) or ((not b_con) and d_con)) +
+                                            rotate_left(unsigned(a_con), 5) +
+                                            unsigned(e_con) +
+                                            unsigned(w(i)) +
+                                            unsigned(k0);                                            
                         --f(t;B,C,D) = B XOR C XOR D
-                        when 20 to 39 => a <= b xor c xor d;
+                        --when 20 => a <= "00000000000000000000000000000000";
+                        when 20 to 39 => a <= unsigned(b_con xor c_con xor d_con) +
+                                            rotate_left(unsigned(a_con), 5) +
+                                            unsigned(e_con) +
+                                            unsigned(w(i)) +
+                                            unsigned(k1);        
                         --f(t;B,C,D) = (B AND C) OR (B AND D) OR (C AND D)
-                        when 40 to 59 => a <= (b and c) or (b and d) or (c and d);
+                        when 40 to 59 => a <= unsigned((b_con and c_con) or (b_con and d_con) or (c_con and d_con)) +
+                                            rotate_left(unsigned(a_con), 5) +
+                                            unsigned(e_con) +
+                                            unsigned(w(i)) +
+                                            unsigned(k2);        
                         --f(t;B,C,D) = B XOR C XOR D
-                        when 60 to 79 => a <= b xor c xor d;
+                        when 60 to 79 => a <= unsigned(b_con xor c_con xor d_con) +
+                                            rotate_left(unsigned(a_con), 5) +
+                                            unsigned(e_con) +
+                                            unsigned(w(i)) +
+                                            unsigned(k3);        
                     end case;
                     --E = D;  D = C;  C = S^30(B);  B = A; A = TEMP;
-                    e <= d_con;
-                    d <= c_con;
-                    c <= b_con;
-                    b <= a_con;
+                    e <= unsigned(d_con);
+                    d <= unsigned(c_con);
+                    c <= rotate_left(unsigned(b_con), 30);
+                    b <= unsigned(a_con);
                     --a <= temp;
                     
                     if i = 79 then
@@ -136,7 +167,7 @@ begin
                         --h2 <= std_ulogic_vector(unsigned(h2) + unsigned(b_con));
                         --h3 <= std_ulogic_vector(unsigned(h3) + unsigned(c_con));
                         --h4 <= std_ulogic_vector(unsigned(h4) + unsigned(d_con));
-                        h0out <= b xor c xor d;
+                        h0out <= std_ulogic_vector(b xor c xor d);
                         h1out <= a_con;
                         h2out <= b_con;
                         h3out <= c_con;
@@ -158,15 +189,15 @@ begin
     w_hold <= dat_i;
     
     w_con <= w;
-    a_con <= a;
-    b_con <= b(30 to 31) & b(0 to 29);
-    c_con <= c;
-    d_con <= d;
-    e_con <= e;
+    a_con <= std_ulogic_vector(a);
+    b_con <= std_ulogic_vector(b);
+    c_con <= std_ulogic_vector(c);
+    d_con <= std_ulogic_vector(d);
+    e_con <= std_ulogic_vector(e);
     
     test_word_1 <= w(78);
-    test_word_2 <= w(79);
-    test_word_3 <= a;
+    test_word_2 <= std_ulogic_vector(a);
+    test_word_3 <= std_ulogic_vector(b);
     test_word_4 <= h0out;
     test_word_5 <= h1out;
 

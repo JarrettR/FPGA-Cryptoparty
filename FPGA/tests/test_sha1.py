@@ -8,7 +8,7 @@ import random
 from shutil import copyfile
 from python_sha1 import Sha1Model, Sha1Driver
 
-_debug = False
+_debug = True
 
 @cocotb.coroutine
 def load_data(dut, log, mockObject, words):
@@ -19,7 +19,7 @@ def load_data(dut, log, mockObject, words):
         dut.dat_i <= input
         yield RisingEdge(dut.clk_i)
         if _debug == True:
-            log.info(str(i) + " - " + "{} - ".format(dut.pinput1.i.value.hex()) + " {:08x} - ".format(input) + convert_hex(dut.dat_i) + " - " + convert_hex(dut.pinput1.test_word_5))
+            log.info(str(i) + " - {} - ".format(int(str(dut.pbuffer1.i), 2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_3)))
 
         
 @cocotb.coroutine
@@ -90,7 +90,7 @@ def B_reset_test(dut):
 
     if convert_hex(dut.test_sha1_load_o).zfill(8) != mockOut:
         raise TestFailure(
-            "Adder result is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
+            "Reload is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
     else:
         log.info("Ok!")
         
@@ -145,24 +145,30 @@ def Z_wavedrom_test(dut):
         mockObject.processInput()
         mockObject.processBuffer()
         
+        if _debug == True:
+            log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
         yield load_data(dut, log, mockObject, 60)
         
+        
+            
         if _debug == True:
-            log.info("{:08x}".format(mockObject.W[16 - 3]))
-            log.info("{:08x}".format(mockObject.W[16 - 8]))
-            log.info("{:08x}".format(mockObject.W[16 - 14]))
-            log.info("{:08x}".format(mockObject.W[16 - 16]))
-            log.info("{:08x}".format(mockObject.W[16]))
+            log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
+            #log.info("{:08x}".format(mockObject.W[78]))
+            #log.info("{:08x}".format(mockObject.W[79]))
+            #log.info("{:08x}".format(mockObject.W[16 - 14]))
+            #log.info("{:08x}".format(mockObject.W[16 - 16]))
+            #log.info("{:08x}".format(mockObject.W[16]))
             
         yield load_data(dut, log, mockObject, 90)
         
         if _debug == True:
-            log.info(dut.pinput1.test_word_1.value.hex())
-            log.info(dut.pinput1.test_word_2.value.hex())
-            log.info(dut.pinput1.test_word_3.value.hex())
-            log.info(dut.pinput1.test_word_4.value.hex())
-            log.info(dut.pinput1.test_word_5.value.hex())
-            log.info(dut.pinput1.test_word_5)
+            log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
+            #log.info(dut.pinput1.test_word_1.value.hex())
+            #log.info(dut.pinput1.test_word_2.value.hex())
+            #log.info(dut.pinput1.test_word_3.value.hex())
+            #log.info(dut.pinput1.test_word_4.value.hex())
+            #log.info(dut.pinput1.test_word_5.value.hex())
+            #log.info(dut.pinput1.test_word_5)
             #log.info(waves.dumpj(header = {'text':'D_wavedrom_test', 'tick':-2}, config = {'hscale':3}))
             
         waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-1}, config = {'hscale':5})
