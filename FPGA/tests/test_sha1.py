@@ -167,10 +167,6 @@ def Z_wavedrom_test(dut):
             
         waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-1}, config = {'hscale':5})
         
-        #Todo: NGINX conf files are a way better solution for this
-        src = 'wavedrom.json'
-        dst = '/home/www/projects/fpga/wavedrom.json'
-        copyfile(src, dst)
 
         
 @cocotb.test()

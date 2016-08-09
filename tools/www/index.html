@@ -4,30 +4,41 @@
         <meta charset="UTF-8">
         <title>WaveDrom Output</title>
 
-        <script src="skins/default.js" type="text/javascript"></script>
+        <script src="skins/narrow.js" type="text/javascript"></script>
         <script src="wavedrom.min.js" type="text/javascript"></script>
         <script type="text/javascript">
             function loadWave() {
+                var scrollX = window.pageXOffset;
+                var scrollY = window.pageYOffset;
+                
                 var txtFile = new XMLHttpRequest();
-                txtFile.open("GET", "wavedrom.json", true);
+                txtFile.open("GET", "wavedrom.json?_=" + new Date().getTime(), true);
                 txtFile.onreadystatechange = function() {
                     if (txtFile.readyState === 4) { // Makes sure the document is ready to parse.
                         if (txtFile.status === 200) { // Makes sure the file exists.
                             allText = txtFile.responseText;
-                            var customTextElement2 = document.getElementById('inputWave');
-                            customTextElement2.innerHTML = txtFile.responseText;
-                            WaveDrom.ProcessAll();
+                            if (allText != document.getElementById('InputJSON_0').innerHTML) {
+                                var ScriptElement = document.getElementById('inputWave');
+                                document.getElementById('WaveDrom_Display_0').remove();
+                                var ScriptElement = document.getElementById('InputJSON_0');
+                                ScriptElement.id = 'inputWave';
+                                ScriptElement.innerHTML = txtFile.responseText;
+                                WaveDrom.ProcessAll();
+                                
+                                window.scrollTo(scrollX, scrollY);
+                            }
                         }
                     }
                 }
                 txtFile.send(null);
-
+                setTimeout(loadWave, 5000);
             }       
         </script>
         </head>
 
     <body onload="loadWave()">
-    <script type="WaveDrom" id="inputWave"></script>
+    <div id="WaveDrom_Display_0"></div>
+    <script type="WaveDrom" id="InputJSON_0"></script>
     </body>
 </html>
 
