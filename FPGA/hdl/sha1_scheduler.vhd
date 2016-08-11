@@ -59,11 +59,7 @@ architecture RTL of sha1_scheduler is
     signal w_processed_buffer: w_output;
     signal w_buffer_valid: std_ulogic;
     signal w_pinput: w_input;
-    signal latch_pinput1: std_ulogic;
-    signal latch_pinput2: std_ulogic;
-    signal latch_pinput3: std_ulogic;
-    signal latch_pinput4: std_ulogic;
-    signal latch_pinput5: std_ulogic;
+    signal latch_pinput: std_ulogic_vector(0 to 4);
     signal i : integer range 0 to 16;
     
     signal i_mux : integer range 0 to 4;
@@ -71,18 +67,14 @@ architecture RTL of sha1_scheduler is
 begin
 
     LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
-    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput1,w_processed_input1,w_processed_valid1);
+    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid1);
     PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid1,w_processed_valid1,w_processed_buffer,w_buffer_valid);
     
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                latch_pinput1 <= '0';
-                latch_pinput2 <= '0';
-                latch_pinput3 <= '0';
-                latch_pinput4 <= '0';
-                latch_pinput5 <= '0';
+                latch_pinput <= "00000";
                 i <= 0;
                 --Todo: start from 0 after testing
                 i_mux <= 0;
@@ -92,12 +84,11 @@ begin
             else
                 if i = 15 then
                     case i_mux is
-                        --Todo: make into a vector for brevity
-                        when 0 => latch_pinput1 <= '1';
-                        when 1 => latch_pinput2 <= '1';
-                        when 2 => latch_pinput3 <= '1';
-                        when 3 => latch_pinput4 <= '1';
-                        when 4 => latch_pinput5 <= '1';
+                        when 0 => latch_pinput <= "10000";
+                        when 1 => latch_pinput <= "01000";
+                        when 2 => latch_pinput <= "00100";
+                        when 3 => latch_pinput <= "00010";
+                        when 4 => latch_pinput <= "00001";
                     end case;
                     w_pinput <= w_load;
                     i <= 0;
@@ -108,11 +99,7 @@ begin
                         i_mux <= i_mux + 1;
                     end if;
                 else
-                    latch_pinput1 <= '0';
-                    latch_pinput2 <= '0';
-                    latch_pinput3 <= '0';
-                    latch_pinput4 <= '0';
-                    latch_pinput5 <= '0';
+                    latch_pinput <= "00000";
                     i <= i + 1;
                 end if;
             end if;

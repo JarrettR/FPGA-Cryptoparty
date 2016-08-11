@@ -20,11 +20,15 @@ architecture RTL of sha1_process_input is
     signal w: w_full;
     signal w_con: w_full;
     signal w_hold: w_input;
+    
+    -- synthesis translate_off
     signal test_word_1: std_ulogic_vector(0 to 31);
     signal test_word_2: std_ulogic_vector(0 to 31);
     signal test_word_3: std_ulogic_vector(0 to 31);
     signal test_word_4: std_ulogic_vector(0 to 31);
     signal test_word_5: std_ulogic_vector(0 to 31);
+    -- synthesis translate_on
+    
     signal i : integer range 0 to 79;
 
 begin
@@ -55,6 +59,9 @@ begin
                         (w_con(i - 16)(1 to 31) & w_con(i - 16)(0));
                     if i = 79 then
                         i <= 0;
+                        --valid_o <= '1';
+                    elsif i = 16 then
+                        i <= i + 1;
                         valid_o <= '1';
                     else
                         i <= i + 1;
@@ -70,12 +77,13 @@ begin
     w_hold <= dat_i;
     w_con <= w;
     
-    --Todo: remove test fixtures
+    -- synthesis translate_off
     test_word_1 <= w_con(16);
     test_word_2 <= w_con(17);
     test_word_3 <= w_con(18);
     test_word_4 <= w_con(78);
     test_word_5 <= w_con(79);
+    -- synthesis translate_on
 
 
 end RTL; 

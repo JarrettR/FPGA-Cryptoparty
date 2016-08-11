@@ -177,7 +177,7 @@ def Z_wavedrom_test(dut):
 
         
 @cocotb.test()
-def D_process_first_input_test(dut):
+def D_process_first_input_round_test(dut):
     """Test input data properly processed during first stage"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
@@ -195,27 +195,49 @@ def D_process_first_input_test(dut):
     yield load_data(dut, log, mockObject, 68)
     
     mockOut = "{:08x}".format(mockObject.W[16])
+    compare1 = convert_hex(dut.pinput1.test_word_1.value).rjust(8, '0')
+    compare2 = convert_hex(dut.pinput1.test_word_5.value).rjust(8, '0')
     
-    if convert_hex(dut.pinput1.test_word_1.value) != mockOut:
+    if compare1 != mockOut:
         raise TestFailure(
-            "First load incorrect: {0} != {1}".format(convert_hex(dut.pinput1.test_word_1.value), mockOut))
-    elif convert_hex(dut.pinput1.test_word_5.value) != "{:08x}".format(mockObject.W[79]):
+            "First load incorrect: {0} != {1}".format(compare1, mockOut))
+    elif compare2 != "{:08x}".format(mockObject.W[79]):
         raise TestFailure(
-            "First load incorrect: {0} != {1}".format(convert_hex(dut.pinput1.test_word_5.value), "{:08x}".format(mockObject.W[79])))
+            "First load incorrect: {0} != {1}".format(compare2, "{:08x}".format(mockObject.W[79])))
     else:
         log.info("First load ok!") 
 
         
 @cocotb.test()
-def E_process_second_input_test(dut):
-    """Test second set of input data processed"""
+def E_process_second_input_round_test(dut):
+    """Test input processing with 32 word input"""
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
     mockObject = Sha1Model()
 
     yield reset(dut)
-    log.info("Second load not tested!")
+    #yield load_data(dut, log, mockObject, 16)
+
+    #mockObject.processInput()
+    #mockObject.displayAll()
+    
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    yield load_data(dut, log, mockObject, 68)
+    
+    mockOut = "{:08x}".format(mockObject.W[16])
+    compare1 = convert_hex(dut.pinput1.test_word_1.value).rjust(8, '0')
+    compare2 = convert_hex(dut.pinput1.test_word_5.value).rjust(8, '0')
+    
+    if compare1 != mockOut:
+        raise TestFailure(
+            "First load incorrect: {0} != {1}".format(compare1, mockOut))
+    elif compare2 != "{:08x}".format(mockObject.W[79]):
+        raise TestFailure(
+            "First load incorrect: {0} != {1}".format(compare2, "{:08x}".format(mockObject.W[79])))
+    else:
+        log.info("First load ok!") 
         
         
 @cocotb.test()
@@ -239,10 +261,11 @@ def F_process_first_buffer_test(dut):
     yield load_data(dut, log, mockObject, 85)
     
     mockOut = "{:08x}".format(mockObject.H0)
+    compare1 = convert_hex(dut.pbuffer1.test_word_4.value).rjust(8, '0')
     
-    if convert_hex(dut.pbuffer1.test_word_4.value) != mockOut:
+    if compare1 != mockOut:
         raise TestFailure(
-            "First buffer incorrect: {0} != {1}".format(convert_hex(dut.pbuffer1.test_word_4.value), mockOut))
+            "First buffer incorrect: {0} != {1}".format(compare1, mockOut))
     else:
         log.info("First buffer ok!") 
         

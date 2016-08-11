@@ -23,11 +23,13 @@ architecture RTL of sha1_process_buffer is
     --signal w_con: w_full;
     signal w_hold: w_full;
     signal running: std_ulogic;
+    -- synthesis translate_off
     signal test_word_1: std_ulogic_vector(0 to 31);
     signal test_word_2: std_ulogic_vector(0 to 31);
     signal test_word_3: std_ulogic_vector(0 to 31);
     signal test_word_4: std_ulogic_vector(0 to 31);
     signal test_word_5: std_ulogic_vector(0 to 31);
+    -- synthesis translate_on
     signal i : integer range 0 to 79;
     
     signal a: unsigned(0 to 31);
@@ -99,7 +101,7 @@ begin
                         a <=  unsigned((h1i and h2i) or ((not h1i) and h3i)) +
                             rotate_left(unsigned(h0i), 5) +
                             unsigned(h4i) +
-                            unsigned(w_hold(0)) +
+                            unsigned(dat_i(0)) +
                             unsigned(k0);  
                         b <= unsigned(h0i);
                         c <= rotate_left(unsigned(h1i), 30);
@@ -114,9 +116,9 @@ begin
                     --    h4 <= std_ulogic_vector(unsigned(h4) + unsigned(e));
                     end if;
                     
-                    for x in 0 to 79 loop
-                        w(x) <= w_hold(x);
-                    end loop;
+                    --for x in 0 to 79 loop
+                    --    w(x) <= w_hold(x);
+                    --end loop;
                     i <= 0;
                     --valid_o <= '0';
                     --running <= '1';
@@ -163,6 +165,7 @@ begin
                     b <= unsigned(a_con);
                     --a <= temp;
                     
+                    i <= i + 1;
                 end if;
                 
                 if i = 79 then
@@ -180,19 +183,18 @@ begin
                     h3out <= unsigned(h3) + d;
                     h4out <= unsigned(h4) + e;
                 else
-                    i <= i + 1;
                     valid_o <= '0';
                 end if;
             end if;
         end if;
     end process;
 
-    dat_w_o(0) <= h0;
-    dat_w_o(1) <= h1;
-    dat_w_o(2) <= h2;
-    dat_w_o(3) <= h3;
-    dat_w_o(4) <= h4;
-    w_hold <= dat_i;
+    dat_w_o(0) <= std_ulogic_vector(h0out);
+    dat_w_o(1) <= std_ulogic_vector(h1out);
+    dat_w_o(2) <= std_ulogic_vector(h2out);
+    dat_w_o(3) <= std_ulogic_vector(h3out);
+    dat_w_o(4) <= std_ulogic_vector(h4out);
+    w <= dat_i;
     
     --w_con <= w;
     a_con <= std_ulogic_vector(a);
@@ -201,10 +203,12 @@ begin
     d_con <= std_ulogic_vector(d);
     e_con <= std_ulogic_vector(e);
     
-    test_word_1 <= w(78);
-    test_word_2 <= std_ulogic_vector(a);
-    test_word_3 <= std_ulogic_vector(b);
+    -- synthesis translate_off
+    test_word_1 <= w(0);
+    test_word_2 <= w(78);
+    test_word_3 <= w(79);
     test_word_4 <= std_ulogic_vector(h0out);
     test_word_5 <= std_ulogic_vector(h1out);
+    -- synthesis translate_on
 
 end RTL; 
