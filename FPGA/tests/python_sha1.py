@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import cocotb
+
+import hashlib #For testing my mock objects
+'''import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
 from cocotb.drivers import BusDriver, ValidatedBusDriver
@@ -28,7 +30,7 @@ class Sha1Driver(BusDriver):
         self.bus.load_i <= single
         self.bus.rst_i <= single
         self.bus.dat_i <= word
-
+'''
 
 class Sha1Model(object):
     K0 = 0x5A827999       #( 0 <= t <= 19)
@@ -46,6 +48,45 @@ class Sha1Model(object):
         self.H2 = 0x98BADCFE
         self.H3 = 0x10325476
         self.H4 = 0xC3D2E1F0
+
+    def hashList(self, W):
+        self.resetSeed()
+        for i in range(0, len(W) / 16):
+            for x in range(15, -1, -1):
+                print 'Word {:02d}: {:08X}'.format(x + (i * 16), W[x + (i * 16)])
+                self.addWord(W[x + (i * 16)])
+            self.processInput()
+            self.processBuffer()
+
+        print self.getHash()
+        
+    def hashString(self, input):
+        #List of bytes
+        B = list(input)
+        W = []
+        
+        for x in range(0, len(B)):
+            B[x] = ord(B[x])
+        
+        B.append(0x80)
+        
+        #Fill up each SHA1 frame with 16 words, minus 2 words for length
+        while (len(B) % (16 * 4)) != (14 * 4):
+            B.append(0x00)
+        
+        #2 words for length
+        for x in range(7, -1, -1):
+            B.append((len(input) * 8) >> (x * 8))
+            
+        #Transform list of bytes into list of words
+        word = 0
+        for x in range(0, len(B)):
+            word = (word << 8) | B[x]
+            if ((x + 1) % 4) == 0:
+                W.append(word)
+                word = 0
+                
+        self.hashList(W)
 
     def run(self):
         self.addWord(0x00000140)
@@ -67,10 +108,56 @@ class Sha1Model(object):
         #Out: 9b47122a88a9a7f65ce5540c1fc5954567c48404
         
         self.processInput()
-        
         self.processBuffer()
         
         print self.displayAll()
+        print "Finished first input"
+        
+        self.resetSeed()
+        
+        self.addWord(0x00000140)
+        self.addWord(0x00000000)
+        self.addWord(0x00000000)
+        self.addWord(0x00000000)
+        self.addWord(0x00000000)
+        self.addWord(0x80000000)
+        self.addWord(0x494a4b4c)
+        self.addWord(0x45464748)
+        self.addWord(0x41424344)
+        self.addWord(0x797a3031)
+        self.addWord(0x75767778)
+        self.addWord(0x71727374)
+        self.addWord(0x6d6e6f70)
+        self.addWord(0x696a6b6c)
+        self.addWord(0x65666768)
+        self.addWord(0x61626364)
+        self.processInput()
+        self.processBuffer()
+        
+        self.addWord(0x30313233)
+        self.addWord(0x38396060)
+        self.addWord(0x34353637)
+        self.addWord(0x30313233)
+        self.addWord(0x38396060)
+        self.addWord(0x34353637)
+        self.addWord(0x30313233)
+        self.addWord(0x38396060)
+        self.addWord(0x34353637)
+        self.addWord(0x30313233)
+        self.addWord(0x38396060)
+        self.addWord(0x34353637)
+        self.addWord(0x30313233)
+        self.addWord(0x38396060)
+        self.addWord(0x34353637)
+        self.addWord(0x30313233)
+        #Out: 9b47122a88a9a7f65ce5540c1fc5954567c48404
+        
+        self.processInput()
+        self.processBuffer()
+        
+        print self.displayAll()
+        print "Finished second input"
+        
         return "Finished"
         
 
@@ -112,10 +199,6 @@ class Sha1Model(object):
                 func = self.func3
             TEMP = (self.CSL(A,5) + func(B, C, D) + E + self.W[t] + K) & 0xFFFFFFFF
             
-            #print 'TEMP: ' + '{:08X} '.format(TEMP)
-            #print 't: ' + str(t)
-            #print 'K: ' + '{:08X} '.format(K)
-            
             #E = D;  D = C;  C = S^30(B);  B = A; A = TEMP;
             E = D
             D = C
@@ -123,15 +206,12 @@ class Sha1Model(object):
             B = A 
             A = TEMP
             
-            #print '{:d}, A - {:08X} '.format(t, A)
-        
         #H0 = H0 + A, H1 = H1 + B, H2 = H2 + C, H3 = H3 + D, H4 = H4 + E.
         self.H0 = (self.H0 + A) & 0xFFFFFFFF
         self.H1 = (self.H1 + B) & 0xFFFFFFFF
         self.H2 = (self.H2 + C) & 0xFFFFFFFF
         self.H3 = (self.H3 + D) & 0xFFFFFFFF
         self.H4 = (self.H4 + E) & 0xFFFFFFFF
-        #print '{:d}, H0 - {:08X} '.format(t, self.H0)
         
         
     def func0(self, B, C, D):
@@ -167,6 +247,9 @@ class Sha1Model(object):
         
         return "All vars printed"
         
+    def getHash(self):
+        return '%08x%08x%08x%08x%08x' % (self.H0, self.H1, self.H2, self.H3, self.H4)
+        
     def formatW(self, start = 0, stop = 80):
         W = ''
         for x in range(start, stop):
@@ -177,7 +260,17 @@ class Sha1Model(object):
 if __name__ == "__main__":
     obj = Sha1Model()
     
-    print obj.run()
+    str = '0123456789aaaaa'
+
+    for x in range(0, 158):
+        str = str + 'aaaaa'
+        
+        obj.hashString(str)
+        print hashlib.sha1(str).hexdigest()
+        print "------------"
+        
+    
+        
     
 # SHA1("61...") = 9b47122a88a9a7f65ce5540c1fc5954567c48404
 #
