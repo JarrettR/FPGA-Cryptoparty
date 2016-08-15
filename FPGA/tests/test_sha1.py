@@ -224,7 +224,7 @@ def E_process_second_input_round_test(dut):
     
     yield load_data(dut, log, mockObject, 16)
     mockObject.processInput()
-    yield load_data(dut, log, mockObject, 68)
+    yield load_data(dut, log, mockObject, 66)
     
     mockOut = "{:08x}".format(mockObject.W[16])
     compare1 = convert_hex(dut.pinput1.test_word_1.value).rjust(8, '0')
@@ -268,6 +268,35 @@ def F_process_first_buffer_test(dut):
             "First buffer incorrect: {0} != {1}".format(compare1, mockOut))
     else:
         log.info("First buffer ok!") 
+        
+        
+@cocotb.test()
+def G_process_second_buffer_test(dut):
+    """Test data after processing the second message buffer"""
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    mockObject = Sha1Model()
+
+    yield reset(dut)
+    
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    mockObject.processBuffer()
+    yield load_data(dut, log, mockObject, 5)
+    yield load_data(dut, log, mockObject, 16)
+    mockObject.processInput()
+    mockObject.processBuffer()
+    yield load_data(dut, log, mockObject, 85)
+    
+    mockOut = "{:08x}".format(mockObject.H0)
+    compare1 = convert_hex(dut.pbuffer1.test_word_4.value).rjust(8, '0')
+    
+    if compare1 != mockOut:
+        raise TestFailure(
+            "Second buffer incorrect: {0} != {1}".format(compare1, mockOut))
+    else:
+        log.info("Second buffer ok!") 
         
 def convert_hex(input):
     input = str(input)

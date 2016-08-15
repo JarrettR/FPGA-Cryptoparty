@@ -205,8 +205,8 @@ begin
     
     -- synthesis translate_off
     test_word_1 <= w(0);
-    test_word_2 <= w(78);
-    test_word_3 <= w(79);
+    test_word_2 <= w(79);
+    test_word_3 <= h0;
     test_word_4 <= std_ulogic_vector(h0out);
     test_word_5 <= std_ulogic_vector(h1out);
     -- synthesis translate_on

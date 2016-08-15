@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib #For testing my mock objects
+import random
 '''import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
@@ -30,8 +31,8 @@ class Sha1Driver(BusDriver):
         self.bus.load_i <= single
         self.bus.rst_i <= single
         self.bus.dat_i <= word
-'''
 
+'''
 class Sha1Model(object):
     K0 = 0x5A827999       #( 0 <= t <= 19)
     K1 = 0x6ED9EBA1       #(20 <= t <= 39)
@@ -53,12 +54,12 @@ class Sha1Model(object):
         self.resetSeed()
         for i in range(0, len(W) / 16):
             for x in range(15, -1, -1):
-                print 'Word {:02d}: {:08X}'.format(x + (i * 16), W[x + (i * 16)])
+                #print 'Word {:02d}: {:08X}'.format(x + (i * 16), W[x + (i * 16)])
                 self.addWord(W[x + (i * 16)])
             self.processInput()
             self.processBuffer()
 
-        print self.getHash()
+        return self.getHash()
         
     def hashString(self, input):
         #List of bytes
@@ -86,7 +87,7 @@ class Sha1Model(object):
                 W.append(word)
                 word = 0
                 
-        self.hashList(W)
+        return self.hashList(W)
 
     def run(self):
         self.addWord(0x00000140)
@@ -260,13 +261,18 @@ class Sha1Model(object):
 if __name__ == "__main__":
     obj = Sha1Model()
     
-    str = '0123456789aaaaa'
+    str = ''
 
-    for x in range(0, 158):
-        str = str + 'aaaaa'
+    for x in range(0, 185):
+        input = random.randint(0, 0xff)
+        str = str + chr(random.randint(0, 0xff))
         
-        obj.hashString(str)
-        print hashlib.sha1(str).hexdigest()
+        v1 = obj.hashString(str)
+        v2 = hashlib.sha1(str).hexdigest()
+        print v1
+        print v2
+        if v1 != v2:
+            print "-------------- NOT EQUAL"
         print "------------"
         
     
