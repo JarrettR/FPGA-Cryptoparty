@@ -48,7 +48,7 @@ class HmacModel(object):
         
         self.addValue(self.generateList(value))
         
-        shaBi = self.Sha1.hashString(self.generateString(self.Bi))
+        shaBi = self.Sha1.hashString(self.generateString(self.Bi) + value)
         print 'Bi'
         print self.generateString(self.Bi)
         print 'shaBi'
@@ -59,17 +59,21 @@ class HmacModel(object):
         #for x in range(0, len(shaBiDec)):
         #    self.Bo.append(shaBiDec[x])
         #self.Bo = self.Bo + shaBi.decode("hex")
-        shaBiDec = shaBiDec + value
+        #shaBiDec = shaBiDec + value
         
-        out = self.generateString(self.Bo) + self.Sha1.hashString(shaBiDec)
+        out = self.generateString(self.Bo)
         
-        #for x in range(0, len(self.Bo)):
-        #    out = out + '{:02x}'.format(self.Bo[x])
         print 'Bo'
         print out
         
-        #stringBo = self.generateString(self.Bo)
-        #print stringBo
+        shaBo = self.Sha1.hashString(out)
+        print 'shaBo'
+        print shaBo
+        
+        out = self.generateString(self.Bo) + shaBiDec
+        
+        print 'Bo'
+        print out
         
         shaBo = self.Sha1.hashString(out)
         print 'shaBo'
@@ -97,55 +101,6 @@ class HmacModel(object):
             out = out + chr(intList[x])
         
         return out
-        
-class HMAC:
-    def __init__(self, key, msg):
-        self.outer = hashlib.sha1()
-        self.inner = hashlib.sha1()
-        self.digest_size = self.inner.digest_size
-        blocksize = 64
-        if len(key) > blocksize:
-            key = sha1(key).digest()
-        key = key + chr(0) * (blocksize - len(key))
-        print 'key'
-        self.pprint(key)
-        
-        trans_5C = "".join ([chr (x ^ 0x5c) for x in xrange(256)])
-        trans_36 = "".join ([chr (x ^ 0x36) for x in xrange(256)])
-        
-        #print 'trans_5C'
-        #self.pprint(trans_5C)
-        #print 'trans_36'
-        #self.pprint(trans_36)
-        
-        print 'trans_key'
-        self.pprint(key.translate(trans_5C))
-        
-        self.outer.update(key.translate(trans_5C))
-        
-        self.inner.update(key.translate(trans_36))
-        print 'trans_36'
-        self.pprint(key.translate(trans_36))
-        print 'shatrans_36'
-        print self.inner.hexdigest()
-        
-        if msg:
-            self.inner.update(msg)
-            print "msg " + msg
-        self.h = self.outer.copy()
-        self.h.update(self.inner.digest())
-        print 'sha h'
-        print self.h.hexdigest()
-        
-        
-    def pprint(self, msg):
-        out = ''
-        for x in range(0, len(msg)):
-            out = out + '{:02x}'.format(ord(msg[x]))
-        
-        print out
-    def hexdigest(self):
-        return self.h.hexdigest()
 
 if __name__ == "__main__":
     objSha = Sha1Model()
@@ -155,7 +110,4 @@ if __name__ == "__main__":
     
     print objHmac.run()
     print "--------------------------"
-    
-    h = HMAC(secret,value)
-    print h.hexdigest() #80070713463e7749b90c2dc24911e275
     
