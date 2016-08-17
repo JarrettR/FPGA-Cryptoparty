@@ -52,6 +52,8 @@ if __name__ == "__main__":
     objHmac = HmacModel(objSha)
     secret = 'Jefe'
     value = 'what do ya want for nothing?'
+    secret = 'secret'
+    value = 'value'
     
     print "Goal:   " + hmac.new(secret, value, hashlib.sha1).hexdigest()
     print "Result: " + objHmac.load(secret, value)

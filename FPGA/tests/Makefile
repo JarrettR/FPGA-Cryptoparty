@@ -52,6 +52,7 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_load.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_process_input.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_process_buffer.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/hmac_cache.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_scheduler.vhd
     TOPLEVEL = sha1_scheduler
 else
