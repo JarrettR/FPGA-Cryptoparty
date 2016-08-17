@@ -15,9 +15,11 @@ def load_data(dut, log, mockObject, words):
     for i in range(words):
         #input = 0xffffffff
         input = random.randint(0, 0xffffffff)
-        mockObject.addWord(input)
-        dut.dat_i <= input
-        yield RisingEdge(dut.clk_i)
+        if mockObject != None:
+            mockObject.addWord(input)
+        if dut != None:
+            dut.dat_i <= input
+            yield RisingEdge(dut.clk_i)
         if _debug == True:
             log.info(str(i) + " - {} - ".format(int(str(dut.pbuffer1.i), 2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_3)))
 
@@ -134,7 +136,17 @@ def Z_wavedrom_test(dut):
             dut.pbuffer1.test_word_3,
             dut.pbuffer1.test_word_4,
             dut.pbuffer1.test_word_5,
-            dut.pbuffer1.valid_o
+            dut.pbuffer1.valid_o,
+            dut.pbuffer2.i,
+            dut.pbuffer2.rst_i,
+            dut.pbuffer2.load_i,
+            dut.pbuffer2.new_i,
+            dut.pbuffer2.test_word_1,
+            dut.pbuffer2.test_word_2,
+            dut.pbuffer2.test_word_3,
+            dut.pbuffer2.test_word_4,
+            dut.pbuffer2.test_word_5,
+            dut.pbuffer2.valid_o
             ]
 
     with cocotb.wavedrom.trace(*args, clk=dut.clk_i) as waves:
@@ -276,27 +288,73 @@ def G_process_second_buffer_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
-    mockObject = Sha1Model()
+    mockObject1 = Sha1Model()
+    mockObject2 = Sha1Model()
 
     yield reset(dut)
     
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
-    mockObject.processBuffer()
-    yield load_data(dut, log, mockObject, 5)
-    yield load_data(dut, log, mockObject, 16)
-    mockObject.processInput()
-    mockObject.processBuffer()
-    yield load_data(dut, log, mockObject, 85)
+    yield load_data(dut, log, mockObject1, 16)
+    mockObject1.processInput()
+    mockObject1.processBuffer()
+    yield load_data(dut, log, mockObject2, 16)
+    mockObject2.processInput()
+    mockObject2.processBuffer()
+    yield load_data(None, log, mockObject1, 85)
+    yield load_data(None, log, mockObject2, 85)
     
-    mockOut = "{:08x}".format(mockObject.H0)
+    yield load_data(dut, log, None, 85)
+    
+    mock1 = "{:08x}".format(mockObject1.H0)
     compare1 = convert_hex(dut.pbuffer1.test_word_4.value).rjust(8, '0')
     
-    if compare1 != mockOut:
+    mock2 = "{:08x}".format(mockObject2.H0)
+    compare2 = convert_hex(dut.pbuffer2.test_word_4.value).rjust(8, '0')
+    
+
+    if compare1 != mock1:
         raise TestFailure(
-            "Second buffer incorrect: {0} != {1}".format(compare1, mockOut))
+            "Second buffer1 incorrect: {0} != {1}".format(compare1, mock1))
+    elif compare2 != mock2:
+        raise TestFailure(
+            "Second buffer2 incorrect: {0} != {1}".format(compare2, mock2))
     else:
         log.info("Second buffer ok!") 
+        
+        
+@cocotb.test()
+def H_continuous_buffer_test(dut):
+    """Loop message buffer several times"""
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+
+    yield reset(dut)
+    
+    i = 6
+    while i >= 0:
+        mockObject = Sha1Model()
+        #
+    
+        yield load_data(dut, log, mockObject, 16)
+        mockObject.processInput()
+        mockObject.processBuffer()
+    
+        yield load_data(None, log, mockObject, 85)
+    
+        yield load_data(dut, log, None, 85)
+    
+        mockOut = "{:08x}".format(mockObject.H0)
+        compare1 = convert_hex(dut.test_sha1_process_buffer_o.value).rjust(8, '0')
+        print mockOut + " - " + compare1
+        
+        i = i - 1
+    
+
+    if mockOut != compare1:
+        raise TestFailure(
+            "Continuous buffer incorrect: {0} != {1}".format(compare1, mockOut))
+    else:
+        log.info("Continuous buffer ok!") 
         
 def convert_hex(input):
     input = str(input)
