@@ -15,6 +15,7 @@ port(
     dat_2_o                     : out    std_ulogic_vector(0 to 31);
     dat_3_o                     : out    std_ulogic_vector(0 to 31);
     test_sha1_process_input_o   : out    std_ulogic_vector(0 to 31);
+    test_sha1_process_buffer0_o   : out    std_ulogic_vector(0 to 31);
     test_sha1_process_buffer_o   : out    std_ulogic_vector(0 to 31);
     test_sha1_load_o            : out    std_ulogic_vector(0 to 31)
     
@@ -56,21 +57,28 @@ architecture RTL of sha1_scheduler is
     signal w_load: w_input;
     
     signal w_processed_input1: w_full;
-    signal w_processed_valid1: std_ulogic;
-    
     signal w_processed_input2: w_full;
-    signal w_processed_valid2: std_ulogic;
+    signal w_processed_input3: w_full;
+    signal w_processed_input4: w_full;
+    signal w_processed_input5: w_full;
     
     signal w_processed_new: std_ulogic;
     
     signal w_processed_buffer: w_output;
     signal w_processed_buffer1: w_output;
     signal w_processed_buffer2: w_output;
+    signal w_processed_buffer3: w_output;
+    signal w_processed_buffer4: w_output;
+    signal w_processed_buffer5: w_output;
     
     signal w_buffer_valid1: std_ulogic;
     signal w_buffer_valid2: std_ulogic;
+    signal w_buffer_valid3: std_ulogic;
+    signal w_buffer_valid4: std_ulogic;
+    signal w_buffer_valid5: std_ulogic;
     signal w_pinput: w_input;
     signal latch_pinput: std_ulogic_vector(0 to 4);
+    signal w_processed_valid: std_ulogic_vector(0 to 4);
     signal i : integer range 0 to 16;
     
     signal i_mux : integer range 0 to 4;
@@ -78,10 +86,21 @@ architecture RTL of sha1_scheduler is
 begin
 
     LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
-    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid1);
-    PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid1,w_processed_valid1,w_processed_buffer1,w_buffer_valid1);
-    PINPUT2: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(1),w_processed_input2,w_processed_valid2);
-    PBUFFER2: sha1_process_buffer port map (clk_i,rst_i,w_processed_input2,w_processed_valid2,w_processed_valid2,w_processed_buffer2,w_buffer_valid2);
+    
+    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
+    PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    
+    PINPUT2: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(1),w_processed_input2,w_processed_valid(1));
+    PBUFFER2: sha1_process_buffer port map (clk_i,rst_i,w_processed_input2,w_processed_valid(1),w_processed_valid(1),w_processed_buffer2,w_buffer_valid2);
+    
+    PINPUT3: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(2),w_processed_input3,w_processed_valid(2));
+    PBUFFER3: sha1_process_buffer port map (clk_i,rst_i,w_processed_input3,w_processed_valid(2),w_processed_valid(2),w_processed_buffer3,w_buffer_valid3);
+    
+    PINPUT4: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(3),w_processed_input4,w_processed_valid(3));
+    PBUFFER4: sha1_process_buffer port map (clk_i,rst_i,w_processed_input4,w_processed_valid(3),w_processed_valid(3),w_processed_buffer4,w_buffer_valid4);
+    
+    PINPUT5: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(4),w_processed_input5,w_processed_valid(4));
+    PBUFFER5: sha1_process_buffer port map (clk_i,rst_i,w_processed_input5,w_processed_valid(4),w_processed_valid(4),w_processed_buffer5,w_buffer_valid5);
     
     process(clk_i)   
     begin
@@ -117,17 +136,24 @@ begin
                 end if;
             end if;
             --Todo: fix this for multi-cycle SHA1 inputs
-            if w_processed_valid1 = '1' then
-                w_processed_new <= '1';
-            else
-                w_processed_new <= '0';
+            if w_processed_valid(0) = '1' then
+                w_processed_buffer <= w_processed_buffer1;
+            elsif w_processed_valid(1) = '1' then
+                w_processed_buffer <= w_processed_buffer2;
+            elsif w_processed_valid(2) = '1' then
+                w_processed_buffer <= w_processed_buffer3;
+            elsif w_processed_valid(3) = '1' then
+                w_processed_buffer <= w_processed_buffer4;
+            elsif w_processed_valid(4) = '1' then
+                w_processed_buffer <= w_processed_buffer5;
             end if;
         end if;
     end process;
     
     dat_1_o <= w_pinput(15);
     test_sha1_process_input_o <= w_processed_input1(16);
-    test_sha1_process_buffer_o <= w_processed_buffer1(0);
+    test_sha1_process_buffer0_o <= w_processed_buffer1(0);
+    test_sha1_process_buffer_o <= w_processed_buffer(0);
     test_sha1_load_o <= w_load(15);
 
 end RTL; 

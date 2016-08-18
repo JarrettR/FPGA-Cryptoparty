@@ -119,14 +119,14 @@ def Z_wavedrom_test(dut):
             dut.dat_i,
             dut.i,
             dut.i_mux,
-            dut.pinput1.i,
-            dut.pinput1.load_i,
-            dut.pinput1.test_word_1,
-            dut.pinput1.test_word_2,
-            dut.pinput1.test_word_3,
-            dut.pinput1.test_word_4,
-            dut.pinput1.test_word_5,
-            dut.pinput1.valid_o,
+            # dut.pinput1.i,
+            # dut.pinput1.load_i,
+            # dut.pinput1.test_word_1,
+            # dut.pinput1.test_word_2,
+            # dut.pinput1.test_word_3,
+            # dut.pinput1.test_word_4,
+            # dut.pinput1.test_word_5,
+            # dut.pinput1.valid_o,
             dut.pbuffer1.i,
             dut.pbuffer1.rst_i,
             dut.pbuffer1.load_i,
@@ -146,7 +146,17 @@ def Z_wavedrom_test(dut):
             dut.pbuffer2.test_word_3,
             dut.pbuffer2.test_word_4,
             dut.pbuffer2.test_word_5,
-            dut.pbuffer2.valid_o
+            dut.pbuffer2.valid_o,
+            dut.pbuffer3.i,
+            dut.pbuffer3.rst_i,
+            dut.pbuffer3.load_i,
+            dut.pbuffer3.new_i,
+            dut.pbuffer3.test_word_1,
+            dut.pbuffer3.test_word_2,
+            dut.pbuffer3.test_word_3,
+            dut.pbuffer3.test_word_4,
+            dut.pbuffer3.test_word_5,
+            dut.pbuffer3.valid_o
             ]
 
     with cocotb.wavedrom.trace(*args, clk=dut.clk_i) as waves:
@@ -330,8 +340,10 @@ def H_continuous_buffer_test(dut):
 
     yield reset(dut)
     
-    i = 6
-    while i >= 0:
+    iterations = 30
+    mockW = [0] * iterations
+    compareW = [0] * iterations
+    for i in xrange(iterations):
         mockObject = Sha1Model()
         #
     
@@ -339,20 +351,27 @@ def H_continuous_buffer_test(dut):
         mockObject.processInput()
         mockObject.processBuffer()
     
-        yield load_data(None, log, mockObject, 85)
+        #yield load_data(dut, log, mockObject, 73)
     
-        yield load_data(dut, log, None, 85)
+        #yield load_data(dut, log, None, 85)
     
         mockOut = "{:08x}".format(mockObject.H0)
+        compare0 = convert_hex(dut.test_sha1_process_buffer0_o.value).rjust(8, '0')
         compare1 = convert_hex(dut.test_sha1_process_buffer_o.value).rjust(8, '0')
-        print mockOut + " - " + compare1
+        #print mockOut + " - " + compare0 + " - " + compare1 + " - " + str(dut.w_processed_valid.value)
         
-        i = i - 1
+        mockW[i] = mockOut
+        if i >= 11:
+            compareW[i - 11] = compare1
+        
+    #print str(mockW[0:-11]).strip('[]')
+    #print str(compareW[0:-11]).strip('[]')
+       
     
 
-    if mockOut != compare1:
+    if mockW[0:-11] != compareW[0:-11]:
         raise TestFailure(
-            "Continuous buffer incorrect: {0} != {1}".format(compare1, mockOut))
+            "Continuous buffer incorrect: {0} != {1}".format(str(mockW[0:-11]).strip('[]'), str(compareW[0:-11]).strip('[]')))
     else:
         log.info("Continuous buffer ok!") 
         
