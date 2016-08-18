@@ -9,4 +9,4 @@
 	url = https://github.com/jrfonseca/gprof2dot
 [submodule "tools/wavedrom"]
 	path = tools/wavedrom
-	url = git@github.com:drom/wavedrom.git
+	url = https://github.com/drom/wavedrom.git
