@@ -87,6 +87,7 @@ begin
 
     LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
     
+    --Alt: Use a generate statement
     PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
     PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
     
@@ -135,7 +136,7 @@ begin
                     i <= i + 1;
                 end if;
             end if;
-            --Todo: fix this for multi-cycle SHA1 inputs
+            --Alt: Consider other conditionals
             if w_processed_valid(0) = '1' then
                 w_processed_buffer <= w_processed_buffer1;
             elsif w_processed_valid(1) = '1' then

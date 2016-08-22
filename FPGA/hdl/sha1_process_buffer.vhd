@@ -91,13 +91,7 @@ begin
                         h2 <= h2i;
                         h3 <= h3i;
                         h4 <= h4i;
-                        
-                        -- a <= unsigned(h0i);
-                        -- b <= unsigned(h1i);
-                        -- c <= unsigned(h2i);
-                        -- d <= unsigned(h3i);
-                        -- e <= unsigned(h4i);
-                        
+
                         a <=  unsigned((h1i and h2i) or ((not h1i) and h3i)) +
                             rotate_left(unsigned(h0i), 5) +
                             unsigned(h4i) +
@@ -107,34 +101,22 @@ begin
                         c <= rotate_left(unsigned(h1i), 30);
                         d <= unsigned(h2i);
                         e <= unsigned(h3i);
-                        
-                    --elsif i = 0 and new_i = '0' then
-                    --    h0 <= std_ulogic_vector(unsigned(h0) + unsigned(a));
-                    --    h1 <= std_ulogic_vector(unsigned(h1) + unsigned(b));
-                    --    h2 <= std_ulogic_vector(unsigned(h2) + unsigned(c));
-                    --    h3 <= std_ulogic_vector(unsigned(h3) + unsigned(d));
-                    --    h4 <= std_ulogic_vector(unsigned(h4) + unsigned(e));
+
                     end if;
                     
-                    --for x in 0 to 79 loop
-                    --    w(x) <= w_hold(x);
-                    --end loop;
+
                     i <= 0;
-                    --valid_o <= '0';
-                    --running <= '1';
                 else
                     --TEMP = S^5(A) + f(t;B,C,D) + E + W(t) + K(t);
                     --Alt: gotta be better way!
                     case i is
                        --f(t;B,C,D) = (B AND C) OR ((NOT B) AND D)
-                        --when 0 => a <= "00000000000000000000000000000000";
                         when 0 to 18 => a <= unsigned((b_con and c_con) or ((not b_con) and d_con)) +
                                             rotate_left(unsigned(a_con), 5) +
                                             unsigned(e_con) +
                                             unsigned(w(i + 1)) +
                                             unsigned(k0);                                            
                         --f(t;B,C,D) = B XOR C XOR D
-                        --when 20 => a <= "00000000000000000000000000000000";
                         when 19 to 38 => a <= unsigned(b_con xor c_con xor d_con) +
                                             rotate_left(unsigned(a_con), 5) +
                                             unsigned(e_con) +
@@ -163,7 +145,6 @@ begin
                     d <= unsigned(c_con);
                     c <= rotate_left(unsigned(b_con), 30);
                     b <= unsigned(a_con);
-                    --a <= temp;
                     
                     i <= i + 1;
                 end if;
@@ -172,11 +153,6 @@ begin
                     --i <= 0;
                     --Todo: AND 'running' signal with i = 79 to stop incorrect 'valid_o' outputs
                     valid_o <= '1';
-                    --h0 <= std_ulogic_vector(unsigned(h0) + unsigned(b xor c xor d));
-                    --h1 <= std_ulogic_vector(unsigned(h1) + unsigned(a_con));
-                    --h2 <= std_ulogic_vector(unsigned(h2) + unsigned(b_con));
-                    --h3 <= std_ulogic_vector(unsigned(h3) + unsigned(c_con));
-                    --h4 <= std_ulogic_vector(unsigned(h4) + unsigned(d_con));
                     h0out <= unsigned(h0) + a;
                     h1out <= unsigned(h1) + b;
                     h2out <= unsigned(h2) + c;

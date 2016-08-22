@@ -37,6 +37,7 @@ begin
     end process;
     dat_w_o <= w_temp;
     
+    --Alt: Use a generate statement
     w_temp(0) <= dat_i;
     w_temp(1) <= w(1);
     w_temp(2) <= w(2);

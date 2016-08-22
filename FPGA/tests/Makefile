@@ -52,14 +52,20 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_load.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_process_input.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_process_buffer.vhd
-    VHDL_SOURCES += $(WPWD)/../hdl/hmac_cache.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_scheduler.vhd
-    TOPLEVEL = sha1_scheduler
+    VHDL_SOURCES += $(WPWD)/../hdl/hmac_cache.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/hmac_main.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/hmac_scheduler.vhd
+    #For testing SHA1:
+    #TOPLEVEL = sha1_scheduler
+    TOPLEVEL = hmac_scheduler
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
 
-MODULE=test_sha1
+#For testing SHA1:
+#MODULE=test_sha1
+MODULE=test_hmac
 
 CUSTOM_COMPILE_DEPS = hal
 
