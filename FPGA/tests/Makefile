@@ -28,7 +28,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-# Fuck verilog
+# The most powerful language in the world is VHDL - Because it's what I know
 TOPLEVEL_LANG ?= vhdl
 
 SIM ?= ghdl
