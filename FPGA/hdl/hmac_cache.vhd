@@ -12,8 +12,7 @@ port(
     load_i          : in    std_ulogic;
     dat_bi_o        : out    w_input;
     dat_bo_o        : out    w_input;
-    valid_o         : out    std_ulogic
-    
+    valid_o         : out    std_ulogic  
     );
 end hmac_cache;
 
@@ -28,18 +27,14 @@ begin
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                for x in 0 to 15 loop
-                    bi(x) <= X"36363636";
-                    bo(x) <= X"5c5c5c5c";
-                end loop;
                 i <= 0;
+                valid_o <= '0';
             else
                 if load_i = '1' then
                     bi(i) <= X"36363636" xor secret_i;
                     bo(i) <= X"5c5c5c5c" xor secret_i;
                 end if;
                 if i = 15 then
-                    i <= 0;
                     valid_o <= '1';
                  else
                     i <= i + 1;
