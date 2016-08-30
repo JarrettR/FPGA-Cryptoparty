@@ -1,0 +1,7 @@
+Quick START guide for FX3 developers
+------------------------------------
+
+1. Install Cypress FX3 SDK somewhere
+2. Install ZTEX SDK (just unpack it) somewhere 
+3. Edit Makefile.conf and make sure that variables point to Cypress 
+   FX3 SDK directory

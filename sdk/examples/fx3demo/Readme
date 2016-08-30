@@ -1,0 +1,8 @@
+fx3demo
+-------
+
+This example demonstrates common FX3 functions and the usage of the SDK. 
+
+It should run on every FX3 based hardware but overwriting firmware in 
+RAM only works if either no firmware is installed or another firmware
+with FX3 reset support (e.g. default firmwares) is running.

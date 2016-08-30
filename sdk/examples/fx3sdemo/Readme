@@ -1,0 +1,11 @@
+fx3sdemo
+--------
+
+This example demonstrates usage of the SD card. 
+
+It should run on every FX3S based hardware but overwriting firmware in 
+RAM only works if either no firmware is installed or another firmware
+with FX3 reset support (e.g. default firmwares) is running.
+
+SD card can be accessed through as secondary Flash using the API. 
+Performance can be tested using the ../flashbench example.

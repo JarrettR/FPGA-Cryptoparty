@@ -1,0 +1,18 @@
+mmio
+----
+
+This example runs only un USB-FPGA Modules 2.16. It demonstrates
+memory mapped I/O between the EZ-USB FX2 and the FPGA.
+
+The firmware (defined in mmio-*.c) declares Endpoint 2 and Endpoint 4
+(both 512 bytes, double buffered, bulk transfer, belong to interface 0).
+All data that is written to Endpoint 4 is converted to uppercase by
+the FPGA and can be read back from Endpoint 2.
+
+The uppercase - lowercase conversion is made by the FPGA through memory
+mapped I/O: The EZ-USB FX2 writes the data to address 0x5001 and reads
+the converted data back from 0x5002.
+
+The driver (defined in MMIO.java) uploads the the Firmware to the EZ-USB
+Microcontroller and the Bitstream to the FPGA, sends user string to the
+device and reads them back.

@@ -1,0 +1,105 @@
+#!/bin/bash
+#
+# makecopyright - put a copyright info into source files
+# Copyright (C) 2009-2016 ZTEX GmbH., http://www.ztex.de
+#
+
+# writes the copyright info to stdout
+# $1    short description
+# $2    begin of comment
+# $3    end of comment
+msg () {
+echo "$2
+   $1
+   Copyright (C) 2009-2016 ZTEX GmbH.
+   http://www.ztex.de
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 3 as
+   published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see http://www.gnu.org/licenses/.
+$3"
+}
+
+readonly=no
+
+# copyright info for single file
+# $1    file
+# $2    short description
+# $3    begin of comment
+# $4    end of comment
+singlefile () {
+#    if [ ! -f "$1" -o -f "$1.tmp" ]; then
+    if [ ! -f "$1" ]; then
+	return
+    fi
+    echo "$1"
+    if [ "$readonly" = "no" ]; then
+	mv "$1" "$1.tmp"
+	(
+	    msg "$2" "$3" "$4"
+	    echo "@@@define[$3][$4
+][]" | bmp -mm "@@@" - "$1.tmp"
+	) > "$1"
+	rm -f "$1.tmp"
+    fi
+    echo "$1" >> files.tmp
+}
+
+
+# copyright info for single directory
+# $1    dir(s)
+# $2    description
+singledir () {
+    if [ ! -d $1 ]; then
+	echo "Directory not found: $1"
+    fi
+    for i in $1/*.pas $1/*.inc; do
+	singlefile "$i" "$2" "{*!" "!*}"
+    done
+    for i in $1/*.c $1/*.h $1/*.java $1/fpga*/*.v; do
+	singlefile "$i" "$2" "/*!" "!*/"
+    done
+}
+
+rm -f files.tmp
+
+singledir bmp/src "bmp -- babel macro processor"
+
+singledir default "Common communication interface of default firmwares"
+singledir default/DefaultUpdater "Utility for automatic updating default firmware"
+singledir default/usb-fpga-1.15 "Default firmware and loader for ZTEX USB-FPGA Modules 1.15"
+singledir default/usb-fpga-1.15y "Default firmware and loader for ZTEX USB-FPGA Modules 1.15y"
+singledir default/usb-fpga-2.01 "Default firmware and loader for ZTEX USB-FPGA Modules 2.13"
+singledir default/usb-fpga-2.04 "Default firmware and loader for ZTEX USB-FPGA Modules 2.14"
+singledir default/usb-fpga-2.13 "Default firmware and loader for ZTEX USB-FPGA Modules 2.13"
+singledir default/usb-fpga-2.14 "Default firmware and loader for ZTEX USB-FPGA Modules 2.14"
+singledir default/usb-fpga-2.16 "Default firmware and loader for ZTEX USB-FPGA Modules 2.16"
+
+singledir examples/flashbench "flashbench -- Flash memory benchmark"
+singledir examples/fx3demo "fx2demo -- Demonstrates common features of the FX2"
+singledir examples/fx3demo "fx3demo -- Demonstrates common features of the FX3"
+singledir examples/fx3demo "fx3sdemo -- Demonstrates common features of the FX3S"
+singledir examples/lightshow "lightshow -- A lightshow on Debug Board"
+singledir examples/memfifo "memfifo -- Connects the bi-directional high speed interface of default firmware to a FIFO built of on-board SDRAM or on-chip BRAM"
+singledir examples/mmio "mmio -- Memory mapped I/O example for ZTEX USB-FPGA Module 2.16"
+singledir examples/ucecho "ucecho -- Uppercase conversion example using the low speed interface of default firmware"
+
+singledir fx2 "ZTEX Firmware Kit for EZ-USB FX2 Microcontrollers"
+
+singledir fx3 "ZTEX Firmware Kit for EZ-USB FX3 Microcontrollers"
+
+singledir java/ztex "Java host software API of ZTEX SDK"
+singledir java/FWLoader "Firmware / Bitstream loader for ZTEX USB-FPGA Modules"
+singledir java/DeviceServer "DeviceServer for the ZTEX USB-FPGA Modules"
+
+#files=`cat files.tmp`
+#wc $files
+rm -f files.tmp

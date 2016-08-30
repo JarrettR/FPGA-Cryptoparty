@@ -1,0 +1,22 @@
+ZTEX EZ-USB SDK
+---------------
+
+A SDK for EZ-USB FX2 and FX3 micro controllers which is developed for
+ZTEX FPGA Boards but also runs on other EZ-USB based hardware. 
+
+It covers
+
+  * Host Side: Utilities, Java API (usage not required)
+  * EZ-USB controller: Firmware development Kits for FX2 and FX3
+  * FPGA: Communication cores 
+
+and contains many examples.
+
+For documentation and more information please visit
+
+http://www.ztex.de/firmware-kit/
+
+and
+
+http://wiki.ztex.de .
+

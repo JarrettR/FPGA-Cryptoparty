@@ -1,0 +1,14 @@
+This directory contains default firmwares (sub-directories `usb-fpga-*')
+and Verilog modules for the default interface.
+
+There are three modules for FX3 (directory `fpga-fx3') and FX2 (
+directory `fpga-fx2') based FPGA Boards:
+
+ezusb_gpio.v	4 bi-directional GPIO's
+ezusb_lsi.v 	low speed communication using an SRAM-like interface
+ezusb_io.v	bi-directional high speed communication using GPIF II / 
+		Slave FIFO interface of the EZ-USB
+		
+The default interface also contains a reset signal which is not 
+implemented as a separate module.
+		

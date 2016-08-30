@@ -1,0 +1,22 @@
+fx2demo
+-------
+
+This example should run on all EZ-USB FX2 based devices. It implements 
+simple USB input(output and demonstrates the usage of the debug helper.
+
+The firmware (defined in fx2demo.c) declares Endpoint 2 and Endpoint 4
+(both 512 bytes, double buffered, bulk transfer, belong to interface 0).
+All data that is written to Endpoint 4 is converted to uppercase and can
+be read back from Endpoint 2.
+
+The driver (defined in Fx2Demo.java) uploads the the Firmware 
+(fx2demo.ihx) to the EZ-USB Microcontroller if necessary, sends user 
+string to the device and reads them back.
+
+The amount of transferred and converted characters are written to the
+debug  stack and printed out by the host software. See Readme.Debug for
+more information.
+
+Uploading the Firmware to EEPROM is also supported by the firmware (e.g. 
+using the FWLoader utility).
+

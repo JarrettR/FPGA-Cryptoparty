@@ -1,0 +1,63 @@
+memfifo
+-------
+This example demonstrates:
+
+* High speed EZ-USB -> FPGA transfers using the default firmware 
+  interface
+* High speed FPGA -> EZ-USB transfers using the default firmware 
+  interface
+* Usage of memory (type depends on FPGA Board, see below)
+
+The following FPGA Board / memory types are supported:
+
+FPGA Board	        memory type
+------------------------------------------------------------------------
+USB-FPGA Module 2.14	DDR3 SDRAM
+
+All memory is used to build a large FIFO. Input of this FIFO is either 
+USB or a test pattern generator with variable data rate. Output of the
+FIFO is written to USB.
+
+For the communication with the host the default firmware interface is
+used, i.e. no special firmware is required.
+
+The host software writes the data, reads it back and verifies it.
+Several tests are performed in order to test flow control, data rates,
+etc.
+
+The modules are re-usable for many other projects. The example is a good
+starting point for many different applications.
+
+Data source source is selected by the GPIO pins the the default firmware
+interface:
+
+GPIO 1:0  Source 
+------------------------------------------------------------------------
+0:0       USB Endpoint 6 (EZ-USB Slave FIFO interface)
+0:1       48 MByte/s test pattern generator
+1:0	  12 MByte/s test pattern generator
+1:1	  For debugging: Dummy reads form USB + Test pattern generator 
+
+The HDL sources contain 4 modules:
+
+1a. dram_fifo.v: Implements a huge FIFO from on-board SDRAM.
+1b. bram_fifo.v: Implements a smaller FIFO from on-chip BRAM.
+2a. ../../default/fpga-fx3/ezusb_io.v: Implements the high speed 
+    interface on FX3 based FPGA Boards
+2b. ../../default/fpga-fx2/ezusb_io.v: Implements the high speed 
+    interface on FX2 based FPGA Boards
+3a. ../../default/fpga-fx3/ezusb_gpio.v: Implements GPIO's for mode
+    selection on FX3 based FPGA Boards
+3b. ../../default/fpga-fx2/ezusb_gpio.v: Implements GPIO's for mode
+    selection FX2 based FPGA Boards
+4. memfifo.c: The top level module glues everything together.
+
+Debug Board (not required)
+--------------------------
+LED1: Debug/status output, see SW10
+LED2-3: Fill level of the DRAM FIFO
+SW10 on: status signals from dram_fifo module
+     off:status signals from top level module
+
+For more documentations for this example please read
+Also read http://wiki.ztex.de/doku.php?id=en:ztex_boards:ztex_fpga_boards:memfifo:memfifo

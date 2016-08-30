@@ -1,0 +1,13 @@
+# fxclk_in
+NET "fxclk_in" TNM_NET = "fxclk_in";
+TIMESPEC "ts_fxclk_in" = PERIOD "fxclk_in" 48 MHz HIGH 50 %;
+NET "fxclk_in"  LOC = "J16" | IOSTANDARD = LVCMOS33 ;
+
+# reset_in
+NET "reset_in"	LOC = "R3" | IOSTANDARD = LVCMOS33 ;		# PA7/FLAGD/SLCS#
+
+# LSI signals
+NET "lsi_miso"	LOC = "P5" | IOSTANDARD = LVCMOS33 ;		# PC4/GPIFADR4
+NET "lsi_mosi"	LOC = "L8" | IOSTANDARD = LVCMOS33 ;		# PC5/GPIFADR5
+NET "lsi_clk"	LOC = "L7" | IOSTANDARD = LVCMOS33 ;		# PC6/GPIFADR6
+NET "lsi_stop"	LOC = "R5" | IOSTANDARD = LVCMOS33 ;		# PC7/GPIFADR7

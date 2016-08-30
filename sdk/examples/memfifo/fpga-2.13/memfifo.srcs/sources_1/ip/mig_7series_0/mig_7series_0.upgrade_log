@@ -1,0 +1,50 @@
+Copyright 1986-2014 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2014.4 (lin32) Build 1071353 Tue Nov 18 16:37:30 MST 2014
+| Date         : Tue Mar  1 21:38:03 2016
+| Host         : ws2 running 32-bit Debian GNU/Linux 6.0.9 (squeeze)
+| Command      : upgrade_ip
+| Device       : xc7a100tcsg324-2
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'mig_7series_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of mig_7series_0 from xilinx.com:ip:mig_7series:2.1 to xilinx.com:ip:mig_7series:2.3
+
+2. Warnings
+-----------
+
+ERROR: IP Component directory path (/drv_s2/xilinx/Vivado/2014.4/data/ip/xilinx/mig_7series_v2_2) mentioned is not valid. Please provide valid IP Dir path
+
+
+3. Upgrade messages
+-------------------
+
+Failed to execute command 'namespace eval ::ipgen_mig_7series_v2_3_utils {::xcoUpgradeLib::upgradeXCI mig_7series_v2_1 mig_7series_v2_3 ::ipgen_mig_7series_v2_3_utils ::xcoUpgradeLib::xciArray}' :
+	child killed: segmentation violation
+
+
+
+
+
+
+
+Copyright 1986-2014 Xilinx, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------
+| Tool Version : Vivado v.2014.2 (lin32) Build 932637 Wed Jun 11 13:08:21 MDT 2014
+| Date         : Tue Jul  8 19:52:31 2014
+| Host         : ws2 running 32-bit Debian GNU/Linux 6.0.9 (squeeze)
+| Command      : upgrade_ip
+| Device       : xc7a100tcsg324-2
+-----------------------------------------------------------------------------------
+
+Upgrade Log for IP 'mig_7series_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of mig_7series_0 from xilinx.com:ip:mig_7series:2.0 (Rev. 1) to xilinx.com:ip:mig_7series:2.1
+

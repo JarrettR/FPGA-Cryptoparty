@@ -1,0 +1,11 @@
+C host software for fx2demo example
+-----------------------------------
+
+This example demonstrates how EZ-USB devices can be accessed using C and
+the libusb library.
+
+The example works with all fx2demo example. User strings are send via
+Endpoint 4 to the device, converted uppercase and are read back via
+Endpoint 2.
+
+See Readme's of the certain fx2demo examples for further details.

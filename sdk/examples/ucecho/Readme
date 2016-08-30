@@ -1,0 +1,13 @@
+ucecho
+------
+
+This example demonstrates the usage of the low speed interface of
+default firmware (i.e. it runs with default firmware).
+
+The core of the low speed interface can be found in 
+../../default/fpga-fx3/ezusb_io.v (for FX3) and 
+../../default/fpga-fx2/ezusb_io.v (for FX2), respectively.
+It has an SRAM like port with a 8 bit address and 32 bit data width.
+
+The host software writes data to this interface, the FPGA converts it to
+uppercase and stores it such that it can be read back from the host.
