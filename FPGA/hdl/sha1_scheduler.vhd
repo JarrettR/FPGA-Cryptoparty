@@ -31,11 +31,7 @@ port(
     sot_in                      : in    std_ulogic;
     dat_1_o                     : out    std_ulogic_vector(0 to 31);
     dat_2_o                     : out    std_ulogic_vector(0 to 31);
-    dat_3_o                     : out    std_ulogic_vector(0 to 31);
-    test_sha1_process_input_o   : out    std_ulogic_vector(0 to 31);
-    test_sha1_process_buffer0_o   : out    std_ulogic_vector(0 to 31);
-    test_sha1_process_buffer_o   : out    std_ulogic_vector(0 to 31);
-    test_sha1_load_o            : out    std_ulogic_vector(0 to 31)
+    dat_3_o                     : out    std_ulogic_vector(0 to 31)
     
     );
 end sha1_scheduler;
@@ -100,6 +96,13 @@ architecture RTL of sha1_scheduler is
     signal i : integer range 0 to 16;
     
     signal i_mux : integer range 0 to 4;
+    
+    -- synthesis translate_off
+    signal test_sha1_process_input_o     : std_ulogic_vector(0 to 31);
+    signal test_sha1_process_buffer0_o   : std_ulogic_vector(0 to 31);
+    signal test_sha1_process_buffer_o    : std_ulogic_vector(0 to 31);
+    signal test_sha1_load_o              : std_ulogic_vector(0 to 31);
+    -- synthesis translate_on
 
 begin
 
@@ -170,9 +173,12 @@ begin
     end process;
     
     dat_1_o <= w_pinput(15);
+    
+    -- synthesis translate_off
     test_sha1_process_input_o <= w_processed_input1(16);
     test_sha1_process_buffer0_o <= w_processed_buffer1(0);
     test_sha1_process_buffer_o <= w_processed_buffer(0);
     test_sha1_load_o <= w_load(15);
+    -- synthesis translate_on
 
 end RTL; 

@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ################################################################################
-#  Top level regresssion tests for HMAC portion - Modify Makefile appropriately 
+#                                test_hmac.py 
+#    Top level regresssion tests for HMAC algo - Modify Makefile to run 
 #    Copyright (C) 2016  Jarrett Rainier
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -27,22 +28,38 @@ from cocotb.wavedrom import Wavedrom
 import random
 from shutil import copyfile
 from python_sha1 import Sha1Model, Sha1Driver
+from python_hmac import HmacModel, HmacDriver
 
 _debug = False
 
 @cocotb.coroutine
-def load_data(dut, log, mockObject, words):
-    for i in range(words):
-        #input = 0xffffffff
-        input = random.randint(0, 0xffffffff)
-        if mockObject != None:
-            mockObject.addWord(input)
-        if dut != None:
-            dut.dat_i <= input
-            yield RisingEdge(dut.clk_i)
+def load_random_data(dut, log, mockObject, bytes):
+    secret = ''
+    value = ''
+    if dut != None:
+        dut.load_secret_i <= 1
+    
+    for i in range(bytes):
+        inputSecret = random.randint(ord('A'), ord('z'))
+        inputValue = random.randint(ord('A'), ord('z'))
+        secret = secret + chr(inputSecret)
+        value = value + chr(inputValue)
         if _debug == True:
             log.info(str(i) + " - {} - ".format(int(str(dut.pbuffer1.i), 2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_3)))
 
+    if mockObject != None:
+        mockObject.load(secret, value)
+        
+    if dut != None:
+        for i in range(bytes / 4):
+            dut.secret_i <= secret[(i * 4):((i * 4) + 3)]
+            yield RisingEdge(dut.clk_i)
+        if bytes % 4 > 0:
+            dut.secret_i <= secret[-1 * (bytes % 4):]
+            yield RisingEdge(dut.clk_i)
+        dut.load_secret_i <= 0
+        
+        
         
 @cocotb.coroutine
 def reset(dut):
@@ -53,32 +70,35 @@ def reset(dut):
     #log.info("Reset!")
 
 @cocotb.test()
-def A_load_data_test(dut):
+def A_cache_data_test(dut):
     """
-    Test for data properly shifted in
-    w(0) gets loaded in LAST
+    Tests that initial data cache
+    gets built and latched properly
     """
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
-    mockObject = Sha1Model()
+    mockSha1 = Sha1Model()
+    mockObject = HmacModel(mockSha1)
     
     yield reset(dut)
-    yield load_data(dut, log, mockObject, 16)
+    size = random.randint(8, 64)
+    print "Length: {:d}".format(size)
+    yield load_random_data(dut, log, mockObject, size)
 
     #mockObject.displayAll()
-    mockOut = "{:08x}".format(mockObject.W[15])
+    mockOut = "{}".format(mockObject.shaBo)
 
-    #print convert_hex(dut.dat_1_o) + " " + convert_hex(dut.dat_2_o) + " " + convert_hex(dut.dat_3_o) + " " + convert_hex(dut.dat_4_o) + " " + convert_hex(dut.dat_5_o)
+    print convert_hex(dut.test_word_1) + " " + convert_hex(dut.test_word_2) + " " + convert_hex(dut.test_word_3) + " " + convert_hex(dut.test_word_4) + " " + convert_hex(dut.test_word_5)
 
-    if convert_hex(dut.test_sha1_load_o).zfill(8) != mockOut:
+    if convert_hex(dut.test_word_1).zfill(8) != mockOut:
         raise TestFailure(
-            "Load data is incorrect: {0} != {1}".format(convert_hex(dut.test_sha1_load_o), mockOut))
+            "Load data is incorrect: {0} != {1}".format(convert_hex(dut.test_word_1), mockOut))
     else:
         log.info("Ok!")
 
         
-@cocotb.test()
+#@cocotb.test()
 def Z_wavedrom_test(dut):
     """
     Generate a JSON wavedrom diagram of a trace
@@ -86,10 +106,11 @@ def Z_wavedrom_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 100).start())
     
-    mockObject = Sha1Model()
-    shaObject = Sha1Driver(dut, None, dut.clk_i)
+    mockSha1 = Sha1Model()
+    mockObject = HmacModel(mockSha1)
+    shaObject = HmacDriver(dut, None, dut.clk_i)
     
-    #yield load_data(dut, log, mockObject, 80)
+    #yield load_random_data(dut, log, mockObject, 80)
     
     
     args = [
@@ -103,20 +124,20 @@ def Z_wavedrom_test(dut):
     
         yield RisingEdge(dut.clk_i)
         yield reset(dut)
-        yield load_data(dut, log, mockObject, 16)
+        yield load_random_data(dut, log, mockObject, 16)
         mockObject.processInput()
         mockObject.processBuffer()
         
         if _debug == True:
             log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
-        yield load_data(dut, log, mockObject, 60)
+        yield load_random_data(dut, log, mockObject, 60)
         
         
             
         if _debug == True:
             log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
             
-        yield load_data(dut, log, mockObject, 90)
+        yield load_random_data(dut, log, mockObject, 90)
         
         if _debug == True:
             log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))

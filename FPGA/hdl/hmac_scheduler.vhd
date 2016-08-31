@@ -35,6 +35,15 @@ port(
 end hmac_scheduler;
 
 architecture RTL of hmac_scheduler is
+    --Alt: This is totally the same as sha1_load and should be rolled together
+    component hmac_load
+        port(
+            clk_i          : in    std_ulogic;
+            rst_i          : in    std_ulogic;
+            dat_i          : in    std_ulogic_vector(0 to 31);
+            dat_w_o        : out    w_input
+            );
+    end component;
     component hmac_cache
         port(
             clk_i           : in    std_ulogic;
@@ -55,9 +64,20 @@ architecture RTL of hmac_scheduler is
     signal i : integer range 0 to 15;
     
     signal i_mux : integer range 0 to 4;
+    
+    
+    -- synthesis translate_off
+    signal test_word_1: std_ulogic_vector(0 to 31);
+    signal test_word_2: std_ulogic_vector(0 to 31);
+    signal test_word_3: std_ulogic_vector(0 to 31);
+    signal test_word_4: std_ulogic_vector(0 to 31);
+    signal test_word_5: std_ulogic_vector(0 to 31);
+    -- synthesis translate_on
 
 begin
 
+    --LOAD_BI_1: hmac_load port map (clk_i,rst_i,secret_i,load_secret_i,w_bi_1,w_bo_1,w_cached_valid);
+    
     CACHE1: hmac_cache port map (clk_i,rst_i,secret_i,load_secret_i,w_bi_1,w_bo_1,w_cached_valid);
     
     process(clk_i)   
@@ -65,7 +85,6 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 i <= 0;
-                --Todo: start from 0 after testing
                 i_mux <= 0;
                 for x in 0 to 15 loop
                     w_bi_temp(x) <= "00000000000000000000000000000000";
@@ -81,4 +100,13 @@ begin
         end if;
     end process;
 
+    -- synthesis translate_off
+    test_word_1 <= w_bi_1(0);
+    test_word_2 <= w_bi_1(1);
+    test_word_3 <= w_bi_1(13);
+    test_word_4 <= w_bi_1(14);
+    test_word_5 <= w_bi_1(15);
+    -- synthesis translate_on
+    
+    
 end RTL; 
