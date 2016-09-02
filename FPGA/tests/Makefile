@@ -54,18 +54,29 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_process_buffer.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/sha1_scheduler.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/hmac_cache.vhd
-    VHDL_SOURCES += $(WPWD)/../hdl/hmac_main.vhd
-    VHDL_SOURCES += $(WPWD)/../hdl/hmac_scheduler.vhd
+    #VHDL_SOURCES += $(WPWD)/../hdl/hmac_main.vhd
+    #VHDL_SOURCES += $(WPWD)/../hdl/hmac_scheduler.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/pbkdf2_input.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/wpa2_main.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/ztex_wrapper.vhd
     #For testing SHA1:
     #TOPLEVEL = sha1_scheduler
-    TOPLEVEL = hmac_scheduler
+    #For testing HMAC:
+    #TOPLEVEL = hmac_scheduler
+    #For testing whole ZTEX board:
+    TOPLEVEL = ztex_wrapper
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
 
 #For testing SHA1:
 #MODULE=test_sha1
-MODULE=test_hmac
+#For testing HMAC:
+#MODULE=test_hmac
+#For testing PBKDF2:
+#MODULE=test_hmac
+#For testing the whoooole thing:
+MODULE=test_ztex
 
 CUSTOM_COMPILE_DEPS = hal
 

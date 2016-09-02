@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
---  Temporary wrapper file for use with ZTEX 1.15y FPGA Bitcoin miners
+--                             ztex_wrapper.vhd
+--    Overall wrapper for use with ZTEX 1.15y FPGA Bitcoin miners
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -42,34 +43,15 @@ port(
 end ztex_wrapper;
 
 architecture RTL of ztex_wrapper is
-    component sha1_load
-      port (
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        dat_i          : in    std_ulogic_vector(0 to 31);
-        sot_in         : in    std_ulogic;
-        dat_w_o        : out    w_input
-    );
-    end component;
-    component sha1_process_input
-      port (
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        dat_i          : in    w_input;
-        load_i         : in    std_ulogic;
-        dat_w_o        : out    w_full;
-        valid_o        : out    std_ulogic
-    );
-    end component;
-    component sha1_process_buffer
-      port (
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        dat_i          : in    w_full;
-        load_i         : in    std_ulogic;
-        new_i          : in    std_ulogic;
-        dat_w_o        : out    w_output;
-        valid_o        : out    std_ulogic
+    component wpa2_main
+
+    port(
+        clk_i           : in    std_ulogic;
+        rst_i           : in    std_ulogic;
+        dat_i           : in    std_ulogic_vector(0 to 31);
+        valid_i         : in    std_ulogic;
+        dat_w_o         : out    w_input
+        
     );
     end component;
    
@@ -78,7 +60,7 @@ architecture RTL of ztex_wrapper is
 
 begin
 
-    LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
+    MAIN1: wpa2_main port map (clk_i,rst_i,dat_i,sot_in,w_load);
     
     process(fxclk_i)   
     begin

@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
---                               hmac_cache.vhd
---    Calculates and caches initial SHA1 H0-H5 vars for HMAC algorithm
+--                        wpa2_main.vhd
+--    Master file, starting PBKDF2 and cascading down
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -22,48 +22,58 @@ use ieee.std_logic_1164.all;
 use work.sha1_pkg.all;
 
 
-entity hmac_cache is
+entity wpa2_main is
 
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    secret_i        : in    std_ulogic_vector(0 to 31);
-    load_i          : in    std_ulogic;
-    dat_bi_o        : out    w_input;
-    dat_h_o         : out    w_output;
-    valid_o         : out    std_ulogic  
-    );
-end hmac_cache;
-
-architecture RTL of hmac_cache is
+    dat_i           : in    std_ulogic_vector(0 to 31);
+    valid_i         : in    std_ulogic;
+    dat_w_o         : out    w_input
     
-    signal bi: w_input;
-    signal bo: w_output;
-    signal i : integer range 0 to 15;
+    );
+end wpa2_main;
+
+architecture RTL of wpa2_main is
+    
+    signal w: w_input;
+    signal w_temp: w_input;
+    -- Max length of WPA2 will never go over two frames
+    signal i : integer range 0 to 127;
 
 begin
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                i <= 0;
-                valid_o <= '0';
+                for i in 0 to 15 loop
+                    w(i) <= "00000000000000000000000000000000";
+                end loop;
             else
-                if load_i = '1' then
-                    bi(i) <= X"36363636" xor secret_i;
-                    bo(i) <= X"5c5c5c5c" xor secret_i;
-                end if;
-                if i = 15 then
-                    valid_o <= '1';
-                 else
-                    i <= i + 1;
-                    valid_o <= '0';
-                end if;
+                for i in 1 to 15 loop
+                    w(i) <= w_temp(i - 1);
+                end loop;
             end if;
         end if;
     end process;
+    dat_w_o <= w_temp;
     
-    dat_bi_o <= bi;
-    dat_bo_o <= bo;
+    --Alt: Use a generate statement
+    w_temp(0) <= dat_i;
+    w_temp(1) <= w(1);
+    w_temp(2) <= w(2);
+    w_temp(3) <= w(3);
+    w_temp(4) <= w(4);
+    w_temp(5) <= w(5);
+    w_temp(6) <= w(6);
+    w_temp(7) <= w(7);
+    w_temp(8) <= w(8);
+    w_temp(9) <= w(9);
+    w_temp(10) <= w(10);
+    w_temp(11) <= w(11);
+    w_temp(12) <= w(12);
+    w_temp(13) <= w(13);
+    w_temp(14) <= w(14);
+    w_temp(15) <= w(15);
 
 end RTL; 
