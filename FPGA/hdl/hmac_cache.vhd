@@ -64,6 +64,5 @@ begin
     end process;
     
     dat_bi_o <= bi;
-    dat_bo_o <= bo;
 
 end RTL; 

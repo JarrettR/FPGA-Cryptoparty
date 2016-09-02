@@ -34,18 +34,17 @@ _debug = False
         
 @cocotb.coroutine
 def reset(dut):
-    dut.rst_i <= 1
-    yield RisingEdge(dut.clk_i)
-    dut.rst_i <= 0
+    dut.reset_i <= 1
+    yield RisingEdge(dut.fxclk_i)
+    dut.reset_i <= 0
 
 @cocotb.test()
-def A_cache_data_test(dut):
+def A_load_data_test(dut):
     """
-    Tests that initial data cache
-    gets built and latched properly
+    Tests that initial data loads properly
     """
     log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    cocotb.fork(Clock(dut.fxclk_i, 10000).start())
     
 
         
@@ -55,7 +54,7 @@ def Z_wavedrom_test(dut):
     Generate a JSON wavedrom diagram of a trace
     """
     log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 100).start())
+    cocotb.fork(Clock(dut.fxclk_i, 100).start())
 
 def convert_hex(input):
     input = str(input)

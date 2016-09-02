@@ -45,7 +45,7 @@ architecture RTL of pbkdf2_input is
         dat_h_o         : out    w_output;
         valid_o         : out    std_ulogic  
         );
-    end hmac_cache;
+    end component;
     component sha1_load
       port (
         clk_i          : in    std_ulogic;
