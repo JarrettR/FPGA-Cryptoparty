@@ -29,7 +29,8 @@ port(
     rst_i          : in    std_ulogic;
     dat_i          : in    w_full;
     load_i         : in    std_ulogic;
-    new_i         : in    std_ulogic;
+    new_i          : in    std_ulogic;
+    dat_w_i        : in    w_output;
     dat_w_o        : out    w_output;
     valid_o        : out    std_ulogic
     );
@@ -119,6 +120,22 @@ begin
                         c <= rotate_left(unsigned(h1i), 30);
                         d <= unsigned(h2i);
                         e <= unsigned(h3i);
+                    else
+                        h0 <= dat_w_i(0);
+                        h1 <= dat_w_i(1);
+                        h2 <= dat_w_i(2);
+                        h3 <= dat_w_i(3);
+                        h4 <= dat_w_i(4);
+
+                        a <=  unsigned((dat_w_i(1) and dat_w_i(2)) or ((not dat_w_i(1)) and dat_w_i(3))) +
+                            rotate_left(unsigned(dat_w_i(0)), 5) +
+                            unsigned(dat_w_i(4)) +
+                            unsigned(dat_i(0)) +
+                            unsigned(k0);  
+                        b <= unsigned(dat_w_i(0));
+                        c <= rotate_left(unsigned(dat_w_i(1)), 30);
+                        d <= unsigned(dat_w_i(2));
+                        e <= unsigned(dat_w_i(3));
 
                     end if;
                     

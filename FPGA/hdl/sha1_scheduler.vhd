@@ -63,6 +63,7 @@ architecture RTL of sha1_scheduler is
         dat_i          : in    w_full;
         load_i         : in    std_ulogic;
         new_i          : in    std_ulogic;
+        dat_w_i        : in    w_output;
         dat_w_o        : out    w_output;
         valid_o        : out    std_ulogic
     );
@@ -110,19 +111,19 @@ begin
     
     --Alt: Use a generate statement
     PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
-    PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_processed_buffer1,w_buffer_valid1);
     
     PINPUT2: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(1),w_processed_input2,w_processed_valid(1));
-    PBUFFER2: sha1_process_buffer port map (clk_i,rst_i,w_processed_input2,w_processed_valid(1),w_processed_valid(1),w_processed_buffer2,w_buffer_valid2);
+    PBUFFER2: sha1_process_buffer port map (clk_i,rst_i,w_processed_input2,w_processed_valid(1),w_processed_valid(1),w_processed_buffer2,w_processed_buffer2,w_buffer_valid2);
     
     PINPUT3: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(2),w_processed_input3,w_processed_valid(2));
-    PBUFFER3: sha1_process_buffer port map (clk_i,rst_i,w_processed_input3,w_processed_valid(2),w_processed_valid(2),w_processed_buffer3,w_buffer_valid3);
+    PBUFFER3: sha1_process_buffer port map (clk_i,rst_i,w_processed_input3,w_processed_valid(2),w_processed_valid(2),w_processed_buffer3,w_processed_buffer3,w_buffer_valid3);
     
     PINPUT4: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(3),w_processed_input4,w_processed_valid(3));
-    PBUFFER4: sha1_process_buffer port map (clk_i,rst_i,w_processed_input4,w_processed_valid(3),w_processed_valid(3),w_processed_buffer4,w_buffer_valid4);
+    PBUFFER4: sha1_process_buffer port map (clk_i,rst_i,w_processed_input4,w_processed_valid(3),w_processed_valid(3),w_processed_buffer4,w_processed_buffer4,w_buffer_valid4);
     
     PINPUT5: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(4),w_processed_input5,w_processed_valid(4));
-    PBUFFER5: sha1_process_buffer port map (clk_i,rst_i,w_processed_input5,w_processed_valid(4),w_processed_valid(4),w_processed_buffer5,w_buffer_valid5);
+    PBUFFER5: sha1_process_buffer port map (clk_i,rst_i,w_processed_input5,w_processed_valid(4),w_processed_valid(4),w_processed_buffer5,w_processed_buffer5,w_buffer_valid5);
     
     process(clk_i)   
     begin
