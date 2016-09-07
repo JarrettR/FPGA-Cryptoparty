@@ -31,7 +31,21 @@ from python_sha1 import Sha1Model, Sha1Driver
 from python_hmac import HmacModel, HmacDriver
 
 _debug = False
-        
+
+
+@cocotb.coroutine
+def load_data(dut, log, mockObject, words):
+    for i in range(words):
+        #input = 0xffffffff
+        input = random.randint(0, 0xff)
+        if mockObject != None:
+            mockObject.addByte(input)
+        if dut != None:
+            dut.read_i <= input
+            yield RisingEdge(dut.fxclk_i)
+        if _debug == True:
+            log.info(str(i) + " - {} - ".format(int(str(dut.pbuffer1.i), 2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_3)))
+
 @cocotb.coroutine
 def reset(dut):
     dut.reset_i <= 1
@@ -46,6 +60,10 @@ def A_load_data_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.fxclk_i, 10000).start())
     
+    mockSha1 = Sha1Model()
+    
+    yield reset(dut)
+    yield load_data(dut, log, mockSha1, 16)
 
         
 #@cocotb.test()

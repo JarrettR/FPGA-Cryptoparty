@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---  Scheduling code for running multiple HMAC-SHA1 calcs in parallel
+--  Scheduler for running 5 concurrent SHA1 calcs and outputting sequentially
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -24,89 +24,161 @@ use work.sha1_pkg.all;
 entity hmac_scheduler is
 
 port(
-    clk_i          : in    std_ulogic;
-    rst_i          : in    std_ulogic;
-    secret_i       : in    std_ulogic_vector(0 to 31);
-    load_secret_i  : in    std_ulogic;
-    value_i        : in    std_ulogic_vector(0 to 31);
-    load_value_i   : in    std_ulogic;
-    dat_o          : out    std_ulogic_vector(0 to 31)    
+    clk_i                       : in    std_ulogic;
+    load_i                      : in    std_ulogic;
+    rst_i                       : in    std_ulogic;
+    dat_i                       : in    std_ulogic_vector(0 to 31);
+    sot_in                      : in    std_ulogic;
+    dat_1_o                     : out    std_ulogic_vector(0 to 31);
+    dat_2_o                     : out    std_ulogic_vector(0 to 31);
+    dat_3_o                     : out    std_ulogic_vector(0 to 31)
+    
     );
 end hmac_scheduler;
 
 architecture RTL of hmac_scheduler is
-    --Alt: This is totally the same as sha1_load and should be rolled together
-    component hmac_load
-        port(
-            clk_i          : in    std_ulogic;
-            rst_i          : in    std_ulogic;
-            dat_i          : in    std_ulogic_vector(0 to 31);
-            dat_w_o        : out    w_input
-            );
+    component sha1_load
+      port (
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        dat_i          : in    std_ulogic_vector(0 to 31);
+        sot_in         : in    std_ulogic;
+        dat_w_o        : out    w_input
+    );
     end component;
-    component hmac_cache
-        port(
-            clk_i           : in    std_ulogic;
-            rst_i           : in    std_ulogic;
-            secret_i        : in    std_ulogic_vector(0 to 31);
-            load_i          : in    std_ulogic;
-            dat_bi_o        : out    w_input;
-            dat_bo_o        : out    w_input;
-            valid_o         : out    std_ulogic
-            );
+    component sha1_process_input
+      port (
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        dat_i          : in    w_input;
+        load_i         : in    std_ulogic;
+        dat_w_o        : out    w_full;
+        valid_o        : out    std_ulogic
+    );
+    end component;
+    component sha1_process_buffer
+      port (
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        dat_i          : in    w_full;
+        load_i         : in    std_ulogic;
+        new_i          : in    std_ulogic;
+        dat_w_o        : out    w_output;
+        valid_o        : out    std_ulogic
+    );
     end component;
    
-    signal w_bi_1: w_input;
-    signal w_bo_1: w_input;
-    signal w_bi_temp: w_input;
-    signal w_bo_temp: w_input;
-    signal w_cached_valid: std_ulogic;
-    signal i : integer range 0 to 15;
+    signal w_load: w_input;
+    
+    signal w_processed_input1: w_full;
+    signal w_processed_input2: w_full;
+    signal w_processed_input3: w_full;
+    signal w_processed_input4: w_full;
+    signal w_processed_input5: w_full;
+    
+    signal w_processed_new: std_ulogic;
+    
+    signal w_processed_buffer: w_output;
+    signal w_processed_buffer1: w_output;
+    signal w_processed_buffer2: w_output;
+    signal w_processed_buffer3: w_output;
+    signal w_processed_buffer4: w_output;
+    signal w_processed_buffer5: w_output;
+    
+    signal w_buffer_valid1: std_ulogic;
+    signal w_buffer_valid2: std_ulogic;
+    signal w_buffer_valid3: std_ulogic;
+    signal w_buffer_valid4: std_ulogic;
+    signal w_buffer_valid5: std_ulogic;
+    signal w_pinput: w_input;
+    signal latch_pinput: std_ulogic_vector(0 to 4);
+    signal w_processed_valid: std_ulogic_vector(0 to 4);
+    signal i : integer range 0 to 16;
     
     signal i_mux : integer range 0 to 4;
     
-    
     -- synthesis translate_off
-    signal test_word_1: std_ulogic_vector(0 to 31);
-    signal test_word_2: std_ulogic_vector(0 to 31);
-    signal test_word_3: std_ulogic_vector(0 to 31);
-    signal test_word_4: std_ulogic_vector(0 to 31);
-    signal test_word_5: std_ulogic_vector(0 to 31);
+    signal test_sha1_process_input_o     : std_ulogic_vector(0 to 31);
+    signal test_sha1_process_buffer0_o   : std_ulogic_vector(0 to 31);
+    signal test_sha1_process_buffer_o    : std_ulogic_vector(0 to 31);
+    signal test_sha1_load_o              : std_ulogic_vector(0 to 31);
     -- synthesis translate_on
 
 begin
 
-    --LOAD_BI_1: hmac_load port map (clk_i,rst_i,secret_i,load_secret_i,w_bi_1,w_bo_1,w_cached_valid);
+    LOAD1: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
     
-    CACHE1: hmac_cache port map (clk_i,rst_i,secret_i,load_secret_i,w_bi_1,w_bo_1,w_cached_valid);
+    --Alt: Use a generate statement
+    PINPUT1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
+    PBUFFER1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    
+    PINPUT2: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(1),w_processed_input2,w_processed_valid(1));
+    PBUFFER2: sha1_process_buffer port map (clk_i,rst_i,w_processed_input2,w_processed_valid(1),w_processed_valid(1),w_processed_buffer2,w_buffer_valid2);
+    
+    PINPUT3: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(2),w_processed_input3,w_processed_valid(2));
+    PBUFFER3: sha1_process_buffer port map (clk_i,rst_i,w_processed_input3,w_processed_valid(2),w_processed_valid(2),w_processed_buffer3,w_buffer_valid3);
+    
+    PINPUT4: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(3),w_processed_input4,w_processed_valid(3));
+    PBUFFER4: sha1_process_buffer port map (clk_i,rst_i,w_processed_input4,w_processed_valid(3),w_processed_valid(3),w_processed_buffer4,w_buffer_valid4);
+    
+    PINPUT5: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(4),w_processed_input5,w_processed_valid(4));
+    PBUFFER5: sha1_process_buffer port map (clk_i,rst_i,w_processed_input5,w_processed_valid(4),w_processed_valid(4),w_processed_buffer5,w_buffer_valid5);
     
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
+                latch_pinput <= "00000";
                 i <= 0;
+                --Todo: start from 0 after testing
                 i_mux <= 0;
                 for x in 0 to 15 loop
-                    w_bi_temp(x) <= "00000000000000000000000000000000";
-                    w_bo_temp(x) <= "00000000000000000000000000000000";
+                    w_pinput(x) <= "00000000000000000000000000000000";
                 end loop;
             else
                 if i = 15 then
+                    case i_mux is
+                        when 0 => latch_pinput <= "10000";
+                        when 1 => latch_pinput <= "01000";
+                        when 2 => latch_pinput <= "00100";
+                        when 3 => latch_pinput <= "00010";
+                        when 4 => latch_pinput <= "00001";
+                    end case;
+                    w_pinput <= w_load;
                     i <= 0;
-                 else
+                    --i <= i + 1;
+                    if i_mux = 4 then
+                        i_mux <= 0;
+                    else
+                        i_mux <= i_mux + 1;
+                    end if;
+                else
+                    latch_pinput <= "00000";
                     i <= i + 1;
                 end if;
             end if;
+            --Alt: Consider other conditionals
+            if w_processed_valid(0) = '1' then
+                w_processed_buffer <= w_processed_buffer1;
+            elsif w_processed_valid(1) = '1' then
+                w_processed_buffer <= w_processed_buffer2;
+            elsif w_processed_valid(2) = '1' then
+                w_processed_buffer <= w_processed_buffer3;
+            elsif w_processed_valid(3) = '1' then
+                w_processed_buffer <= w_processed_buffer4;
+            elsif w_processed_valid(4) = '1' then
+                w_processed_buffer <= w_processed_buffer5;
+            end if;
         end if;
     end process;
-
+    
+    dat_1_o <= w_pinput(15);
+    
     -- synthesis translate_off
-    test_word_1 <= w_bi_1(0);
-    test_word_2 <= w_bi_1(1);
-    test_word_3 <= w_bi_1(13);
-    test_word_4 <= w_bi_1(14);
-    test_word_5 <= w_bi_1(15);
+    test_sha1_process_input_o <= w_processed_input1(16);
+    test_sha1_process_buffer0_o <= w_processed_buffer1(0);
+    test_sha1_process_buffer_o <= w_processed_buffer(0);
+    test_sha1_load_o <= w_load(15);
     -- synthesis translate_on
-    
-    
+
 end RTL; 

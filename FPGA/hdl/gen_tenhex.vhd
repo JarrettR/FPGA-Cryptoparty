@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
---                        wpa2_main.vhd
---    Master file, starting PBKDF2 and cascading down
+--                        gen_tenhex.vhd
+--    Test 10-digit hex sample PMK generator, because the ZTEX interface is slow
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -19,74 +19,52 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.sha1_pkg.all;
 
 
-entity wpa2_main is
+entity gen_tenhex is
 
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     dat_i           : in    std_ulogic_vector(0 to 31);
-    valid_i         : in    std_ulogic;
-    dat_w_o         : out    w_input
+    complete_o      : out    std_ulogic;
+    dat_pmk_o       : out    pmk_input
     
     );
-end wpa2_main;
+end gen_tenhex;
 
-architecture RTL of wpa2_main is
-    component gen_tenhex
-    port(
-        clk_i           : in    std_ulogic;
-        rst_i           : in    std_ulogic;
-        dat_i           : in    std_ulogic_vector(0 to 31);
-        valid_i         : in    std_ulogic;
-        dat_w_o         : out    w_input
-        
-    );
-    end component;
-    
+architecture RTL of gen_tenhex is
+
     signal w: w_input;
     signal w_temp: w_input;
-    -- Max length of WPA2 will never go over two frames
-    signal i : integer range 0 to 127;
+    signal carry: std_ulogic;
+    
+    signal pmk : integer range 0 to 1048575; --Ten digit, hex (16^5)
 
 begin
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                i <= 0;
+                pmk <= 0;
+                complete_o <= '0';
             else
-                if i = 127 then
-                    i <= 0;
-                --elsif
-                --    w_input <= 
-                --    i <= i + 1;
+                if pmk = 1048575 then
+                    pmk <= 0;
+                    complete_o <= '1';
                 else
-                    i <= i + 1;
+                    pmk <= pmk + 1;
+                    complete_o <= '0';
                 end if;
             end if;
         end if;
     end process;
-    dat_w_o <= w_temp;
     
-    --Alt: Use a generate statement
-    w_temp(0) <= dat_i;
-    w_temp(1) <= w(1);
-    w_temp(2) <= w(2);
-    w_temp(3) <= w(3);
-    w_temp(4) <= w(4);
-    w_temp(5) <= w(5);
-    w_temp(6) <= w(6);
-    w_temp(7) <= w(7);
-    w_temp(8) <= w(8);
-    w_temp(9) <= w(9);
-    w_temp(10) <= w(10);
-    w_temp(11) <= w(11);
-    w_temp(12) <= w(12);
-    w_temp(13) <= w(13);
-    w_temp(14) <= w(14);
-    w_temp(15) <= w(15);
+    -- Alt: generate statement
+    dat_pmk_o(0) <= to_unsigned(pmk,8);
+    dat_pmk_o(1) <= to_unsigned(pmk,16) sll 8;
+ 
 
 end RTL; 

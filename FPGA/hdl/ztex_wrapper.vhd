@@ -72,8 +72,8 @@ architecture RTL of ztex_wrapper is
 
     signal i : integer range 0 to 16;
     
-    signal i_mux : integer range 0 to 4;
-    signal latch_input: std_ulogic_vector(0 to 4);
+    signal i_mux : integer range 0 to 1;
+    signal latch_input: std_ulogic_vector(0 to 1);
     
     -- synthesis translate_off
     signal test_1              : std_ulogic_vector(0 to 31);
@@ -86,25 +86,23 @@ architecture RTL of ztex_wrapper is
 begin
 
     MAIN1: wpa2_main port map (fxclk_i,reset_i,std_ulogic_vector(w_load),latch_input(0),w_pmk);
+    --MAIN2: wpa2_main port map (fxclk_i,reset_i,std_ulogic_vector(w_load),latch_input(0),w_pmk);
     
     process(fxclk_i)   
     begin
         if (fxclk_i'event and fxclk_i = '1') then
             if reset_i = '1' then
-                latch_input <= "00000";
+                latch_input <= "00";
                 --b_load <= "00000000";
                 i <= 0;
                 i_mux <= 0;
             else
                 if i = 3 then
                     case i_mux is
-                        when 0 => latch_input <= "10000";
-                        when 1 => latch_input <= "01000";
-                        when 2 => latch_input <= "00100";
-                        when 3 => latch_input <= "00010";
-                        when 4 => latch_input <= "00001";
+                        when 0 => latch_input <= "10";
+                        when 1 => latch_input <= "01";
                     end case;
-                    if i_mux = 4 then
+                    if i_mux = 1 then
                         i_mux <= 0;
                     else
                         i_mux <= i_mux + 1;
@@ -115,7 +113,7 @@ begin
                     i <= 0;
                 else
                     b_load <= rotate_left(b_load_temp, 8) + unsigned(read_i);
-                    latch_input <= "00000";
+                    latch_input <= "00";
                     i <= i + 1;
                 end if;
             end if;

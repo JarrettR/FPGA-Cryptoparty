@@ -39,11 +39,29 @@ end hmac_main;
 
 architecture RTL of hmac_main is
     
-    signal bi: w_input;
-    signal bo: w_input;
-    signal i : integer range 0 to 15;
+     
+    -- synthesis translate_off
+    signal test_hmac1_o   : std_ulogic_vector(0 to 31);
+    signal test_hmac2_o   : std_ulogic_vector(0 to 31);
+    signal test_hmac3_o   : std_ulogic_vector(0 to 31);
+    signal test_hmac4_o   : std_ulogic_vector(0 to 31);
+    -- synthesis translate_on
 
 begin
+
+    LOAD1: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bi,sot_in,w_load);
+    LOAD2: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bo,sot_in,w_load);
+    
+    --Alt: Use a generate statement
+    --Inner HMAC
+    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
+    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    
+    --Inner HMAC
+    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
+    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    
+    
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then

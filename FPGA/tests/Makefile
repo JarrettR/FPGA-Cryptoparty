@@ -57,6 +57,7 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     #VHDL_SOURCES += $(WPWD)/../hdl/hmac_main.vhd
     #VHDL_SOURCES += $(WPWD)/../hdl/hmac_scheduler.vhd
     #VHDL_SOURCES += $(WPWD)/../hdl/pbkdf2_input.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/gen_tenhex.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/wpa2_main.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/ztex_wrapper.vhd
     #For testing SHA1:
