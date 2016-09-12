@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ################################################################################
-#                              python_ztex.py 
-#    Top-level simulation of complete ZTEX 1.15y board
+#                            python_wpa2.py 
+#    WPA2 mock object
 #    Copyright (C) 2016  Jarrett Rainier
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-from python_sha1 import Sha1Model
-from python_hmac import HmacModelModel
+import hashlib #For testing mock objects
+import random
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
@@ -29,9 +29,10 @@ from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.result import ReturnValue, TestError
 
-class ZtexDriver(BusDriver):
+
+class Wpa2Driver(BusDriver):
     """
-    ZTEX Driver
+    SHA1 Driver
     """
     _signals = ["dat_i", "load_i", "rst_i"]
     _optional_signals = []
@@ -48,15 +49,13 @@ class ZtexDriver(BusDriver):
         self.bus.load_i <= single
         self.bus.rst_i <= single
         self.bus.dat_i <= word
-        
-        
-class ZtexModel(object):
+
+
+class Wpa2Model(object):
     
-    def __init__(self, HmacObj, Sha1Obj):
-        self.Hmac = HmacObj
-        self.Sha1 = Sha1Obj
+    def __init__(self):
+        self.W = [0] * 80
         self.reset()
-        
         
     def reset(self):
         self.message = [0] * 64
@@ -66,22 +65,13 @@ class ZtexModel(object):
         self.shiftMessage()
         self.message[0] = input
         self.messageLength = self.messageLength + 1
-        
-    def shiftMessage(self):
-        for x in range(63, 1, -1):
-            self.message[x] = self.message[x - 1]
 
-    def load(self, secret, value):
-        self.addSecret(secret)
+    def formatW(self, start = 0, stop = 80):
+        W = ''
+        for x in range(start, stop):
+            W = W + '{:08X} '.format(self.W[x])
         
-        shaBi = self.Sha1.hashString(self.generateString(self.Bi) + value)
-        shaBiDec = shaBi.decode("hex")
-        
-        Bo = self.generateString(self.Bo) + shaBiDec
-        self.shaBo = self.Sha1.hashString(Bo)
-        
-        return self.shaBo
-
+        return W[:-1]
 
 if __name__ == "__main__":
     objSha = Sha1Model()

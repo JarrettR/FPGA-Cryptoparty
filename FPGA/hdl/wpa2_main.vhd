@@ -27,27 +27,21 @@ entity wpa2_main is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    dat_i           : in    std_ulogic_vector(0 to 31);
-    valid_i         : in    std_ulogic;
-    dat_w_o         : out    w_input
-    
+    dat_ssid_i      : in    std_ulogic_vector(0 to 31);
+    valid_ssid_i    : in    std_ulogic;
+    dat_mk_i        : in    std_ulogic_vector(0 to 31);
+    valid_mk_i      : in    std_ulogic;
+    dat_pmk_o       : out   w_output;
+    valid_pmk_o     : out   std_ulogic
     );
 end wpa2_main;
 
 architecture RTL of wpa2_main is
-    component gen_tenhex
-    port(
-        clk_i           : in    std_ulogic;
-        rst_i           : in    std_ulogic;
-        dat_i           : in    std_ulogic_vector(0 to 31);
-        valid_i         : in    std_ulogic;
-        dat_w_o         : out    w_input
-        
-    );
-    end component;
     
     signal w: w_input;
     signal w_temp: w_input;
+    
+    signal mk: w_input;
     -- Max length of WPA2 will never go over two frames
     signal i : integer range 0 to 127;
 
@@ -69,7 +63,6 @@ begin
             end if;
         end if;
     end process;
-    dat_w_o <= w_temp;
     
     --Alt: Use a generate statement
     w_temp(0) <= dat_i;

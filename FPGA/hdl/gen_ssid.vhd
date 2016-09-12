@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
---                        gen_tenhex.vhd
---    Test 10-digit hex sample PMK generator, because the ZTEX interface is slow
+--                        gen_ssid.vhd
+--    SSID generator for hardcoded benchmarking, because ZTEX interface is slow
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ use ieee.numeric_std.all;
 use work.sha1_pkg.all;
 
 
-entity gen_tenhex is
+entity gen_ssid is
 
 port(
     clk_i           : in    std_ulogic;
@@ -31,15 +31,15 @@ port(
     complete_o      : out    std_ulogic;
     dat_mk_o       : out    mk_data
     );
-end gen_tenhex;
+end gen_ssid;
 
-architecture RTL of gen_tenhex is
+architecture RTL of gen_ssid is
 
     signal w: w_input;
     signal w_temp: w_input;
     signal carry: std_ulogic;
     
-    signal pmk : integer range 0 to 1048575; --Ten digit, hex (16^10)
+    signal pmk : integer range 0 to 50; --Ten digit, hex (16^10)
 
 begin
     process(clk_i)   
@@ -49,7 +49,7 @@ begin
                 pmk <= 0;
                 complete_o <= '0';
             else
-                if pmk = 1048575 then
+                if pmk = 50 then
                     pmk <= 0;
                     complete_o <= '1';
                 else

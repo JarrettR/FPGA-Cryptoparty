@@ -45,29 +45,59 @@ end ztex_wrapper;
 
 architecture RTL of ztex_wrapper is
     component wpa2_main
-
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
-        dat_i           : in    std_ulogic_vector(0 to 31);
-        valid_i         : in    std_ulogic;
-        dat_w_o         : out    w_input
-        
+        dat_ssid_i      : in    std_ulogic_vector(0 to 31);
+        valid_ssid_i    : in    std_ulogic;
+        dat_mk_i        : in    std_ulogic_vector(0 to 31);
+        valid_mk_i      : in    std_ulogic;
+        dat_pmk_o       : out   w_output;
+        valid_pmk_o     : out   std_ulogic
     );
     end component;
+    
+    -- Fixed input format for benchmarking
+    -- Will only work if password happens to be ten ascii digits, 0-f
+    component gen_tenhex
+    port(
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        complete_o     : out    std_ulogic;
+        dat_mk_o       : out    mk_data
+    );
+    end component;
+    
+    -- Fixed input for benchmarking
+    -- Manually set+programmed for each SSID :(
+    component gen_ssid
+    port(
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        complete_o     : out    std_ulogic;
+        dat_mk_o       : out    mk_data
+    );
+    end component;
+   
+	type state_type is (STATE_IDLE, STATE_SSID, STATE_MK, STATE_OUT);
+    
+	signal state       : state_type := STATE_IDLE;
    
     signal b_load:  unsigned(0 to 31);
     signal b_load_temp:  unsigned(0 to 31);
     signal w_load:  unsigned(0 to 31);
     
-    signal w_pmk:  w_input;
+    signal w_mk:   mk_data;
+    signal w_pmk:  pmk_data;
     
+    --PMK
     signal w_secret1: w_input;
     signal w_secret2: w_input;
     signal w_secret3: w_input;
     signal w_secret4: w_input;
     signal w_secret5: w_input;
     
+    --SSID
     signal w_value: w_input;
 
     signal i : integer range 0 to 16;
@@ -120,6 +150,7 @@ begin
         end if;
     end process;
     
+	write_o <= std_logic_vector( pb_buf ) when select_i = '1' else (others => 'Z');
     b_load_temp <= b_load;
     
 end RTL; 
