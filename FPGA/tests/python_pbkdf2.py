@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ################################################################################
-#  Home-rolled HMAC algorithm allows better debugging of intermediate steps 
+#                            python_pbkdf2.py 
+#    PBKDF2 mock object
 #    Copyright (C) 2016  Jarrett Rainier
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,9 +19,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
+import hashlib #For testing mock objects
+import random
 from python_sha1 import Sha1Model
-import hashlib
-import hmac
+from python_hmac import HmacModel
 '''
 import cocotb
 from cocotb.decorators import coroutine
@@ -30,9 +32,10 @@ from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.result import ReturnValue, TestError
 
-class HmacDriver(BusDriver):
+
+class Pbkdf2Driver(BusDriver):
     """
-    HMAC Driver
+    PBKDF2 Driver
     """
     _signals = ["dat_i", "load_i", "rst_i"]
     _optional_signals = []
@@ -49,60 +52,75 @@ class HmacDriver(BusDriver):
         self.bus.load_i <= single
         self.bus.rst_i <= single
         self.bus.dat_i <= word
-        
+
 '''
-class HmacModel(object):
+class Pbkdf2Model(object):
     
-    def __init__(self, Sha1Obj):
-        self.Sha1 = Sha1Obj
-        self.shaBo = ''
+    def __init__(self):
+        self.W = [0] * 80
         self.reset()
         
-        
     def reset(self):
-        self.Bi = [0x36] * 64
-        self.Bo = [0x5c] * 64
-    
-    
-    def run(self):
-        secret = 'Jefe'
-        value = 'what do ya want for nothing?'
-        print "Goal: "
-        print hmac.new(secret, value, hashlib.sha1).hexdigest()
-        return self.load(secret, value)
+        self.message = [0] * 64
+        self.messageLength = 0
         
-    def addSecret(self, secret):
-        for x in range(0, len(secret)):
-            self.Bi[x] = self.Bi[x] ^ ord(secret[x])
-            self.Bo[x] = self.Bo[x] ^ ord(secret[x])
-
-    def load(self, secret, value):
-        self.addSecret(secret)
+    def run(self, objHmac, mk, ssid):
+        test = objHmac.load(mk, ssid)
         
-        shaBi = self.Sha1.hashString(self.generateString(self.Bi) + value)
-        shaBiDec = shaBi.decode("hex")
+        x1 = objHmac.load(mk, ssid + '\0\0\0\1')
+        x2 = objHmac.load(mk, ssid + '\0\0\0\2')
+        #x1 = objHmac.load(mk, ssid + '\1')
+        #x2 = objHmac.load(mk, ssid + '\2')
         
-        Bo = self.generateString(self.Bo) + shaBiDec
-        self.shaBo = self.Sha1.hashString(Bo)
+        for x in xrange(4096):
+            x1 = objHmac.load(mk, self.toAscii(x1))
+            x2 = objHmac.load(mk, self.toAscii(x2))
+            #print '{} - {} - {}'.format(x1, (ord(c) for c in self.toAscii(x1)), x1)
+            self.xorString(x1, x2)
         
-        return self.shaBo
+        return x1 + ' ' + x2
         
-    def generateString(self, intList):
+    def addByte(self, input):
+        self.shiftMessage()
+        self.message[0] = input
+        self.messageLength = self.messageLength + 1
+        
+    def xorString(self, in1, in2):
+        i = 0
         out = ''
-        for x in range(0, len(intList)):
-            #print intList[x]
-            out = out + chr(intList[x])
-        
+        x1 = self.toAscii(in1)
+        x2 = self.toAscii(in2)
+        for x in xrange(len(x1)):
+            #print x1[x]
+            what = chr(ord(x1[x]) ^ ord(x2[x]))
+            out += what
+            #print what
+            
         return out
+        
+    def toAscii(self, input):
+        str = ''
+        while len(input) > 0:
+            str = chr(int(input[-2:], 16)) + str
+            input = input[0:-2]
+        return str
+
+    def formatW(self, start = 0, stop = 80):
+        W = ''
+        for x in range(start, stop):
+            W = W + '{:08X} '.format(self.W[x])
+        
+        return W[:-1]
 
 if __name__ == "__main__":
     objSha = Sha1Model()
     objHmac = HmacModel(objSha)
+    objPbkdf2 = Pbkdf2Model()
     secret = 'Jefe'
     value = 'what do ya want for nothing?'
     secret = 'secret'
     value = 'value'
     
-    print "Goal:   " + hmac.new(secret, value, hashlib.sha1).hexdigest()
-    print "Result: " + objHmac.load(secret, value)
+    # 64 hex digits / 32 bytes / 256 bits
+    print objPbkdf2.run(objHmac, secret, value)
     

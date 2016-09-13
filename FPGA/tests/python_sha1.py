@@ -20,6 +20,7 @@
 
 import hashlib #For testing my mock objects
 import random
+'''
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
@@ -48,8 +49,7 @@ class Sha1Driver(BusDriver):
         self.bus.load_i <= single
         self.bus.rst_i <= single
         self.bus.dat_i <= word
-
-
+'''
 class Sha1Model(object):
     K0 = 0x5A827999       #( 0 <= t <= 19)
     K1 = 0x6ED9EBA1       #(20 <= t <= 39)

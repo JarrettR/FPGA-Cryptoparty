@@ -21,6 +21,8 @@
 
 import hashlib #For testing mock objects
 import random
+from python_sha1 import Sha1Model
+from python_hmac import HmacModel
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
@@ -32,7 +34,7 @@ from cocotb.result import ReturnValue, TestError
 
 class Wpa2Driver(BusDriver):
     """
-    SHA1 Driver
+    WPA2 Driver
     """
     _signals = ["dat_i", "load_i", "rst_i"]
     _optional_signals = []
