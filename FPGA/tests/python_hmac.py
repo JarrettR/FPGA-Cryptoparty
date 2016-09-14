@@ -77,6 +77,7 @@ class HmacModel(object):
             self.Bo[x] = self.Bo[x] ^ ord(secret[x])
 
     def load(self, secret, value):
+        self.reset()
         self.addSecret(secret)
         
         shaBi = self.Sha1.hashString(self.generateString(self.Bi) + value)

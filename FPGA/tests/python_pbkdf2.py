@@ -65,20 +65,22 @@ class Pbkdf2Model(object):
         self.messageLength = 0
         
     def run(self, objHmac, mk, ssid):
-        test = objHmac.load(mk, ssid)
         
         x1 = objHmac.load(mk, ssid + '\0\0\0\1')
         x2 = objHmac.load(mk, ssid + '\0\0\0\2')
-        #x1 = objHmac.load(mk, ssid + '\1')
-        #x2 = objHmac.load(mk, ssid + '\2')
         
-        for x in xrange(4096):
+        f1 = self.toAscii(x1)
+        f2 = self.toAscii(x2)
+        
+        for x in xrange(4095):
             x1 = objHmac.load(mk, self.toAscii(x1))
             x2 = objHmac.load(mk, self.toAscii(x2))
-            #print '{} - {} - {}'.format(x1, (ord(c) for c in self.toAscii(x1)), x1)
-            self.xorString(x1, x2)
+            
+            f1 = self.xorString(self.toAscii(x1), f1)
+            f2 = self.xorString(self.toAscii(x2), f2)
         
-        return x1 + ' ' + x2
+        out = self.toHexString(f1) + self.toHexString(f2)
+        return out[0:64]
         
     def addByte(self, input):
         self.shiftMessage()
@@ -88,29 +90,31 @@ class Pbkdf2Model(object):
     def xorString(self, in1, in2):
         i = 0
         out = ''
-        x1 = self.toAscii(in1)
-        x2 = self.toAscii(in2)
+        
+        x1 = in1
+        x2 = in2
         for x in xrange(len(x1)):
-            #print x1[x]
             what = chr(ord(x1[x]) ^ ord(x2[x]))
             out += what
-            #print what
             
         return out
         
     def toAscii(self, input):
         str = ''
+        #print input
         while len(input) > 0:
+            #print input[-2:]
             str = chr(int(input[-2:], 16)) + str
             input = input[0:-2]
         return str
-
-    def formatW(self, start = 0, stop = 80):
-        W = ''
-        for x in range(start, stop):
-            W = W + '{:08X} '.format(self.W[x])
         
-        return W[:-1]
+    def toHexString(self, input):
+        str = ''
+        #print input
+        for x in xrange(len(input)):
+            #print input[-2:]
+            str += "{:02x}".format(ord(input[x]))
+        return str
 
 if __name__ == "__main__":
     objSha = Sha1Model()
