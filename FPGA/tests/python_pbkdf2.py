@@ -18,12 +18,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
-
 import hashlib #For testing mock objects
 import random
 from python_sha1 import Sha1Model
 from python_hmac import HmacModel
-'''
+
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
@@ -53,7 +52,7 @@ class Pbkdf2Driver(BusDriver):
         self.bus.rst_i <= single
         self.bus.dat_i <= word
 
-'''
+
 class Pbkdf2Model(object):
     
     def __init__(self):

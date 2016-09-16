@@ -21,7 +21,7 @@
 from python_sha1 import Sha1Model
 import hashlib
 import hmac
-'''
+
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event
@@ -50,7 +50,7 @@ class HmacDriver(BusDriver):
         self.bus.rst_i <= single
         self.bus.dat_i <= word
         
-'''
+
 class HmacModel(object):
     
     def __init__(self, Sha1Obj):

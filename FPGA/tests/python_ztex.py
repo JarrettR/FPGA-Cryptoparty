@@ -21,6 +21,7 @@
 
 from python_sha1 import Sha1Model
 from python_hmac import HmacModel
+
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, ReadOnly, NextTimeStep, Event

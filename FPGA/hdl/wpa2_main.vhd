@@ -27,12 +27,14 @@ entity wpa2_main is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    dat_ssid_i      : in    std_ulogic_vector(0 to 31);
-    valid_ssid_i    : in    std_ulogic;
-    dat_mk_i        : in    std_ulogic_vector(0 to 31);
-    valid_mk_i      : in    std_ulogic;
-    dat_pmk_o       : out   w_output;
-    valid_pmk_o     : out   std_ulogic
+    ssid_dat_i      : in    w_input;
+    ssid_load_i     : in    std_ulogic;
+    ssid_length_i   : in    integer range 0 to 63;
+    mk_dat_i        : in    mk_data;
+    mk_load_i       : in    std_ulogic;
+    mk_length_i     : in    integer range 0 to 63;
+    pmk_dat_o       : out   w_output;
+    pmk_valid_o     : out   std_ulogic
     );
 end wpa2_main;
 
@@ -64,22 +66,6 @@ begin
         end if;
     end process;
     
-    --Alt: Use a generate statement
-    w_temp(0) <= dat_i;
-    w_temp(1) <= w(1);
-    w_temp(2) <= w(2);
-    w_temp(3) <= w(3);
-    w_temp(4) <= w(4);
-    w_temp(5) <= w(5);
-    w_temp(6) <= w(6);
-    w_temp(7) <= w(7);
-    w_temp(8) <= w(8);
-    w_temp(9) <= w(9);
-    w_temp(10) <= w(10);
-    w_temp(11) <= w(11);
-    w_temp(12) <= w(12);
-    w_temp(13) <= w(13);
-    w_temp(14) <= w(14);
-    w_temp(15) <= w(15);
+
 
 end RTL; 

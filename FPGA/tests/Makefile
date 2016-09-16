@@ -57,8 +57,9 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     #VHDL_SOURCES += $(WPWD)/../hdl/hmac_main.vhd
     #VHDL_SOURCES += $(WPWD)/../hdl/hmac_scheduler.vhd
     #VHDL_SOURCES += $(WPWD)/../hdl/pbkdf2_input.vhd
-    VHDL_SOURCES += $(WPWD)/../hdl/gen_tenhex.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/wpa2_main.vhd
+    VHDL_SOURCES += $(WPWD)/../hdl/gen_tenhex.vhd
+    #VHDL_SOURCES += $(WPWD)/../hdl/gen_ssid.vhd
     VHDL_SOURCES += $(WPWD)/../hdl/ztex_wrapper.vhd
     #For testing SHA1:
     #TOPLEVEL = sha1_scheduler
@@ -75,7 +76,7 @@ endif
 #For testing HMAC:
 #MODULE=test_hmac
 #For testing PBKDF2:
-#MODULE=test_hmac
+#MODULE=test_wpa2
 #For testing the whoooole thing:
 MODULE=test_ztex
 
