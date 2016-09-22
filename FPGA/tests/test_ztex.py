@@ -65,13 +65,32 @@ def A_load_data_test(dut):
     objHmac = HmacModel(objSha)
     objPrf = PrfModel(objHmac)
     
-    pmk = ''
-    apMac = ''
-    cMac = ''
-    apNonce = ''
-    cNonce = ''
+    #pmk = '9051ba43660caec7a909fbbe6b91e4685f1457b5a2e23660d728afbd2c7abfba'
+    #apMac = '001dd0f694b0'
+    #cMac = '489d2477179a'
+    #apNonce = '87f2718bad169e4987c94255395e054bcaf77c8d791698bf03dc85ed3c90832a'
+    #cNonce = '143fbb4333341f36e17667f88aa02c5230ab82c508cc4bd5947dd7e50475ad36'
     
-    print objPrf.run(pmk, apMac, cMac, apNonce, cNonce)
+    pmk = '01b809f9ab2fb5dc47984f52fb2d112e13d84ccb6b86d4a7193ec5299f851c48'
+    apMac = '001e2ae0bdd0'
+    cMac = 'cc08e0620bc8'
+    apNonce = '61c9a3f5cdcdf5fae5fd760836b8008c863aa2317022c7a202434554fb38452b'
+    cNonce = '60eff10088077f8b03a0e2fc2fc37e1fe1f30f9f7cfbcfb2826f26f3379c4318'
+    
+    ptk = objPrf.PRF(pmk, apMac, cMac, apNonce, cNonce)
+    
+    print "Goal  : bf49a95f0494f44427162f38696ef8b6"
+    print "Result: " + ptk
+    
+    data = "0103005ffe0109002000000000000000010000000000000000000000000000000000000" + \
+        "00000000000000000000000000000000000000000000000000000000000000000000000000" + \
+        "00000000000000000000000000000000000000000000000000000"
+    
+
+    mic = objPrf.MIC(ptk, data)
+    
+    print "Goal  : 45282522bc6707d6a70a0317a3ed48f0"
+    print "Result: " + mic
     
     yield reset(dut)
     #yield load_data(dut, log, mockSha1, 16)
