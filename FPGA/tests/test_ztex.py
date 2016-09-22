@@ -29,6 +29,7 @@ import random
 from shutil import copyfile
 from python_sha1 import Sha1Model, Sha1Driver
 from python_hmac import HmacModel, HmacDriver
+from python_prf import PrfModel, PrfDriver
 
 _debug = False
 
@@ -60,10 +61,20 @@ def A_load_data_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.fxclk_i, 10000).start())
     
-    mockSha1 = Sha1Model()
+    objSha = Sha1Model()
+    objHmac = HmacModel(objSha)
+    objPrf = PrfModel(objHmac)
+    
+    pmk = ''
+    apMac = ''
+    cMac = ''
+    apNonce = ''
+    cNonce = ''
+    
+    print objPrf.run(pmk, apMac, cMac, apNonce, cNonce)
     
     yield reset(dut)
-    yield load_data(dut, log, mockSha1, 16)
+    #yield load_data(dut, log, mockSha1, 16)
 
         
 #@cocotb.test()

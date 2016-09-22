@@ -56,9 +56,6 @@ begin
             else
                 if i = 127 then
                     i <= 0;
-                --elsif
-                --    w_input <= 
-                --    i <= i + 1;
                 else
                     i <= i + 1;
                 end if;
