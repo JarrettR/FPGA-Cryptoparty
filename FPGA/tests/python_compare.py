@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ################################################################################
-#                            python_prf.py 
-#    WPA2 Pseudo Random Function mock object
+#                            python_compare.py 
+#    WPA2 Pseudo Random Function and MIC comparison mock objects
 #    Copyright (C) 2016  Jarrett Rainier
 #
 #    This program is free software: you can redistribute it and/or modify
