@@ -18,7 +18,7 @@ ZTEXPREFIX=../..
 #default: $(PREFIX)/share/man/man1
 
 ################################
-# DO NOT CHANGE THE FOLLOWING #
+# DO NOT CHANAGE THE FOLLOWING #
 ################################
 
 .PHONY: all clean distclean install
@@ -30,7 +30,7 @@ INSTALLDIR=$(INSTALL) -d
 INSTALLEXE=$(INSTALL) -m 0755
 INSTALLFILE=$(INSTALL) -m 0644
 
-CLASSPATH:=.:$(ZTEXPREFIX)/usb4java:$(ZTEXPREFIX)/java:/usr/local/share/java:/usr/share/java:$(CLASSPATH)
+CLASSPATH:=.:$(ZTEXPREFIX)/libusbJava:$(ZTEXPREFIX)/java:/usr/local/share/java:/usr/share/java:$(CLASSPATH)
 JAVAFILES:=$(wildcard *.java)
 
 ifndef PREFIX

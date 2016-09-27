@@ -1,6 +1,6 @@
 /*!
    Firmware / Bitstream loader for ZTEX USB-FPGA Modules
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,13 @@
 !*/
 
 /* 
-    Firmware Loader and FPGA Configurator
+    Firmware Loader and FPGA Configurater
 */
 
 import java.io.*;
 import java.util.*;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 import ztex.*;
 
@@ -43,6 +43,7 @@ class FWLoader {
 
 // ******* main ****************************************************************
     public static void main (String args[]) {
+	LibusbJava.usb_init();
 
 	final String helpMsg = new String (
 			"Global parameters:\n"+
@@ -53,23 +54,23 @@ class FWLoader {
 			"    -d <number>      Device Number (default: 0, use -p to get a list)\n"+
 			"    -f               Force uploads\n"+
 			"    -p               Print a list of available devices\n"+
+			"    -w               Enable certain workarounds\n"+
 			"    -h               This help \n\n"+
 			"Ordered parameters:\n"+
 			"    -i               Print device info\n"+
 			"    -ii              Print device info + capabilities\n"+
 			"    -if              Print FPGA state\n"+
 			"    -ic              Print configuration data and flash info\n"+
-			"    -il              Print log messages of FX3 based FPGA Boards\n"+
 			"    -ss <sn string>  Set the serial number, \n"+
 			"                     used with -uu or -ue or if configuration data present\n"+
 			"    -ru              Reset EZ-USB Microcontroller\n"+
-			"    -uu <file>       Upload EZ-USB Firmware in ihx or img format to volatile memory\n"+
+			"    -uu <ihx file>   Upload EZ-USB Firmware\n"+
 			"    -bs 0|1|A        Bit swapping for bitstreams: 0: disable, 1: enable, A: automatic detection\n"+
 			"    -rf              Reset FPGA\n"+
 			"    -uf <bitstream>  Upload bitstream to FPGA\n"+
 			"    -sf <number>     Select FPGA (default: 0)\n"+
-			"    -re              Reset Firmware in non-volatile memory\n"+
-			"    -ue <file>       Upload Firmware in ihx or img format to non-volatile memory\n"+
+			"    -re              Reset EEPROM Firmware\n"+
+			"    -ue <ihx file>   Upload Firmware to EEPROM\n"+
 			"    -rm              Reset bitstream in Flash\n"+
 			"    -um <bitstream>  Upload bitstream to Flash\n"+
 			"    -uxf <ihx file>  Upload Firmware / data  to ATxmega Flash\n"+
@@ -87,6 +88,7 @@ class FWLoader {
 	    int devNum = 0;
 	    boolean forceUpload = false;
 	    boolean printBus = false;
+	    boolean workarounds = false;
 	    String snString = null;
 	    int bs = -1;
 	    
@@ -125,13 +127,16 @@ class FWLoader {
 		}
 		else if ( args[i].equals("-vc") ) {
 		    usbVendorId = ZtexDevice1.cypressVendorId;
-		    usbProductId = ZtexDevice1.cypressProductIdFx2;
+		    usbProductId = ZtexDevice1.cypressProductId;
 		}
 		else if ( args[i].equals("-f") ) {
 		    forceUpload = true;
 		}
 		else if ( args[i].equals("-p") ) {
 		    printBus = true;
+		}
+		else if ( args[i].equals("-w") ) {
+		    workarounds = true;
 		}
 		else if ( args[i].equals("-d") ) {
 		    i++;
@@ -159,7 +164,7 @@ class FWLoader {
 		        System.err.println(helpMsg);
 	    	        System.exit(0);
 		}
-		else if ( args[i].equals("-i") || args[i].equals("-ii") || args[i].equals("-if") || args[i].equals("-ic") || args[i].equals("-il") || args[i].equals("-ru") || args[i].equals("-rf") || args[i].equals("-re") || args[i].equals("-rm") ) {
+		else if ( args[i].equals("-i") || args[i].equals("-ii") || args[i].equals("-if") || args[i].equals("-ic") || args[i].equals("-ru") || args[i].equals("-rf") || args[i].equals("-re") || args[i].equals("-rm") ) {
 		}
 		else if ( args[i].equals("-uu") || args[i].equals("-uf") || args[i].equals("-sf") || args[i].equals("-ue") || args[i].equals("-um") || args[i].equals("-bs") || args[i].equals("-uxf")  || args[i].equals("-uxe") || args[i].equals("-rxf") || args[i].equals("-ss")) {
 		    i+=1;
@@ -174,7 +179,7 @@ class FWLoader {
 		}
 	    }
 	    
-// Scan the USB. This also creates and initializes a new USB context.
+// process ordered parameters
 	    ZtexScanBus1 bus = new ZtexScanBus1( usbVendorId, usbProductId, cypress, false, 1, snString);
 	    if ( bus.numberOfDevices() <= 0 ) {
 		System.err.println("No devices found");
@@ -184,7 +189,7 @@ class FWLoader {
 		bus.printBus(System.out);
 
 	    Ztex1v1 ztex = new Ztex1v1 ( bus.device(devNum) );
-	    bus.unref();
+	    ztex.certainWorkarounds = workarounds;
 	    
 	    snString = null;
 	    for (int i=0; i<args.length; i++ ) {
@@ -216,15 +221,6 @@ class FWLoader {
 		    String s = ztex.flashInfo(); if ( s.length()>0 ) System.out.println("Flash: " + s);
 		    s = ztex.flash2Info(); if ( s.length()>0 ) System.out.println("2nd Flash: " + s);
 		} 
-		if ( args[i].equals("-il") ) {
-		    try {
-		        ztex.debug2PrintNextLogMessages(System.out); 
-		        ztex.getUsb3Errors();
-		        System.out.println("USB 3.0 send errors: "+ztex.usb3SndErrors + "  receive errors: "+ztex.usb3RcvErrors);
-		    }
-		    catch ( CapabilityException e ) {
-		    }
-		}
 		else if ( args[i].equals("-ss") ) {
 		    i++;
     	    	    if ( i >= args.length ) {
@@ -247,10 +243,10 @@ class FWLoader {
 			System.err.println(helpMsg);
 			System.exit(1);
 		    }
-		    ZtexImgFile1 imgFile = new ZtexImgFile1( args[i] );
+		    ZtexIhxFile1 ihxFile = new ZtexIhxFile1( args[i] );
 		    if ( snString != null ) 
-		        imgFile.setSnString( snString );
-		    System.out.println("Firmware upload time: " + ztex.uploadFirmware( imgFile, forceUpload ) + " ms");
+		        ihxFile.setSnString( snString );
+		    System.out.println("Firmware upload time: " + ztex.uploadFirmware( ihxFile, forceUpload ) + " ms");
 		}
 		else if ( args[i].equals("-bs") ) {
 		    i++;
@@ -295,7 +291,7 @@ class FWLoader {
 		    }
 		} 
 		else if ( args[i].equals("-re") ) {
-		    ztex.nvDisableFirmware();
+		    ztex.eepromDisable();
 		} 
 		else if ( args[i].equals("-ue") ) {
 		    i++;
@@ -304,10 +300,10 @@ class FWLoader {
 			System.err.println(helpMsg);
 			System.exit(1);
 		    }
-		    ZtexImgFile1 imgFile = new ZtexImgFile1( args[i] );
+		    ZtexIhxFile1 ihxFile = new ZtexIhxFile1( args[i] );
 		    if ( snString != null )
-		        imgFile.setSnString(snString);
-		    System.out.println("Firmware to non-volatile memory upload time: " + ztex.nvUploadFirmware( imgFile, forceUpload ) + " ms");
+		        ihxFile.setSnString(snString);
+		    System.out.println("Firmware to EEPROM upload time: " + ztex.eepromUpload( ihxFile, forceUpload ) + " ms");
 		}
 		else if ( args[i].equals("-rm") ) {
 		    System.out.println("First free sector: " + ztex.flashFirstFreeSector() );
@@ -332,7 +328,7 @@ class FWLoader {
 			System.err.println(helpMsg);
 			System.exit(1);
 		    }
-		    System.out.println("Firmware to ATxmega Flash upload time: " + ztex.xmegaWriteFirmware( new ImgFile(args[i]) ) + " ms");
+		    System.out.println("Firmware to ATxmega Flash upload time: " + ztex.xmegaWriteFirmware( new IhxFile(args[i]) ) + " ms");
 		} 
 		else if ( args[i].equals("-uxe") ) {
 		    i++;
@@ -341,7 +337,7 @@ class FWLoader {
 			System.err.println(helpMsg);
 			System.exit(1);
 		    }
-		    System.out.println("Firmware to ATxmega Flash upload time: " + ztex.xmegaWriteEeprom( new ImgFile(args[i]) ) + " ms");
+		    System.out.println("Firmware to ATxmega Flash upload time: " + ztex.xmegaWriteEeprom( new IhxFile(args[i]) ) + " ms");
 		} 
 		else if ( args[i].equals("-rxf") ) {
 		    i++;
@@ -396,9 +392,6 @@ class FWLoader {
 		    ztex.xmegaFuseWrite( j, (ztex.xmegaFuseRead(j) & ~k) | l );
 		} 
 	    } 
-	    
-	    ztex.dispose();
-
 	} 
 	catch (Exception e) {
 	    System.out.println("Error: "+e.getLocalizedMessage() );

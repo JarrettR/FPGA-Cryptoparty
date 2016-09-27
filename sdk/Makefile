@@ -1,4 +1,4 @@
-DIRS=bmp examples default java
+DIRS=bmp examples default java libusbJava-src
 
 .PHONY: default all clean distclean avr avrclean avrdistclean
 

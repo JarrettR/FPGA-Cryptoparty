@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -17,6 +17,8 @@
 !*/
 
 package ztex;
+
+import ch.ntb.usb.*;
 
 /**
   * This class represents the configuration data space of ZTEX FPGA Boards that support it.
@@ -38,7 +40,6 @@ package ztex;
   * 26..27    Actual size of Bitstream in 4K sectors; 0 means Bitstream disabled (default)
   * 28..29    Maximum size of Bitstream in 4K sectors; 0 means that either no Flash
   *           is present or that this information is stored in Flash (exchangeable media)
-  * 30..31    Start of the Bitstream in 4K sectors
   * 30..79    Reserved
   * 80..127   48 bytes user space
   * </pre>
@@ -53,15 +54,13 @@ public class ConfigData {
 public static final String boardNames[] = {
     "(unknown)" ,             // 0
     "ZTEX FPGA Module" ,      // 1
-    "ZTEX USB-FPGA Module"    // 2, FX2 based
-    "ZTEX USB3-FPGA Module"   // 3, FX3 based
+    "ZTEX USB-FPGA Module"    // 2
 };}</pre>
   **/
     public static final String boardNames[] = {
 	"(unknown)" ,             // 0
 	"ZTEX FPGA Module" ,      // 1
-	"ZTEX USB-FPGA Module",   // 2, FX2 based
-	"ZTEX USB3-FPGA Module"   // 3, FX3 based
+	"ZTEX USB-FPGA Module"    // 2
     };
 
 /**
@@ -82,8 +81,7 @@ public static final String fpgas[] = {
 	"XC7A75T",     // 10
 	"XC7A100T",    // 11
 	"XC7A200T",    // 12
-	"Quad-XC6SLX150",  // 13
-	"XC7A15T",     // 14
+	"Quad-XC6SLX150"  // 13
 };}</pre>
   **/
     public static final String fpgas[] = {
@@ -100,8 +98,7 @@ public static final String fpgas[] = {
 	"XC7A75T",     // 10
 	"XC7A100T",    // 11
 	"XC7A200T",    // 12
-	"Quad-XC6SLX150",  // 13
-	"XC7A15T",     // 14
+	"Quad-XC6SLX150"  // 13
     };
 
 /** * FPGA packages used on ZTEX FPGA boards.
@@ -303,33 +300,8 @@ public static final String ramTypes[] = {
   * @return The name of the FPGA Board.
   */
    public String getName () {
-	return stringOfArray(boardNames,data[3]) + " " + data[4] + "." +  (data[5] / 10) + (data[5] % 10) + stringFromData(6,2);
+	return stringOfArray(boardNames,data[3]) + " " + data[4] + "." + data[5] + stringFromData(6,2);
    }
-
-/** 
-  * Returns the major version number, e.g. 2 for USB-FPGA Modules 2.14b.
-  * @return the major version number.
-  */
-   public byte getMajorVersion () {
-	return data[4];
-   }
-
-/** 
-  * Returns the minor version number, e.g. 14 for USB-FPGA Modules 2.14b.
-  * @return the minor version number.
-  */
-   public byte getMinorVersion () {
-	return data[5];
-   }
-
-/** 
-  * Returns the variant letter, e.g. "b" for USB-FPGA Modules 2.14b.
-  * @return the variant letter.
-  */
-   public String getVariant () {
-	return stringFromData(6,2);
-   }
-
 
 /** 
   * Sets the name of the FPGA Board. 
@@ -396,8 +368,8 @@ public static final String ramTypes[] = {
   * @param type RAM type and speed, see {@link #ramTypes} for possible values, e.g. "DDR2-800 SDRAM"
  */
    public void setRam ( int size, String type) {
-	if (size<0 || size>480*1024) {
-	    System.err.println("Warning: Invalid RAM size: `" + size + "'. Possible values are 0 to 480*1024.");
+	if (size<0 || size>480) {
+	    System.err.println("Warning: Invalid RAM size: `" + size + "'. Possible values are 0 to 480.");
 	    size = 0;
 	}
 	int i=0;
@@ -426,25 +398,6 @@ public static final String ramTypes[] = {
    public void setMaxBitstreamSize ( int size4k ) {
 	data[28] = (byte) (size4k & 255);
 	data[29] = (byte) ((size4k>> 8) & 255);
-   }
-
-/** 
-  * Returns bitstream start position in bytes.
-  * On devices which boot from flash the first sectors are reserved for the firmware.
-  * @return Bitstream start position in bytes.
-  */
-   public int getBitstreamStart () {
-	return ( (data[30] & 255) | ((data[31] & 255) << 8) ) * 4096;
-   }
-
-/** 
-  * Sets the start position of the bitstream in 4 KByte sectors.
-  * This setting is not transferred to the FPGA Board because is should not be altered by the user.
-  * @param start4k Bitstream start position in 4 KByte sectors. E.g. a value of 128 reserves 512 KByte for the bitstream.
- */
-   public void setBitstreamStart ( int start4k ) {
-	data[30] = (byte) (start4k & 255);
-	data[31] = (byte) ((start4k>> 8) & 255);
    }
 
 /** 
@@ -535,19 +488,4 @@ public static final String ramTypes[] = {
    public boolean sendtUserData () throws InvalidFirmwareException, UsbException, CapabilityException {
 	return sendData(80,48);
    }
-
-/** 
-  * Returns the bitstream path if the same directory sheme as for the examples is used.
-  * For USB-FPGA Modules 1.* and 2.0* (Spartan 6 FPGA) it is "usb-fpga-<major version number>.<minor version number><variant letter>/<project name>.bit", 
-  * for later FPGA Boards it is "usb-fpga-<major version number>.<minor version number>/<project name>.runs/impl_<major version number>.<minor version number><variant letter>/<project name>.bit".
-  * @param name The project name.
-  * @return Standard bitstream path.
-  */
-   public String defaultBitstreamPath(String name) {
-	return ( (getMajorVersion()<2) || ( (getMajorVersion()==2) && getMinorVersion()<10) ) ?
-	    "fpga-" + getMajorVersion() + "." + ( getMinorVersion() / 10 ) +  ( getMinorVersion() % 10 ) + ztex.config.getVariant() + "/" + name + ".bit" :
-	    "fpga-" + getMajorVersion() + "." + ( getMinorVersion() / 10 ) +  ( getMinorVersion() % 10 ) + "/" + name + ".runs/impl_" + getMajorVersion() + "_" + ( getMinorVersion() / 10 ) +  ( getMinorVersion() % 10 ) + ztex.config.getVariant() + "/" + name + ".bit";
-   }
-   
-   
 }    

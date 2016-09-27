@@ -1,6 +1,6 @@
 /*!
    DeviceServer for the ZTEX USB-FPGA Modules
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,10 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.net.*;
-import java.nio.*;
 
 import com.sun.net.httpserver.*;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 import ztex.*;
 
@@ -298,13 +297,13 @@ class SocketThread extends Thread {
 		out.println("(No devices)");
 	    }
 	    else {
-		out.println("# <busIdx>:<devNum>	<port>	<product ID'S>	<serial number string>	<manufacturer string>	<product name>");
+		out.println("# <busIdx>:<devNum>	<busName>	<product ID'S>	<serial number string>	<manufacturer string>	<product name>");
 	    }
 	    for ( int i=0; i<n; i++ ) {
 		try {
 		    ZtexDevice1 dev = DeviceServer.device(i);
 		    out.println(DeviceServer.busIdx(i) + ":" + DeviceServer.devNum(i)
-			    + "	" + LibUsb.getPortNumber(dev.dev())
+			    + "	" + dev.dev().getBus().getDirname()
 			    + ( dev.valid() ? ( "	" + ZtexDevice1.byteArrayString(dev.productId()) ) : "	(unconfigured)" )
 			    + "	\"" + ( dev.snString() == null ? "" : dev.snString() ) + "\"" 
 			    + "	\"" + ( dev.manufacturerString() == null ? "" : dev.manufacturerString() ) + "\"" 
@@ -325,7 +324,7 @@ class SocketThread extends Thread {
         if ( dev == null ) throw new Exception("Device " + busIdx + ":" + devNum + " not found");
 	Ztex1v1 ztex = new Ztex1v1(dev);
         PrintStream out = printer();
-	out.println("Port: " + LibUsb.getPortNumber(dev.dev()) );
+	out.println("Bus name: " + dev.dev().getBus().getDirname() );
 	out.println("Device Number: " + devNum );
 	out.println("USB ID's: " + Integer.toHexString(dev.usbVendorId()) + ":" + Integer.toHexString(dev.usbProductId()) );
 	out.println("Product ID's: " + ( dev.valid() ? ( ZtexDevice1.byteArrayString(dev.productId()) ) : "(unconfigured)" ) );
@@ -350,10 +349,9 @@ class SocketThread extends Thread {
 	if ( eps!=null ) {
 	    for ( int i=0; i<eps.size(); i++ ) {
 		EPDescriptor ep = eps.elementAt(i);
-		out.println("Interface " + ep.iface() + " Endpoint: "+ep.num()+" "+(ep.in() ? "read" : "write"));
+		out.println("Endpoint: "+ep.num()+" "+(ep.in() ? "read" : "write"));
 	    }
 	}
-	ztex.dispose();
     }
     
 // ******* run *****************************************************************
@@ -408,8 +406,6 @@ class SocketThread extends Thread {
 	    args[0] = args[0].substring(i+1);
 	}
 
-	Ztex1v1 ztex = null;
-	
 	// process commands
 	try {
 	    // quit
@@ -451,14 +447,14 @@ class SocketThread extends Thread {
 		int devNum=Integer.valueOf(args[2]);
 		ZtexDevice1 dev = DeviceServer.findDevice(busIdx, devNum);
     		if ( dev == null ) throw new Exception("Device " + busIdx + ":" + devNum + " not found");
-		ztex = new Ztex1v1(dev);
+		Ztex1v1 ztex = new Ztex1v1(dev);
 		
-	        if ( args[0].equalsIgnoreCase("upload")) {
+		if ( args[0].equalsIgnoreCase("upload")) {
 		    DeviceServer.loadFirmware ( ztex, messages, in, IPPermissions.toString( socket.getInetAddress() ), force, vola, nonvola, erase );
-	    	    int ndn = LibUsb.getDeviceAddress(ztex.dev().dev());
+	    	    int ndn = ztex.dev().dev().getDevnum();
 		    if ( ndn != devNum ) {
-		        messages.append("Device re-numerated: " + busIdx + ":" + devNum + " -> " + busIdx + ":" + ndn + "\n");
-		        DeviceServer.scanUSB();
+			messages.append("Device re-numerated: " + busIdx + ":" + devNum + " -> " + busIdx + ":" + ndn + "\n");
+			DeviceServer.scanUSB();
 		    }
 		}
 		else {
@@ -472,9 +468,14 @@ class SocketThread extends Thread {
 		int devNum=Integer.valueOf(args[2]);
 		ZtexDevice1 dev = DeviceServer.findDevice(busIdx, devNum);
     		if ( dev == null ) throw new Exception("Device " + busIdx + ":" + devNum + " not found");
-    		ztex = new Ztex1v1(dev);
+    		Ztex1v1 ztex = new Ztex1v1(dev);
 		EPDescriptorVector eps = DeviceServer.getEps(busIdx,devNum);
-		DeviceServer.epUpload (ztex, eps.find(Integer.valueOf(args[3])), in, messages);
+		try {
+		    DeviceServer.epUpload (ztex, eps.find(Integer.valueOf(args[3])), in, messages);
+		}
+		finally {
+		    DeviceServer.release(ztex);
+		}
 	    }
 	    // [<cid>:]read <bus index> <device number> <ep> [<max. bytes>]
 	    else if ( args[0].equalsIgnoreCase("read") ) {
@@ -484,11 +485,16 @@ class SocketThread extends Thread {
 		int devNum=Integer.valueOf(args[2]);
 		ZtexDevice1 dev = DeviceServer.findDevice(busIdx, devNum);
     		if ( dev == null ) throw new Exception("Device " + busIdx + ":" + devNum + " not found");
-    		ztex = new Ztex1v1(dev);
+    		Ztex1v1 ztex = new Ztex1v1(dev);
 		EPDescriptorVector eps = DeviceServer.getEps(busIdx,devNum);
 		int max_size = argsN==5 ? Integer.valueOf(args[4]) : Integer.MAX_VALUE;
-		DeviceServer.epDownload (ztex, eps.find(Integer.valueOf(args[3])), binOut(), max_size, messages);
-		binOut.flush();
+		try {
+		    DeviceServer.epDownload (ztex, eps.find(Integer.valueOf(args[3])), binOut(), max_size, messages);
+		    binOut.flush();
+		}
+		finally {
+		    DeviceServer.release(ztex);
+		}
 	    }
 	    // error <cid>
 	    else if ( args[0].equalsIgnoreCase("errors") ) {
@@ -513,7 +519,6 @@ class SocketThread extends Thread {
 	catch (Exception e) {
 	    messages.append("Error: "+e.getLocalizedMessage()+"\n");
 	}  
-	if ( ztex!=null ) ztex.dispose();
 	
 	try {
 	    if ( messages != null && messages.length()>0 ) {
@@ -792,7 +797,7 @@ class ZtexHttpHandler implements HttpHandler {
 	sb.append ("<table border=\"0\" bgcolor=\"#808080\" cellspacing=1 cellpadding=4>\n");
 	sb.append ("  <tr>\n");
 	sb.append ("    <td align=center bgcolor=\"#e0e0e0\">Device Link / <br> &lt;Bus Index&gt;:&lt;Device Number&gt;</td>\n");
-	sb.append ("    <td align=center bgcolor=\"#e0e0e0\">Port</td>\n");
+	sb.append ("    <td align=center bgcolor=\"#e0e0e0\">Bus Name</td>\n");
 	sb.append ("    <td align=center bgcolor=\"#e0e0e0\">Product ID's</td>\n");
 	sb.append ("    <td align=center bgcolor=\"#e0e0e0\">Serial Number String</td>\n");
 	sb.append ("    <td align=center bgcolor=\"#e0e0e0\">Manufacturer String</td>\n");
@@ -806,7 +811,7 @@ class ZtexHttpHandler implements HttpHandler {
 		    ZtexDevice1 dev = DeviceServer.device(i);
 		    sb.append("    <tr>\n");
 		    sb.append("    <td align=center bgcolor=\"#f0f0f0\"><a href=\"" + DeviceServer.busIdx(i) + ":" + DeviceServer.devNum(i) + "\">" + DeviceServer.busIdx(i) + ":" + DeviceServer.devNum(i) + "</a></td>\n");
-		    sb.append("    <td align=center bgcolor=\"#f0f0f0\">" + LibUsb.getPortNumber(dev.dev()) + "</td>\n");
+		    sb.append("    <td align=center bgcolor=\"#f0f0f0\">" + dev.dev().getBus().getDirname() + "</td>\n");
 		    sb.append("    <td align=center bgcolor=\"#f0f0f0\">" + ( dev.valid() ? ( ZtexDevice1.byteArrayString(dev.productId()) ) : "(unconfigured)" ) + "</td>\n");
 		    sb.append("    <td align=center bgcolor=\"#f0f0f0\">" + ( dev.snString() == null ? "" : dev.snString() ) + "</td>\n");
 		    sb.append("    <td align=center bgcolor=\"#f0f0f0\">" + ( dev.manufacturerString() == null ? "" : dev.manufacturerString() ) + "</td>\n");
@@ -913,8 +918,7 @@ class ZtexHttpHandler implements HttpHandler {
 	try { 
 	    DeviceServer.loadFirmware ( ztex, messages, fw_data, fw_data_name, fw_force, fw_upload_v, fw_upload_nv, fw_erase );
 	    if ( ztex != null ) {
-		dev = ztex.dev();
-		devNum = LibUsb.getDeviceAddress(dev.dev());
+		devNum = ztex.dev().dev().getDevnum();
 		if ( devNum != oldDevNum ) {
 		    messages.append("Device re-numerated: " + busIdx + ":" + oldDevNum + " -> " + busIdx + ":" + devNum + "\n");
 		    DeviceServer.scanUSB();
@@ -942,12 +946,13 @@ class ZtexHttpHandler implements HttpHandler {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		DeviceServer.epDownload (ztex, eps.find(epnum), out, ep_down_size, messages);
 		h.add("Content-Type", "application/octet-stream");
-		ztex.dispose();
 		return out.toByteArray();
 	    }
 	} catch ( Exception e ) {
 	    messages.append( "Error: " + e.getLocalizedMessage() + '\n' );
 	}
+	
+	DeviceServer.release (ztex);
 	
 	// ************
 	// * response *
@@ -957,9 +962,8 @@ class ZtexHttpHandler implements HttpHandler {
 
 	// info	
 	sb.append ("<table border=\"0\" bgcolor=\"#808080\" cellspacing=1 cellpadding=4>\n");
-	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> Bus number: </td><td align=left bgcolor=\"#f0f0f0\">" + busIdx + "</td></tr>\n");
+	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> Bus name: </td><td align=left bgcolor=\"#f0f0f0\">" + dev.dev().getBus().getDirname() + "</td></tr>\n");
 	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> Device Number: </td><td align=left bgcolor=\"#f0f0f0\">" + devNum + "</td></tr>\n");
-	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> Port: </td><td align=left bgcolor=\"#f0f0f0\">" + LibUsb.getPortNumber(dev.dev()) + "</td></tr>\n");
 	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> USB ID's: </td><td align=left bgcolor=\"#f0f0f0\">" + Integer.toHexString(dev.usbVendorId()) + ":" + Integer.toHexString(dev.usbProductId()) + "</td></tr>\n");
 	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> Product ID's: </td><td align=left bgcolor=\"#f0f0f0\">" + ( dev.valid() ? ( ZtexDevice1.byteArrayString(dev.productId()) ) : "(unconfigured)" ) + "</td></tr>\n");
 	sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> Firmware version: </td><td align=left bgcolor=\"#f0f0f0\">" + ( dev.valid() ? (dev.fwVersion() & 255) : "" ) + "</td></tr>\n");
@@ -981,12 +985,6 @@ class ZtexHttpHandler implements HttpHandler {
 		sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> FPGA State: </td><td align=left bgcolor=\"#f0f0f0\">" + s + "</td></tr>\n");
 	    } catch ( Exception e ) {
 	    }
-	    try {
-		ztex.getUsb3Errors();
-		sb.append("  <tr><td align=left bgcolor=\"#e0e0e0\"> USB 3.0 Errors: </td><td align=left bgcolor=\"#f0f0f0\"> Send errors: " + ztex.usb3SndErrors + ", receive errors: " + ztex.usb3RcvErrors + "</td></tr>\n");
-	    } catch ( Exception e ) {
-	    }
-	    
 	}
 	sb.append ("</table>\n");
         sb.append ("<p><a href=\"/\"><button>Device Overview</button></a>\n");
@@ -997,8 +995,15 @@ class ZtexHttpHandler implements HttpHandler {
 	sb.append ("  <div align=left>\n");
 	sb.append ("    Firmware file: <input name=\"fw_data\" type=\"file\" size=\"70\" accept=\".ihx\" maxlength=\"5000000\"><p>\n");
         sb.append ("  	<input type=\"checkbox\" name=\"fw_upload_v\" value=\"x\" " + ( fw_upload_v ? "checked" : "" ) + ">Upload to volatile Memory &nbsp;&nbsp;&nbsp;&nbsp;\n");
-    	sb.append ("    <input type=\"checkbox\" name=\"fw_upload_nv\" value=\"x\"" + ( fw_upload_nv ? "checked" : "" ) + ">Upload to non-Volatile Memory &nbsp;&nbsp;&nbsp;&nbsp;\n");
-    	sb.append ("    <input type=\"checkbox\" name=\"fw_erase\" value=\"x\"" + ( fw_erase ? "checked" : "" ) + ">Erase firmware in non-volatile memory");
+//        try {
+//    	    if ( ztex != null ) {
+//		ztex.checkCapability(ztex.CAPABILITY_EEPROM);
+    		sb.append ("    <input type=\"checkbox\" name=\"fw_upload_nv\" value=\"x\"" + ( fw_upload_nv ? "checked" : "" ) + ">Upload to non-Volatile Memory &nbsp;&nbsp;&nbsp;&nbsp;\n");
+    		sb.append ("    <input type=\"checkbox\" name=\"fw_erase\" value=\"x\"" + ( fw_erase ? "checked" : "" ) + ">Erase firmware in non-volatile memory");
+//    	    }
+//    	}
+//    	catch ( Exception a ) {
+//    	}
         sb.append ("    <input type=\"checkbox\" name=\"fw_force\" value=\"x\"" + ( fw_force ? "checked" : "" ) + ">Enforce upload<p>");
 	sb.append ("    (Before firmware can be loaded into non-volatile memory some firmware must be installed in volatile memory.)<p>\n");
 	sb.append ("  </div>\n");
@@ -1053,32 +1058,13 @@ class ZtexHttpHandler implements HttpHandler {
 	    sb.append ("</table>\n");
 	}
 
-	// Board log
-	try {
-	    String s = ztex.debug2GetNextLogMessage();
-	    if ( s != null ) {
-		StringBuilder sb2 = new StringBuilder();
-		while ( s!=null ) {
-		    sb2.append(s+"\n");
-		    s = ztex.debug2GetNextLogMessage();
-		}
-		heading(sb, "Device log");
-		sb.append("<div align=left><pre>\n");
-		sb.append(sb2);
-		sb.append ("</pre></div>");
-	    }
-	} catch ( Exception e ) {
-	}
-
-	// Device Server messages
+	// messages
 	if ( messages.length() > 0 ) {
-	    heading(sb,"Device Server Messages");
+	    heading(sb,"Messages");
 	    sb.append ("<div align=left><pre>\n");
 	    sb.append(messages);
 	    sb.append ("</pre></div>");
 	}
-
-	if ( ztex!=null ) ztex.dispose();
 
 	return htmlConvert(sb);
     }
@@ -1232,13 +1218,11 @@ class IPPermissions {
 // ******* EPDescriptor ********************************************************
 // *****************************************************************************
 class EPDescriptor {
-    public int iface;
     private boolean in, bulk;
     public int num;
     public int size;
     
-    public EPDescriptor ( int p_iface, boolean p_in, int p_num, boolean p_bulk, int p_size ) {
-	iface = p_iface;
+    public EPDescriptor ( boolean p_in, int p_num, boolean p_bulk, int p_size ) {
 	in = p_in;
 	num = p_num;
 	bulk = p_bulk;
@@ -1252,10 +1236,6 @@ class EPDescriptor {
     
     public int num () {
 	return num;
-    }
-
-    public int iface () {
-	return iface;
     }
     
     public boolean bulk () {
@@ -1292,11 +1272,10 @@ class DeviceServer {
     public static int httpPort = 9080;
     public static int socketPort = 9081;
     public static boolean quit = false;
-
+    
     private static Vector<Socket> socketVector = new Vector<Socket>();
     private static boolean verbose = false;
     private static boolean quiet = false;
-    private static boolean scanAllInterfaces = false;
     private static PrintStream logFile = null;
     private static PrintStream log2File = null;
     
@@ -1304,11 +1283,12 @@ class DeviceServer {
     private static IPPermissions socketPermissions = new IPPermissions();
     private static String httpBind = null, socketBind = null;
     
-    private static ZtexScanBus1 scanBus = null;
+    private static ZtexScanBus1 scanBus;
     private static int busIdx[];
     private static int devNum[];
     private static int confNum[];
     private static EPDescriptorVector eps[];
+    private static Vector<String> dirnameDB = new Vector<String>();
 
 // ******* addSocket ***********************************************************
     public synchronized static void addSocket( Socket socket ) {
@@ -1349,10 +1329,20 @@ class DeviceServer {
 	if ( log2File != null ) log2File.println( msgDateFormat.format(new Date()) + ": " + msg );
     }
 
+// ******* getDirnameNum *******************************************************
+    public static int getDirnameIdx ( String dirname ) {
+	if ( dirname == null ) return -1;
+	for ( int i=0; i<dirnameDB.size(); i++ ) {
+	    if ( dirname.equals(dirnameDB.elementAt(i)) ) return i;
+	}
+	dirnameDB.add(dirname);
+	info("Found bus \"" +dirname + "\": assigned bus index " + (dirnameDB.size()-1));
+	return dirnameDB.size()-1;
+    }
+
 // ******* scanUSB *************************************************************
     public synchronized static void scanUSB () {
 	info("Scanning USB ...");
-	if ( scanBus != null ) scanBus.unref();
 	scanBus = new ZtexScanBus1( usbVendorId, usbProductId, cypress, false, 1 );
 	int n = scanBus.numberOfDevices();
 	if ( n > 0 ) {
@@ -1361,38 +1351,30 @@ class DeviceServer {
 	    confNum = new int[n];
 	    eps = new EPDescriptorVector[n];
 	    for ( int i=0; i<n; i++ ) {
-		Device dev = scanBus.device(i).dev();
-		busIdx[i] = LibUsb.getBusNumber(dev);
-		devNum[i] = LibUsb.getDeviceAddress(dev);
+		Usb_Device dev = scanBus.device(i).dev();
+		busIdx[i] = getDirnameIdx( dev.getBus().getDirname() );
+		devNum[i] = dev.getDevnum();
 		confNum[i] = -1;
 		eps[i] = new EPDescriptorVector();
 		try {
-		    DeviceDescriptor dd = new DeviceDescriptor();
-    		    int result = LibUsb.getDeviceDescriptor(dev, dd);
-    		    if ( (result!=LibUsb.SUCCESS) || (dd.bNumConfigurations() < 1) ) throw new Exception();
-    		    ConfigDescriptor cd = new ConfigDescriptor();
-    		    result = LibUsb.getConfigDescriptor(dev,(byte)0,cd);
-		    if ( result!=LibUsb.SUCCESS ) throw new Exception();
-		    confNum[i] = cd.bConfigurationValue();
-		    int kn = Math.min(scanAllInterfaces ? 255 : 1, cd.bNumInterfaces());
-		    for (int k=0; k<kn; k++ ) {
-			Interface iface = cd.iface()[k];
-			if ( iface.numAltsetting() < 1 ) continue;
-			InterfaceDescriptor desc = iface.altsetting()[0];
-			if ( desc.bNumEndpoints() < 1 ) continue;
-			EndpointDescriptor epd[] = desc.endpoint();
-			for ( int j=0; j<epd.length; j++ ) {
-			    int t = epd[j].bmAttributes() & LibUsb.TRANSFER_TYPE_MASK;
-			    if ( t == LibUsb.TRANSFER_TYPE_BULK || t == LibUsb.TRANSFER_TYPE_INTERRUPT )
-				eps[i].addElement(new EPDescriptor( k,
-					(epd[j].bEndpointAddress() & 128) != 0,
-					epd[j].bEndpointAddress() & 127,
-					t == LibUsb.TRANSFER_TYPE_BULK,
-					epd[j].wMaxPacketSize() 
-				    ) );
-			}
-			
-			
+		    if ( dev.getDescriptor().getBNumConfigurations() < 1 ) throw new Exception();
+		    Usb_Config_Descriptor conf = dev.getConfig()[0];
+		    confNum[i] = conf.getBConfigurationValue();
+		    if ( conf.getBNumInterfaces() < 1 ) throw new Exception();
+		    Usb_Interface iface = conf.getInterface()[0];
+		    if ( iface.getNumAltsetting() < 1 ) throw new Exception();
+		    Usb_Interface_Descriptor desc = iface.getAltsetting()[0];
+		    if ( desc.getBNumEndpoints() < 1 ) throw new Exception();
+		    Usb_Endpoint_Descriptor epd[] = desc.getEndpoint();
+		    for ( int j=0; j<epd.length; j++ ) {
+			int t = epd[j].getBmAttributes() & Usb_Endpoint_Descriptor.USB_ENDPOINT_TYPE_MASK;
+			if ( t == Usb_Endpoint_Descriptor.USB_ENDPOINT_TYPE_BULK || t == Usb_Endpoint_Descriptor.USB_ENDPOINT_TYPE_INTERRUPT )
+			    eps[i].addElement(new EPDescriptor( 
+				    (epd[j].getBEndpointAddress() & Usb_Endpoint_Descriptor.USB_ENDPOINT_DIR_MASK) != 0,
+				    epd[j].getBEndpointAddress() & Usb_Endpoint_Descriptor.USB_ENDPOINT_ADDRESS_MASK,
+				    t == Usb_Endpoint_Descriptor.USB_ENDPOINT_TYPE_BULK,
+				    epd[j].getWMaxPacketSize() 
+				) );
 		    }
 		}
 		catch (Exception e) {
@@ -1401,30 +1383,24 @@ class DeviceServer {
 	}
     }
 
-// ******* unref ***************************************************************
-    public synchronized static void unref () {
-	if ( scanBus != null ) scanBus.unref();
-	scanBus = null;
-    }
-
 // ******* loadFirmware ********************************************************
-    public synchronized static void loadFirmware ( Ztex1v1 ztex, StringBuilder messages, InputStream in, String inName, boolean force, boolean toVolatile, boolean toNonVolatile, boolean eraseNV ) throws Exception {
+    public synchronized static void loadFirmware ( Ztex1v1 ztex, StringBuilder messages, InputStream in, String inName, boolean force, boolean toVolatile, boolean toNonVolatile, boolean eraseEeprom ) throws Exception {
 	if ( ztex == null ) return;
-	eraseNV = eraseNV && (! toNonVolatile );
+	eraseEeprom = eraseEeprom && (! toNonVolatile );
 	if ( toVolatile || toNonVolatile ) {
 	    if ( in == null ) throw new Exception("No firmware defined.");
-	    ZtexImgFile1 imgFile = new ZtexImgFile1( in, inName );
+	    ZtexIhxFile1 ihxFile = new ZtexIhxFile1( in, inName );
 	    if ( toVolatile ) {
-		long i = ztex.uploadFirmware( imgFile, force );
+		long i = ztex.uploadFirmware( ihxFile, force );
 		if ( messages != null ) messages.append("Firmware uploaded to volatile memory: "+i+"ms\n");
 		}
 	    if ( toNonVolatile ) {
-		 long i = ztex.nvUploadFirmware( imgFile, force );
+		 long i = ztex.eepromUpload( ihxFile, force );
 		if ( messages != null ) messages.append("Firmware uploaded to non-volatile memory: "+i+"ms\n");
 	    }
 	}
-	if ( eraseNV ) {
-	    ztex.nvDisableFirmware();
+	if ( eraseEeprom ) {
+	    ztex.eepromDisable();
 	    if ( messages != null ) messages.append("Firmware in non-volatile memory disabled\n");
 	}
     }
@@ -1462,7 +1438,7 @@ class DeviceServer {
     }
 
 // ******* claim ***************************************************************
-    public synchronized static void claim ( Ztex1v1 ztex, int iface, StringBuilder messages ) {
+    public synchronized static void claim ( Ztex1v1 ztex, StringBuilder messages ) {
 	int c = 1;
 	for (int i=0; i<scanBus.numberOfDevices(); i++ ) {
 	    if ( scanBus.device(i) == ztex.dev() ) {
@@ -1477,135 +1453,59 @@ class DeviceServer {
 	}
 
 	try {
-	    ztex.claimInterface(iface);
+	    ztex.claimInterface(0);
 	}
 	catch ( UsbException e ) {
 	    if (messages!=null) messages.append("Warning: "+e.getLocalizedMessage()+'\n');
 	}
     }
 
+// ******* release *************************************************************
+    public synchronized static void release ( Ztex1v1 ztex ) {
+	if (ztex!=null) ztex.releaseInterface(0);
+    }
+
 // ******* epUpload ************************************************************
-/*    public synchronized static void epUpload ( Ztex1v1 ztex, EPDescriptor ep, InputStream in, StringBuilder messages ) throws Exception {
-	if ( ztex == null ) return;
-	if ( ep == null || ep.in() ) throw new UsbException(ztex.dev().dev(), "No valid endpoint defined");
-	
-	claim(ztex, ep.iface(), messages);
-
-	ZtexUsbWriter writer = new ZtexUsbWriter( ztex, ep.num(), !ep.bulk(), 16, 128*1024 );
-	byte buf[] = new byte[writer.bufSize()];
-
-	ZtexEventHandler eventHandler = new ZtexEventHandler(ztex);
-	eventHandler.start();
-
-	int r,i;
-	do {
-	    r = i = Math.max(in.read(buf),0);
-	    if ( r>0 ) i = writer.transmitBuffer(buf, r, 2000);
-	} while (r>0 && r==i);
-
-	if ( ! eventHandler.terminate() ) if (messages!=null) messages.append("Warning: Unable to terminate event handler\n");
-
-	if (i<0) throw new UsbException("Write error: timeout occured");
-	if ( r!=i ) throw new UsbException("Write error: wrote " + i + " bytes instead of " + r + " bytes");
-	
-	if ( !writer.wait(5000) ) throw new UsbException("Unable to finish writing\n");
-    } */
     public synchronized static void epUpload ( Ztex1v1 ztex, EPDescriptor ep, InputStream in, StringBuilder messages ) throws Exception {
 	if ( ztex == null ) return;
 	if ( ep == null || ep.in() ) throw new UsbException(ztex.dev().dev(), "No valid endpoint defined");
 	
-	claim(ztex, ep.iface(), messages);
-
-	final int bufSize = 512;
-	ByteBuffer buffer = BufferUtils.allocateByteBuffer(bufSize);
-	IntBuffer transferred = BufferUtils.allocateIntBuffer();
+	claim(ztex,messages);
+	
+	int bufSize = ep.num()==1 ? 64 : 256*1024;
 	byte buf[] = new byte[bufSize];
-
-	int r, i, result=LibUsb.SUCCESS;
+	int r,i;
 	do {
-	    r = i = Math.max(in.read(buf),0);
-	    if ( r > 0 ) {
-		buffer.put(buf,0,r);
-		ByteBuffer tmpbuf = r == bufSize ? buffer : BufferUtils.slice(buffer,0,r);
-		result = ep.bulk() ? 
-		    LibUsb.bulkTransfer(ztex.handle(), (byte)(ep.num() & 127), tmpbuf, transferred, 2000) :
-		    LibUsb.interruptTransfer(ztex.handle(), (byte)(ep.num() & 127), tmpbuf, transferred, 2000);
-		i = transferred.get();
-		transferred.clear();
-		buffer.clear();
-	    }
-	} while (r>0 && r==i && result==LibUsb.SUCCESS);
+	    i = r = Math.max(in.read(buf),0);
+	    if ( i>0 ) i = ep.bulk() ? LibusbJava.usb_bulk_write(ztex.handle(), ep.num, buf, r, 1000) : LibusbJava.usb_interrupt_write(ztex.handle(), ep.num, buf, r, 1000);
+	} while (r>0 && r==i);
 
-	if ( result != LibUsb.SUCCESS) throw new UsbException("Write error: ", result);
-	if ( r!=i ) throw new UsbException("Write error: transmitted " + i + " bytes instead of " + r + " bytes");
-    } 
+	if (i<0) throw new UsbException("Write error: " + LibusbJava.usb_strerror());
+	if ( r!=i ) throw new UsbException("Write error: wrote " + i + " bytes instead of " + r + " bytes");
+    }
 
 // ******* epDownload **********************************************************
-/*
     public synchronized static void epDownload ( Ztex1v1 ztex, EPDescriptor ep, OutputStream out, int maxSize, StringBuilder messages ) throws Exception {
 	if ( ztex == null ) return;
 	if ( ep == null || ! ep.in() ) throw new UsbException(ztex.dev().dev(), "No valid endpoint defined");
 	if ( maxSize < 1 ) maxSize = Integer.MAX_VALUE;
 	
-	claim(ztex, ep.iface(), messages);
+	claim(ztex,messages);
 	
-	ZtexUsbReader reader = new ZtexUsbReader( ztex, ep.num(), !ep.bulk(), 16, 1024 );
-	byte buf[] = new byte[reader.bufSize()];
-
-	ZtexEventHandler eventHandler = new ZtexEventHandler(ztex);
-	eventHandler.start();
-	reader.start( ((maxSize-1)/reader.bufSize())+1 );
-
-	int i;
-	do {
-	    i = reader.getBuffer(buf, 2000);
-	    if (i>0) out.write(buf,0,i);
-	} while (i==reader.bufSize());
-
-	if ( ! eventHandler.terminate() ) if (messages!=null) messages.append("Warning: Unable to terminate event handler\n");
-	reader.cancel();
-
-	if (i<0) throw new UsbException("Read error: timeout occurred");
-
-	if ( !reader.cancelWait(5000) ) if (messages!=null) messages.append("Unable to cancel reader\n");
-    }
-*/    
-
-    public synchronized static void epDownload ( Ztex1v1 ztex, EPDescriptor ep, OutputStream out, int maxSize, StringBuilder messages ) throws Exception {
-	if ( ztex == null ) return;
-	if ( ep == null || ! ep.in() ) throw new UsbException(ztex.dev().dev(), "No valid endpoint defined");
-	if ( maxSize < 1 ) maxSize = Integer.MAX_VALUE;
-	
-	claim(ztex, ep.iface(), messages);
-
-	final int bufSize = 128*1024;
-	ByteBuffer buffer = BufferUtils.allocateByteBuffer(bufSize);
-	IntBuffer transferred = BufferUtils.allocateIntBuffer();
+	int bufSize = ep.num()==1 ? 64 : 256*1024;
 	byte buf[] = new byte[bufSize];
-
-	int r, i=0, result=LibUsb.SUCCESS;
+	int r,i;
+	int j=0;
 	do {
-	    r = Math.min(bufSize, maxSize);
-	    maxSize -= r;
-	    buffer.limit(r);
-    	    
-	    result = ep.bulk() ? 
-	        LibUsb.bulkTransfer(ztex.handle(), (byte)(128 | (ep.num() & 127)), buffer, transferred, 2000) :
-	        LibUsb.interruptTransfer(ztex.handle(), (byte)(128 | (ep.num() & 127)), buffer, transferred, 2000);
-	    
-	    i = Math.min(r,transferred.get());
-	    
-//	    System.err.println("r=" + r + " result="+result + " i="+i);
+	    r = Math.min(bufSize,maxSize);
+	    maxSize-=r;
+	    i = ep.bulk() ? LibusbJava.usb_bulk_read(ztex.handle(), 0x80 | ep.num, buf, r, j==0 ? 5000 : 1000) : LibusbJava.usb_interrupt_read(ztex.handle(), 0x80 | ep.num, buf, r, 1000);
+	    if (i>0) out.write(buf,0,i);
+//	    System.out.println("r: "+i);
+	    j++;
+	} while (maxSize>0 && r==i);
 
-	    if ( result==LibUsb.SUCCESS && i>0 ) {
-		buffer.get(buf,0,i);
-		out.write(buf,0,i);
-	    }
-	    buffer.clear();
-	    transferred.clear();
-	} while (maxSize>0 && r==i && result==LibUsb.SUCCESS);
-	if ( result != LibUsb.SUCCESS) throw new UsbException("Read error: ", result);
-//	if ( r!=i ) throw new UsbException("Read error: got " + i + " bytes instead of " + r + " bytes");
+	if (i<0) throw new UsbException("Read error: " + LibusbJava.usb_strerror());
     }
 
 // ******* numberOfDevices *****************************************************
@@ -1656,6 +1556,8 @@ class DeviceServer {
 
 // ******* main ****************************************************************
     public static void main (String args[]) {
+	LibusbJava.usb_init();
+
 	final String helpMsg = new String (
 			"Global parameters:\n"+
 			"    -nc              Do not scan for Cypress EZ-USB devices without ZTEX firmware\n"+
@@ -1670,7 +1572,6 @@ class DeviceServer {
 			"    -hb <address>    Bind HTTP server to this address (default: listen on all interfaces)\n"+
 			"    -v               Be verbose\n"+
 			"    -q               Be quiet\n"+
-			"    -a               Scan all interfaces (default: interface 0 only)\n"+
 			"    -l               Log file\n"+
 			"    -l2              Verbose log file\n"+
 			"    -h               Help" );
@@ -1798,9 +1699,6 @@ class DeviceServer {
 		else if ( args[i].equals("-q") ) {
 		    quiet = true;
 		}
-		else if ( args[i].equals("-a") ) {
-		    scanAllInterfaces = true;
-		}
 		else if ( args[i].equals("-l") ) {
 		    i++;
 		    if (i>=args.length) {
@@ -1850,6 +1748,13 @@ class DeviceServer {
 	    }
 
 // init USB stuff
+	    LibusbJava.usb_init();
+	    LibusbJava.usb_find_busses();
+	    Usb_Bus bus = LibusbJava.usb_get_busses();
+    	    while ( bus != null ) {
+		getDirnameIdx(bus.getDirname());
+		bus = bus.getNext();
+	    }
 	    scanUSB();
 
 // start http server
@@ -1899,8 +1804,6 @@ class DeviceServer {
 	catch (Exception e) {
 	    error("Error: "+e.getLocalizedMessage() );
 	}  
-	
-	unref();
    } 
    
 }

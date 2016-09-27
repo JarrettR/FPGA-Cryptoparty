@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -20,9 +20,8 @@ package ztex;
 
 import java.io.*;
 import java.util.*;
-import java.nio.*;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 /** 
   * Provides methods for uploading firmware to Cypress EZ-USB devices.
@@ -35,19 +34,17 @@ public class EzUsb {
   * @param r The reset state (true means reset).
   * @throws FirmwareUploadException if an error occurred while attempting to control the reset state.
   */
-    public static void resetFx2 ( DeviceHandle handle, boolean r ) throws FirmwareUploadException {
-	ByteBuffer buffer = BufferUtils.allocateByteBuffer(1);
-	buffer.put(new byte[] { (byte) (r ? 1 : 0) });
-
-	int k = LibUsb.controlTransfer(handle, (byte)0x40, (byte)(0xA0 & 255), (short)(0xE600 & 0xffff), (short)0, buffer, 1000);  
+    public static void reset ( long handle, boolean r ) throws FirmwareUploadException {
+	byte buffer[] = { (byte) (r ? 1 : 0) };
+	int k = LibusbJava.usb_control_msg(handle, 0x40, 0xA0, 0xE600, 0, buffer, 1, 1000);   // upload j bytes
 	if ( k<0 ) 
-	    throw new FirmwareUploadException( LibUsb.strError(k) + ": unable to set reset="+r );
+	    throw new FirmwareUploadException( LibusbJava.usb_strerror() + ": unable to set reset="+buffer[0] );
 	else if ( k!=1 ) 
-	    throw new FirmwareUploadException( "Unable to set reset="+r );
+	    throw new FirmwareUploadException( "Unable to set reset="+buffer[0] );
 	try {
     	    Thread.sleep( r ? 50 : 400 );	// give the firmware some time for initialization
 	}
-	catch ( InterruptedException e ) {
+	    catch ( InterruptedException e ) {
 	}
     }
      
@@ -55,54 +52,44 @@ public class EzUsb {
 /** 
   * Uploads the Firmware to a Cypress EZ-USB device.
   * @param handle The handle of the device.
-  * @param imgFile The firmware image.
+  * @param ihxFile The firmware image.
   * @return the upload time in ms.
   * @throws FirmwareUploadException if an error occurred while attempting to upload the firmware.
   */
-    public static long uploadFirmware (DeviceHandle handle, ImgFile imgFile ) throws FirmwareUploadException {
-	final int transactionBytes = 4096;
-	
-	ByteBuffer buffer = BufferUtils.allocateByteBuffer(transactionBytes).order(ByteOrder.LITTLE_ENDIAN);
+    public static long uploadFirmware (long handle, IhxFile ihxFile ) throws FirmwareUploadException {
+	final int transactionBytes = 256;
+	byte[] buffer = new byte[transactionBytes];
 
-	if ( !imgFile.isFx3 )
-	    resetFx2( handle, true );  // FX2 assumed, reset = 1
+	reset( handle, true );  // reset = 1
 	
 	long t0 = new Date().getTime();
 	int j = 0;
-	for ( int i=0; i<=imgFile.data.length; i++ ) {
-	    if ( i >= imgFile.data.length || imgFile.data[i] < 0 || j >=transactionBytes ) {
+	for ( int i=0; i<=ihxFile.ihxData.length; i++ ) {
+	    if ( i >= ihxFile.ihxData.length || ihxFile.ihxData[i] < 0 || j >=transactionBytes ) {
 		if ( j > 0 ) {
-		    long addr = ImgFile.uncompressAddr(i-j);
-		    int k = LibUsb.controlTransfer(handle, (byte)0x40, (byte)(0xA0 & 255), (short)(addr & 0xffff), (short)(addr >> 16), BufferUtils.slice(buffer,0,j), 1000);   // upload j bytes
+		    int k = LibusbJava.usb_control_msg(handle, 0x40, 0xA0, i-j, 0, buffer, j, 1000);   // upload j bytes
 		    if ( k<0 ) 
-			throw new FirmwareUploadException(LibUsb.strError(k));
+			throw new FirmwareUploadException(LibusbJava.usb_strerror());
 		    else if ( k!=j ) 
-			throw new FirmwareUploadException("sent "+k+" bytes, expected "+j);
+			throw new FirmwareUploadException();
 		    try {
 		        Thread.sleep( 1 );	// to avoid package loss
 		    }
 			catch ( InterruptedException e ) {
 		    }
-		    buffer.clear();
 		}
 		j = 0;
 	    }
 
-	    if ( i < imgFile.data.length && imgFile.data[i] >= 0 && imgFile.data[i] <= 255 ) {
-		buffer.put( (byte) imgFile.data[i] );
+	    if ( i < ihxFile.ihxData.length && ihxFile.ihxData[i] >= 0 && ihxFile.ihxData[i] <= 255 ) {
+		buffer[j] = (byte) ihxFile.ihxData[i];
 		j+=1;
 	    }
 	}
 	long t1 = new Date().getTime();
-	
-	if ( imgFile.startVector >=0 ) {
-	    LibUsb.controlTransfer(handle, (byte)0x40, (byte)(0xA0 & 255), (short)(imgFile.startVector & 0xffff), (short)(imgFile.startVector >> 16), ByteBuffer.allocateDirect(0), 1000);   // upload start vector
-	} 
 
 	try {
-	    if ( !imgFile.isFx3 ) {
-		resetFx2( handle, false );  // FX2 assumed, reset = 0, errors (due to renumeration) can be ignored
-	    }
+	    EzUsb.reset(handle,false);		// error (may caused re-numeration) can be ignored
 	}
 	catch ( FirmwareUploadException e ) {
 	}

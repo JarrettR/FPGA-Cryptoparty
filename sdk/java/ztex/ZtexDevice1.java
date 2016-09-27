@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,14 @@
 !*/
 
 /* 
-    USB device with ZTEX descriptor 1 and/or Cypress EZ-USB FX2/3 device
+    USB device with ZTEX descriptor 1 and/or Cypress EZ-USB FX2 device
 */
 package ztex;
 
 import java.io.*;
 import java.util.*;
-import java.nio.*;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 /**
   * A class representing an EZ-USB device that supports the ZTEX descriptor 1 or an unconfigured EZ-USB device.<br>
@@ -75,18 +74,11 @@ import org.usb4java.*;
   *           <tr><td>10.*.*.*</td> <td>used for ZTEX products</td></tr>
   *           <tr><td>10.11.*.*</td> <td>ZTEX USB-FPGA-Module 1.2</td></tr>
   *           <tr><td>10.12.*.*</td> <td>ZTEX USB-FPGA-Module 1.11</td></tr>
-  *	      <tr><td>10.12.2.1..4</td> <td>NIT (http://www.niteurope.com/)</td></tr>
   *           <tr><td>10.13.*.*</td> <td>ZTEX USB-FPGA-Module 1.15 (not 1.15y)</td></tr>
   *           <tr><td>10.14.*.*</td> <td>ZTEX USB-FPGA-Module 1.15x</td></tr>
   *           <tr><td>10.15.*.*</td> <td>ZTEX USB-FPGA-Module 1.15y</td></tr>
-  *           <tr><td>10.16.*.*</td> <td> ZTEX USB-FPGA-Module 2.16</td></tr>
-  *           <tr><td>10.17.*.*</td> <td>ZTEX USB-FPGA-Module 2.13</td></tr>
-  *           <tr><td>10.18.*.*</td> <td>ZTEX USB-FPGA-Module 2.01</td></tr>
-  *           <tr><td>10.19.*.*</td> <td>ZTEX USB-FPGA-Module 2.04</td></tr>
   *           <tr><td>10.20.*.*</td> <td>ZTEX USB-Module 1.0</td></tr>
   *           <tr><td>10.30.*.*</td> <td>ZTEX USB-XMEGA-Module 1.0</td></tr>
-  *           <tr><td>10.40.*.*</td> <td>ZTEX USB-FPGA-Module 2.02</td></tr>
-  *           <tr><td>10.41.*.*</td> <td>ZTEX USB-FPGA-Module 2.14</td></tr>
   *           <tr><td>10.0.1.1</td> <td>ZTEX BTCMiner firmware</td></tr>
   *         </table></td></tr></table>
   *         Please contact us (<a href="http://www.ztex.de/contact.e.html">http://www.ztex.de/contact.e.html</a>) if you want to register or reserve a Product ID (range).
@@ -131,16 +123,8 @@ import org.usb4java.*;
 public class ZtexDevice1 {
 /** * Cypress vendor ID: 0x4b4 */
     public static final int cypressVendorId = 0x4b4;
-/** * EZ-USB USB FX2 product ID: 0x8613 */
-    public static final int cypressProductIdFx2 = 0x8613;
-/** * EZ-USB USB FX3 product ID: 0x00f3 */
-    public static final int cypressProductIdFx3 = 0x00f3;
-//    public static final int cypressProductIdFx3 = 0x4720;
-
-/** * Vendor ID of buggy FX3 devices (datecode 1149) */
-    public static final int cypressVendorIdBuggy = 0x1480;
-/** * Product ID of buggy FX3 devices (datecode 1149) */
-    public static final int cypressProductIdBuggy = 0x0000;
+/** * EZ-USB USB product ID: 0x8613 */
+    public static final int cypressProductId = 0x8613;
 
 /** * ZTEX vendor ID: 0x221a */
     public static final int ztexVendorId = 0x221A;
@@ -162,7 +146,7 @@ public class ZtexDevice1 {
   */
     public static final int ztexProductIdMax = 0x1ff;
 
-    private Device dev = null;
+    private Usb_Device dev = null;
     private boolean valid = false;		// true if descriptor 1 is available
     private int usbVendorId = -1;
     private int usbProductId = -1;
@@ -174,9 +158,6 @@ public class ZtexDevice1 {
     private byte interfaceVersion = 0;
     private byte interfaceCapabilities[] = { 0,0,0,0, 0,0 };
     private byte moduleReserved[] = { 0,0,0,0, 0,0,0,0, 0,0,0,0 };
-    private boolean fx3 = false;
-    private ZtexContext context = null;
-    private int refCount = 0;
 
 // ******* byteArrayString *****************************************************
 /**
@@ -201,7 +182,6 @@ public class ZtexDevice1 {
   * the ZTEX descriptor 1 is attempted to read. If this fails, an {@link InvalidFirmwareException} is thrown.
   * To suppress this behavior (e.g. if the EZ-USB device is known to be unconfigured) the vendor and product id's 
   * can be set to -1.
-  * @param p_context The USB context.
   * @param p_dev The USB device.
   * @param pUsbVendorId The given vendor ID.
   * @param pUsbProductId The given product ID.
@@ -210,95 +190,96 @@ public class ZtexDevice1 {
   * @throws InvalidFirmwareException if no valid ZTEX descriptor 1 is found.
   * @throws DeviceNotSupported if the device has the wrong USB ID's.
   */
-    public ZtexDevice1 (ZtexContext p_context, Device p_dev, int pUsbVendorId, int pUsbProductId, boolean allowUnconfigured) throws UsbException, InvalidFirmwareException, DeviceNotSupportedException  {
-	context = p_context;
+    public ZtexDevice1 (Usb_Device p_dev, int pUsbVendorId, int pUsbProductId, boolean allowUnconfigured) throws UsbException, InvalidFirmwareException, DeviceNotSupportedException  {
 	dev = p_dev;
-	refCount = 0;
 
-        DeviceDescriptor dd = new DeviceDescriptor();
-        int result = LibUsb.getDeviceDescriptor(dev, dd);
-        if (result != LibUsb.SUCCESS) throw new UsbException(dev, "Unable to read device descriptor", result);
-	usbVendorId = dd.idVendor() & 65535;
-	usbProductId = dd.idProduct() & 65535;
-        
-	fx3 = (usbVendorId == cypressVendorId) && (usbProductId == cypressProductIdFx3) || (usbVendorId == cypressVendorIdBuggy) && (usbProductId == cypressProductIdBuggy);
+	Usb_Device_Descriptor dd = dev().getDescriptor();
+	usbVendorId = dd.getIdVendor() & 65535;
+	usbProductId = dd.getIdProduct() & 65535;
+	
 	if ( ! ( ( 
 	           (usbVendorId == pUsbVendorId) && 
 	           (usbProductId == pUsbProductId || ( usbVendorId == ztexVendorId && pUsbProductId<0 && usbProductId>=ztexProductId && usbProductId<ztexProductIdMax ) )
 	         ) ||
 	         ( 
-	           allowUnconfigured && 
-	            ( (usbVendorId == cypressVendorId) && (usbProductId == cypressProductIdFx2) || fx3 )
+	           allowUnconfigured && (usbVendorId == cypressVendorId) && (usbProductId == cypressProductId)
 	         ) )  )
 	    throw new DeviceNotSupportedException(p_dev);
 	
-	DeviceHandle handle = new DeviceHandle();
-	result = LibUsb.open(dev, handle);
-	if (result != LibUsb.SUCCESS) throw new UsbException(dev, "Unable to open USB device", result);
+	long handle = LibusbJava.usb_open(dev);
 
-	if ( dd.iManufacturer() > 0 ) 
-	    manufacturerString = LibUsb.getStringDescriptor( handle, dd.iManufacturer() );
-	if ( dd.iProduct() > 0 ) 
-	    productString = LibUsb.getStringDescriptor( handle, dd.iProduct() );
-	if ( dd.iSerialNumber() > 0 )  
-	    snString = LibUsb.getStringDescriptor( handle, dd.iSerialNumber() );
+//	if ( handle > 0 ) {
+	    if ( dd.getIManufacturer() > 0 ) 
+	    	manufacturerString = LibusbJava.usb_get_string_simple( handle, dd.getIManufacturer() );
+	    if ( dd.getIProduct() > 0 ) 
+	    	productString = LibusbJava.usb_get_string_simple( handle, dd.getIProduct() );
+	    if ( dd.getISerialNumber() > 0 )  
+	    	snString = LibusbJava.usb_get_string_simple( handle, dd.getISerialNumber() );
 		
-//	    System.out.println("snString="+snString);
-	if ( snString == null ) {
-	    LibUsb.close(handle);
-	    if ( allowUnconfigured ) {
-		ref();
-	        return;
-	    }
-	    else {
-	        throw new InvalidFirmwareException( dev, "Not a ZTEX device" );  // ZTEX devices always have a SN. See also the next comment a few lines below
-	    }
-	} 
-	
-	ByteBuffer buf = BufferUtils.allocateByteBuffer(42);
-	int i = LibUsb.controlTransfer(handle, (byte) (0xc0 & 255), (byte)0x22, (short)0,(short)0, buf, 500);	// Failing of this may cause problems under windows. Therefore we check for the SN above.
-	if ( i < 0 ) {
-	    LibUsb.close(handle);
-	    if ( allowUnconfigured ) {
-		ref();
-	        return;
-	    }    
-	    else {
-	        throw new InvalidFirmwareException( dev, "Error reading ZTEX descriptor: " + LibUsb.strError(i) );
-	    }
-	}
-	else if ( i != 40 ) {
-	    LibUsb.close(handle);
-	    if ( allowUnconfigured ) {
-		ref();
-	        return;
-	    }
-	    else {
-	        throw new InvalidFirmwareException( dev, "Error reading ZTEX descriptor: Invalid size: " + i );
-	    }
-	}
-
-	if ( buf.get()!=40 || buf.get()!=1 || buf.get()!='Z' || buf.get()!='T' || buf.get()!='E' || buf.get()!='X' ) {
-	    LibUsb.close(handle);
-	    if ( allowUnconfigured ) {
-		ref();
-	        return;
-	    }
-	    else  {
-	        throw new InvalidFirmwareException( dev, "Invalid ZTEX descriptor" );
-	    }
-	}
-	buf.get(productId, 0, 4);              // 6
-	fwVersion = buf.get();                 // 10
-	interfaceVersion = buf.get();          // 11
-	buf.get(interfaceCapabilities, 0, 6);  // 12
-	buf.get(moduleReserved, 0, 12);	       // 18
+	    if ( snString == null ) {
+	        LibusbJava.usb_close(handle);
+	        if ( allowUnconfigured )
+	    	    return;
+		else 
+		    throw new InvalidFirmwareException( dev, "Not a ZTEX device" );  // ZTEX devices always have a SN. See also the next comment a few lines below
+	    } 
 	    
-	fx3 = (interfaceCapabilities[1] & 4) != 0;
+	    byte[] buf = new byte[42];
+	    int i = LibusbJava.usb_control_msg(handle, 0xc0, 0x22, 0, 0, buf, 40, 500);	// Failing of this may cause problems under windows. Therefore we check for the SN above.
+	    if ( i < 0 ) {
+	        LibusbJava.usb_close(handle);
+		if ( allowUnconfigured )
+		    return;
+		else 
+		    throw new InvalidFirmwareException( dev, "Error reading ZTEX descriptor: " + LibusbJava.usb_strerror() );
+	    }
+	    else if ( i != 40 ) {
+	        LibusbJava.usb_close(handle);
+	        if ( allowUnconfigured )
+		    return;
+		else 
+		    throw new InvalidFirmwareException( dev, "Error reading ZTEX descriptor: Invalid size: " + i );
+	    }
+	    if ( buf[0]!=40 || buf[1]!=1 || buf[2]!='Z' || buf[3]!='T' || buf[4]!='E' || buf[5]!='X' ) {
+	        LibusbJava.usb_close(handle);
+		if ( allowUnconfigured )
+		    return;
+		else 
+		    throw new InvalidFirmwareException( dev, "Invalid ZTEX descriptor" );
+	    }
+	    productId[0] = buf[6];
+	    productId[1] = buf[7];
+	    productId[2] = buf[8];
+	    productId[3] = buf[9];
+	    fwVersion = buf[10];
+	    interfaceVersion = buf[11];
+	    interfaceCapabilities[0] = buf[12];
+	    interfaceCapabilities[1] = buf[13];
+	    interfaceCapabilities[2] = buf[14];
+	    interfaceCapabilities[3] = buf[15];
+	    interfaceCapabilities[4] = buf[16];
+	    interfaceCapabilities[5] = buf[17];
+	    moduleReserved[0] = buf[18];
+	    moduleReserved[1] = buf[19];
+	    moduleReserved[2] = buf[20];
+	    moduleReserved[3] = buf[21];
+	    moduleReserved[4] = buf[22];
+	    moduleReserved[5] = buf[23];
+	    moduleReserved[6] = buf[24];
+	    moduleReserved[7] = buf[25];
+	    moduleReserved[8] = buf[26];
+	    moduleReserved[9] = buf[27];
+	    moduleReserved[10] = buf[28];
+	    moduleReserved[11] = buf[29];
 	
-	valid = true;
-	ref();
-        LibUsb.close(handle);
+	    valid = true;
+	        
+//	}
+//	else {
+//	    throw new UsbException( dev, "Error opening device: " + LibusbJava.usb_strerror() );
+//	}
+	
+        LibusbJava.usb_close(handle);
     }
 
 // ******* toString ************************************************************
@@ -307,30 +288,12 @@ public class ZtexDevice1 {
   * @return a string representation if the device with a lot of useful information.
   */
     public String toString () {
-	return name() + "  ID=" + Integer.toHexString(usbVendorId) + ":" + Integer.toHexString(usbProductId) +"\n"  +
+	
+	return "bus=" + dev().getBus().getDirname() + "  device=" + dev().getDevnum() + " (`" + dev().getFilename() + "')  ID=" + Integer.toHexString(usbVendorId) + ":" + Integer.toHexString(usbProductId) +"\n"  +
 	      ( manufacturerString == null ? "" : ("   Manufacturer=\""  + manufacturerString + "\"") ) +
 	      ( productString == null ? "" : ("  Product=\""  + productString + "\"") ) +
 	      ( snString == null ? "" : ("    SerialNumber=\""  + snString + "\"") ) +
 	      ( valid ? "\n   productID=" + byteArrayString(productId) + "  fwVer="+(fwVersion & 255) + "  ifVer="+(interfaceVersion & 255)  : "" );
-    }
-
-// ******* name ****************************************************************
-/** 
-  * Returns a name that identifies a device.
-  * @param p_dev the device.
-  * @return a name that identifies a device.
-  */
-    public static String name ( Device p_dev ) {
-	return "bus=" + LibUsb.getBusNumber(p_dev) + " device=" + LibUsb.getDeviceAddress(p_dev) + " port=" + LibUsb.getPortNumber(p_dev);
-    }
-
-// ******* name ****************************************************************
-/** 
-  * Returns a name that identifies the device.
-  * @return a name that identifies the device.
-  */
-    public String name () {
-	return name(dev);
     }
 
 // ******* compatible **********************************************************
@@ -359,17 +322,8 @@ public class ZtexDevice1 {
   * Returns the USB device.
   * @return the USB device.
   */
-    public final Device dev() {
+    public final Usb_Device dev() {
 	return dev;
-    }
-
-// ******* context *************************************************************
-/** 
-  * Returns the USB context of the device.
-  * @return the USB context of the device.
-  */
-    public final ZtexContext context() {
-	return context;
     }
 
 // ******* valid ***************************************************************
@@ -507,48 +461,6 @@ public class ZtexDevice1 {
   */
     public final int moduleReserved( int i ) {
 	return moduleReserved[i] & 255;
-    }
-
-// ******* fx3 *****************************************************************
-/** 
-  * Returns true if device is an FX3
-  * @return true if device is an FX3
-  */
-    public final boolean fx3 () {
-	return fx3;
-    }
-
-// ******* ref *****************************************************************
-/** 
-  * Increases reference counter.
-  */
-    public synchronized void ref() throws UsbException {
-	refCount ++;
-	if ( refCount == 1 ) {
-	    LibUsb.refDevice(dev);
-	    context.ref();
-//	    System.out.println("created ZtexDevice1: "+name());
-	}
-    }
-
-// ******* unref ***************************************************************
-/** 
-  * Decreases reference counter and rleases resources if 0 is reached.
-  */
-    public synchronized void unref() {
-	refCount --;
-	if ( refCount == 0 ) {
-//	    System.out.println("disposing ZtexDevice1: "+name());
-	    LibUsb.unrefDevice(dev);
-	    context.unref();
-	}
-    }
-
-// ******* finalize ************************************************************
-    protected void finalize() throws Throwable {
-	if (refCount > 0) refCount=1;
-	unref();
-        super.finalize();
     }
 
 }

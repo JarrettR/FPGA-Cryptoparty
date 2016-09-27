@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,7 @@
 
 package ztex;
 
-import org.usb4java.*;
-
+import ch.ntb.usb.*;
 /** * Signals an USB error. */
 public class UsbException extends Exception {
 /** 
@@ -35,26 +34,7 @@ public class UsbException extends Exception {
  * @param dev The device.
  * @param msg The error message.
  */
-    public UsbException(Device dev,  String msg) {
-	super( ZtexDevice1.name(dev) + ": " + msg );
-    }
-
-/** 
- * Constructs an instance from error message and error number.
- * @param msg The error message.
- * @param errNum The error number.
- */
-    public UsbException(String msg, int errNum) {
-	super( msg + ": " + LibUsb.strError(errNum) );
-    }
-
-/** 
- * Constructs an instance from the given device, error message and error number.
- * @param dev The device.
- * @param msg The error message.
- * @param errNum The error number.
- */
-    public UsbException(Device dev,  String msg, int errNum) {
-	super( ZtexDevice1.name(dev) + ": " + msg + ": " + LibUsb.strError(errNum) );
+    public UsbException(Usb_Device dev,  String msg) {
+	super( "bus=" + dev.getBus().getDirname() + "  device=" + dev.getFilename() + ": " + msg );
     }
 }    

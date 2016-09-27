@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 
 package ztex;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 /** 
   * Thrown if a device runs with no or the wrong firmware, i.e. if the ZTEX descriptor is not found or damaged. */
@@ -38,7 +38,7 @@ public class InvalidFirmwareException extends Exception {
  */
     public InvalidFirmwareException ( Ztex1 ztex, String msg) {
 	this( ztex.dev().dev(), msg );
-    } 
+    }
 
 /** 
  * Constructs an instance from the given device and error message.
@@ -46,7 +46,7 @@ public class InvalidFirmwareException extends Exception {
  * @param msg The error message.
  */
     public InvalidFirmwareException ( ZtexDevice1 dev, String msg) {
-	this( dev.name() + ": " + msg );
+	this( dev.dev(), msg );
     }
 
 /** 
@@ -54,8 +54,8 @@ public class InvalidFirmwareException extends Exception {
  * @param dev The device.
  * @param msg The error message.
  */
-    public InvalidFirmwareException (Device dev, String msg) {
-	super( ZtexDevice1.name(dev) + ": Invalid Firmware: "+ msg );
+    public InvalidFirmwareException (Usb_Device dev, String msg) {
+	super( "bus=" + dev.getBus().getDirname() + "  device=" + dev.getFilename() + ": Invalid Firmware: "+ msg );
     }
 
 /** 
@@ -63,8 +63,8 @@ public class InvalidFirmwareException extends Exception {
  * @param ztex The device.
  */
     public InvalidFirmwareException ( Ztex1 ztex ) {
-	this( ztex.dev().name() + ": Invalif Firmware" );
-    } 
+	this( ztex.dev().dev() );
+    }
 
 /** 
  * Constructs an instance from the given device and error message.
@@ -78,8 +78,8 @@ public class InvalidFirmwareException extends Exception {
  * Constructs an instance from the given device and error message.
  * @param dev The device.
  */
-    public InvalidFirmwareException (Device dev ) {
-	super( ZtexDevice1.name(dev) + ": Invalid Firmware" );
+    public InvalidFirmwareException (Usb_Device dev ) {
+	super( "bus=" + dev.getBus().getDirname() + "  device=" + dev.getFilename() + ": Invalid Firmware" );
     }
     
     

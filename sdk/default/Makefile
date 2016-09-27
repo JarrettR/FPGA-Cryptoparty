@@ -1,4 +1,4 @@
-DIRS=DefaultUpdater usb-fpga-1.15 usb-fpga-1.15y usb-fpga-2.01 usb-fpga-2.04 usb-fpga-2.13 usb-fpga-2.14 usb-fpga-2.16 
+DIRS=usb-fpga-1.15 usb-fpga-1.15y usb-fpga-2.16 usb-fpga-2.13
 
 .PHONY: default all clean distclean
 

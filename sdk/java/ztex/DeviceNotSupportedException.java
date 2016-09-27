@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 
 package ztex;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 /** 
   * Thrown if a device is not supported, i.e. has the wrong USB ID's. */
@@ -27,7 +27,7 @@ public class DeviceNotSupportedException extends Exception {
  * Constructs an instance from the given device.
  * @param dev The device.
  */
-    public DeviceNotSupportedException (Device dev) {
-	super( ZtexDevice1.name(dev) + ": Device not supported" );
+    public DeviceNotSupportedException (Usb_Device dev) {
+	super( "bus=" + dev.getBus().getDirname() + "  device=" + dev.getFilename() + ": Device not supported" );
     }
 }    

@@ -1,20 +1,3 @@
-/*!
-   Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
-   http://www.ztex.de
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License version 3 as
-   published by the Free Software Foundation.
-
-   This program is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see http://www.gnu.org/licenses/.
-!*/
 /*
    Java host software API of ZTEX SDK
    Copyright (C) 2009-2014 ZTEX GmbH.
@@ -33,7 +16,7 @@
    along with this program; if not, see http://www.gnu.org/licenses/.
 !*/
 
-/*
+/* 
     Functions for USB devices with ZTEX descriptor 1, Interface 1
     Interface capabilities and vendor requests (VR) / commands (VC):
     0.0  : EEPROM support
@@ -144,49 +127,13 @@
 		7	Error code
 	VR 0x45 : read from Flash
 	VC 0x46 : write to Flash
-
-    1.2  : FX3 extensions 
-	indicates an FX3 firmware
-
-    1.3  : Debug helper 2 support
-	VR 0x28 : read a debug message given by index (value<<16 | index)
-	    Returns:
-	        Offs	Description
-		0 	Error code (!= 0 if fatal error occurred)
-		1..4    Index of last message in buffer
-		5..6    Number of messages in buffer
-		7..8	Size if the message
-		9	Type of the message
-		>=10	Message data
-	VR 0x29 : returns USB 3.0 errors
-	    Returns:
-	        Offs	Description
-		0..1 	Send errors
-		2..3 	Receive errors
-		
-    1.4  : Default firmware interface
-	VC 0x60: Reset 
-	VR 0x61: Write/read GPIO's
-	    Returns:
-	        Offs	Description
-	        1	GPIO state (bits 0..3)
-	VC 0x62: Write to low speed interface
-	VR 0x63: Read from low speed interface
-	VR 0x64: Default interface information
-	    Returns:
-	        Offs	Description
-	        1	Version
-	        2	Output Endpoint of the high speed interface
-	        3	Input Endpoint of the high speed interface
 */
-
 package ztex;
 
 import java.io.*;
 import java.util.*;
-import java.nio.*;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 /**
   * This class implements the communication protocol of the interface version 1 for the interaction with the ZTEX firmware.
@@ -649,142 +596,11 @@ import org.usb4java.*;
   *       </table>
   *     </td>
   *   </tr>
-  *   <tr>
-  *     <td bgcolor="#ffffff" valign="top">1.2</td>
-  *     <td bgcolor="#ffffff" valign="top" colspan=2>Indicates an FX3 firmware</td>
-  *   </tr>
-  *   <tr>
-  *     <td bgcolor="#ffffff" valign="top">1.3</td>
-  *     <td bgcolor="#ffffff" valign="top" colspan=2>
-  *       Debug helper support<p>
-  *       <table bgcolor="#404040" cellspacing=1 cellpadding=6>
-  *         <tr>
-  *           <td bgcolor="#d0d0d0" valign="bottom"><b>Vendor request (VR)<br> or command (VC)</b></td>
-  *           <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VR 0x28</td>
-  *           <td bgcolor="#ffffff" valign="top">Read debug message given by index (value<<16 | index) Returns:
-  *             <table bgcolor="#404040" cellspacing=1 cellpadding=4>
-  *               <tr>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Bytes</b></td>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">0</td>
-  *                 <td bgcolor="#ffffff" valign="top">Error code (!= 0 if fatal error occurred)</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">1..4</td>
-  *                 <td bgcolor="#ffffff" valign="top">Index of last message in buffer</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">5..6</td>
-  *                 <td bgcolor="#ffffff" valign="top">Number of messages in buffer</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">7..8</td>
-  *                 <td bgcolor="#ffffff" valign="top">Size if the message</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">9</td>
-  *                 <td bgcolor="#ffffff" valign="top">Type of the message</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">10..</td>
-  *                 <td bgcolor="#ffffff" valign="top">Message data</td>
-  *               </tr>
-  *             </table>
-  *           </td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VR 0x29</td>
-  *           <td bgcolor="#ffffff" valign="top">Return USB 3.0 errors
-  *             <table bgcolor="#404040" cellspacing=1 cellpadding=4>
-  *               <tr>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Bytes</b></td>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">0..1</td>
-  *                 <td bgcolor="#ffffff" valign="top">Send errors</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">2..3</td>
-  *                 <td bgcolor="#ffffff" valign="top">Receive errors</td>
-  *               </tr>
-  *             </table>
-  *           </td>
-  *         </tr>
-  *       </table>
-  *     </td>
-  *   </tr>
-  *   <tr>
-  *     <td bgcolor="#ffffff" valign="top">1.4</td>
-  *     <td bgcolor="#ffffff" valign="top" colspan=2>
-  *       Default firmware interface<p>
-  *       <table bgcolor="#404040" cellspacing=1 cellpadding=6>
-  *         <tr>
-  *           <td bgcolor="#d0d0d0" valign="bottom"><b>Vendor request (VR)<br> or command (VC)</b></td>
-  *           <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VC 0x60</td>
-  *           <td bgcolor="#ffffff" valign="top">Reset</td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VR 0x61</td>
-  *           <td bgcolor="#ffffff" valign="top">Read/write GPIO's:
-  *             <table bgcolor="#404040" cellspacing=1 cellpadding=4>
-  *               <tr>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Bytes</b></td>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">0</td>
-  *                 <td bgcolor="#ffffff" valign="top">GPIO state (bits 0..3)</td>
-  *               </tr>
-  *             </table>
-  *           </td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VC 0x62</td>
-  *           <td bgcolor="#ffffff" valign="top">Write to low speed interface</td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VC 0x63</td>
-  *           <td bgcolor="#ffffff" valign="top">Read from low speed interface</td>
-  *         </tr>
-  *         <tr>
-  *           <td bgcolor="#ffffff" valign="top">VR 0x64</td>
-  *           <td bgcolor="#ffffff" valign="top">Return Default Interface information:
-  *             <table bgcolor="#404040" cellspacing=1 cellpadding=4>
-  *               <tr>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Bytes</b></td>
-  *                 <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">0</td>
-  *                 <td bgcolor="#ffffff" valign="top">Version</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">1</td>
-  *                 <td bgcolor="#ffffff" valign="top">Output Endpoint of the high speed interface</td>
-  *               </tr>
-  *               <tr>
-  *                 <td bgcolor="#ffffff" valign="top">2</td>
-  *                 <td bgcolor="#ffffff" valign="top">Input Endpoint of the high speed interface</td>
-  *               </tr>
-  *             </table>
-  *           </td>
-  *         </tr>
-  *       </table>
-  *     </td>
-  *   </tr>
   * </table>
   * @see ZtexDevice1
   * @see Ztex1
   */
+
 
 public class Ztex1v1 extends Ztex1 {
     /** * Capability index for EEPROM support. */
@@ -804,15 +620,9 @@ public class Ztex1v1 extends Ztex1 {
     /** * Capability index for multi FPGA support */
     public static final int CAPABILITY_MULTI_FPGA = 7;
     /** * Capability index for Temperature sensor support */
-    public static final int CAPABILITY_TEMP_SENSOR = 8+0;
+    public static final int CAPABILITY_TEMP_SENSOR = 8;
     /** * Capability index for 2nd FLASH memory support. */
-    public static final int CAPABILITY_FLASH2 = 8+1;
-    /** * Capability index for FX3 firmware */
-    public static final int CAPABILITY_FX3 = 8+2;
-    /** * Capability index for debug helper 2 */
-    public static final int CAPABILITY_DEBUG2 = 8+3;
-    /** * Capability index for default firmware interface */
-    public static final int CAPABILITY_DEFAULT = 8+4;
+    public static final int CAPABILITY_FLASH2 = 9;
 
     /** * The names of the capabilities */
     public static final String capabilityStrings[] = {
@@ -824,12 +634,8 @@ public class Ztex1v1 extends Ztex1 {
 	"High speed FPGA configuration",
 	"MAC EEPROM read/write",
 	"Multi FPGA support",
-	
 	"Temperature Sensor support" ,
-	"2nd Flash memory support", 
-	"FX3 firmware",
-	"Debug helper 2",
-	"Default firmware interface"
+	"2nd Flash memory support"
     };
     
     /** * Enables extra FPGA configuration checks. Certain Bistream settings may cause false warnings.  */
@@ -874,10 +680,8 @@ public class Ztex1v1 extends Ztex1 {
     public static final int FLASH_EC_READ_ERROR = 5;
     /** * Signals an error while attempting to write to Flash. */
     public static final int FLASH_EC_WRITE_ERROR = 6;
-    /** * Signals the installed Flash memory is not supported. */
+    /** * Signals the the installed Flash memory is not supported. */
     public static final int FLASH_EC_NOTSUPPORTED = 7;
-    /** * Signals a runtime error of the firmware. */
-    public static final int FLASH_EC_RUNTIME = 8;
     
     private int debugStackSize = -1;
     private int debugMsgSize = -1;
@@ -914,28 +718,6 @@ public class Ztex1v1 extends Ztex1 {
     /** * smallest temperature sensor update interval in ms */
     public int tempSensorUpdateInterval = 100;
 
-    private int debug2LastIdx = -1;
-    private int debug2EC = -1;
-    private int debug2Cnt = -1;
-    /** * Index of next log entry (messages of type 1 and 2) to be read. */
-    public int debug2LogIdx = 0;
-    /** * USB 3.0 send error count. This variable is set by {@link #getUsb3Errors()}. */
-    public int usb3SndErrors = 0;
-    /** * USB 3.0 receive error count. This variable is set by {@link #getUsb3Errors()}. */
-    public int usb3RcvErrors = 0;
-
-    // default interface stuff
-    private int defaultVersion = -1;   // 0 means not present, <0 mean unchecked
-    private int defaultSubVersion = -1;
-    private int defaultInEP = -1;	
-    private int defaultOutEP = -1;
-    /** * disable update warnings. */
-    public boolean defaultDisableWarnings = false;
-    /** * version number of the latest default interface. */
-    public final int defaultLatestVersion = 1;
-    /** * sub-version number of the latest default interface. */
-    public final int defaultLatestSubVersion = 1;
-    
 /** 
   * The configuration data structure 
   * is initialized if this kind of data is present in MAC EEPROM.
@@ -1177,17 +959,23 @@ public class Ztex1v1 extends Ztex1 {
     }
     
 // ******* swapBits ************************************************************
-    private void swapBits ( byte[] buf, int length ) {
-	for (int i=0; i<length; i++ ) {
-	    byte b = buf[i];
-	    buf[i] = (byte) ( ((b & 128) >> 7) |
- 		     	      ((b &  64) >> 5) |
-		     	      ((b &  32) >> 3) |
-		     	      ((b &  16) >> 1) |
-		     	      ((b &   8) << 1) |
-		     	      ((b &   4) << 3) |
-		     	      ((b &   2) << 5) |
-		     	      ((b &   1) << 7) );
+    private void swapBits ( byte[][] buf, int size ) {
+	int j=0, k=0;
+	for (int i=0; i<size; i++ ) {
+	    while ( k >= buf[j].length ) {
+		j++;
+		k=0;
+	    }
+	    byte b = buf[j][k];
+	    buf[j][k] = (byte) ( ((b & 128) >> 7) |
+ 		     	         ((b &  64) >> 5) |
+		     	         ((b &  32) >> 3) |
+		     	         ((b &  16) >> 1) |
+		     	         ((b &   8) << 1) |
+		     	         ((b &   4) << 3) |
+		     	         ((b &   2) << 5) |
+		     	         ((b &   1) << 7) );
+	    k++;
 	}
     }
 
@@ -1206,7 +994,7 @@ public class Ztex1v1 extends Ztex1 {
   * @throws CapabilityException if FPGA configuration is not supported by the firmware.
   */
     public long configureFpgaLS ( InputStream inputStream, boolean force, int bs ) throws BitstreamReadException, UsbException, BitstreamUploadException, AlreadyConfiguredException, InvalidFirmwareException, CapabilityException {
-	final int transactionBytes = 2048;
+	final int transactionBytes = certainWorkarounds ? 256 : 2048;
 	long t0 = 0;
 
 	checkCapability(CAPABILITY_FPGA);
@@ -1215,37 +1003,24 @@ public class Ztex1v1 extends Ztex1 {
 	    throw new AlreadyConfiguredException(); 
 
 // read the Bitstream file	
-        ByteBuffer[] buffers = new ByteBuffer[64*1024*1024/transactionBytes];
-        byte[] buf = new byte[transactionBytes]; 
+        byte[][] buffer = new byte[16*1024*1024/transactionBytes][];
 	int size = 0;
-	int cs = 0;
 	try {
 	    int j = transactionBytes;
-	    for ( int i=0; i<buffers.length && j==transactionBytes; i++ ) {
+	    for ( int i=0; i<buffer.length && j==transactionBytes; i++ ) {
+		buffer[i] = new byte[transactionBytes]; 
 		int k;
 		j = 0;	
 		do {
-		    k = inputStream.read( buf, j, transactionBytes-j );
-		    if ( k < 0 ) k = 0;
+		    k = inputStream.read( buffer[i], j, transactionBytes-j );
+		    if ( k < 0 ) 
+		        k = 0;
 		    j += k;
 		}
 		while ( j<transactionBytes && k>0 );
 
 		if ( j < transactionBytes && j % 64 == 0 )	// ensures size % 64 != 0
 		    j+=1;
-		    
-		if ( (i==0) && ( bs<0 || bs>1 ) ) {
-		    bs = detectBitstreamBitOrder ( buf );
-//		    System.out.println(bs);
-		}
-
-		if ( bs == 1 ) swapBits(buf, j);
-
-		buffers[i] = allocateByteBuffer(buf, 0, j);
-
-		for ( k=0; k<j; k++ ) 
-		    cs = ( cs + (buf[k] & 0xff) ) & 0xff;
-		    
 		size += j;
 	    }
 	    
@@ -1261,6 +1036,11 @@ public class Ztex1v1 extends Ztex1 {
 	if ( size < 64 || size % 64 == 0 ) 
 	    throw new BitstreamReadException("Invalid file size: " + size );
 
+// detect bitstream bit order and swap bits if necessary 
+	if ( bs<0 || bs>1 )
+	    bs = detectBitstreamBitOrder ( buffer[0] );
+	if ( bs == 1 )
+	    swapBits(buffer,size);
 	    
 // upload the Bitstream file	
 	for ( int tries=10; tries>0; tries-- ) {
@@ -1269,14 +1049,18 @@ public class Ztex1v1 extends Ztex1 {
 
 	    try {
 		t0 = -new Date().getTime();
+		int cs = 0;
 		bs = 0;
 		    
-	    	for ( int i=0; i<buffers.length && i*transactionBytes < size; i++ ) {
+	    	for ( int i=0; i<buffer.length && i*transactionBytes < size; i++ ) {
 		    int j = size-i*transactionBytes;
 		    if (j>transactionBytes) 
 			j = transactionBytes;
-		    vendorCommand2(0x32, "sendFpgaData", 0,0, buffers[i]);
+		    vendorCommand2(0x32, "sendFpgaData", 0,0, buffer[i], j);
+
 		    bs+=j;
+		    for ( int k=0; k<buffer[i].length; k++ ) 
+		        cs = ( cs + (buffer[i][k] & 0xff) ) & 0xff;
 		}
 
  		getFpgaState();
@@ -1415,20 +1199,19 @@ public class Ztex1v1 extends Ztex1 {
         } 
     }
 
-
-// ******* eepromUploadFirmware ********************************************************
+// ******* eepromUpload ********************************************************
 //  returns upload time in ms
 /**
   * Upload the firmware to the EEPROM.
   * In order to start the uploaded firmware the device must be reset.
-  * @param imgFile The firmware image.
+  * @param ihxFile The firmware image.
   * @param force Skips the compatibility check if true.
   * @throws IncompatibleFirmwareException if the given firmware is not compatible to the installed one, see {@link #compatible(int,int,int,int)} (Upload can be enforced using the <tt>force</tt> parameter.)
   * @throws InvalidFirmwareException if interface 1 is not supported.
   * @throws CapabilityException if EEPROM access is not supported by the firmware.
   * @throws FirmwareUploadException if an error occurred while attempting to upload the firmware.
   */
-    private long eepromUploadFirmware ( ZtexImgFile1 imgFile, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
+    public long eepromUpload ( ZtexIhxFile1 ihxFile, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
 	final int pagesMax = 256;
 	final int pageSize = 256;
 	int pages = 0;
@@ -1436,21 +1219,22 @@ public class Ztex1v1 extends Ztex1 {
 
 	checkCapability(CAPABILITY_EEPROM);
 
-//	imgFile.dataInfo(System.out);
-//	System.out.println(imgFile);
+//	ihxFile.dataInfo(System.out);
+//	System.out.println(ihxFile);
 	
 // check for compatibility
 	if ( ! force && dev().valid() ) {
-	    if ( imgFile.interfaceVersion() != 1 )
-		throw new IncompatibleFirmwareException("Wrong interface version: Expected 1, got " + imgFile.interfaceVersion() );
+	    if ( ihxFile.interfaceVersion() != 1 )
+		throw new IncompatibleFirmwareException("Wrong interface version: Expected 1, got " + ihxFile.interfaceVersion() );
 	
-	    if ( ! dev().compatible ( imgFile.productId(0), imgFile.productId(1), imgFile.productId(2), imgFile.productId(3) ) )
+	    if ( ! dev().compatible ( ihxFile.productId(0), ihxFile.productId(1), ihxFile.productId(2), ihxFile.productId(3) ) )
 		throw new IncompatibleFirmwareException("Incompatible productId's: Current firmware: " + ZtexDevice1.byteArrayString(dev().productId()) 
-		    + "  Img File: " + ZtexDevice1.byteArrayString(imgFile.productId()) );
+		    + "  Ihx File: " + ZtexDevice1.byteArrayString(ihxFile.productId()) );
 	}
 
-	int vid = dev().usbVendorId();
-	int pid = dev().usbProductId();
+	Usb_Device_Descriptor dd = dev().dev().getDescriptor();
+	int vid = dd.getIdVendor() & 65535;
+	int pid = dd.getIdProduct() & 65535;
 
 	buffer[0] = new byte[pageSize];
 	buffer[0][0] = (byte) 0xc2;
@@ -1464,10 +1248,10 @@ public class Ztex1v1 extends Ztex1 {
 	
 	int ptr = 8, i = 0;
 	
-	while ( i < imgFile.data.length ) {
-	    if ( imgFile.data[i]>=0 && imgFile.data[i]<256 ) {			// new data block
+	while ( i < ihxFile.ihxData.length ) {
+	    if ( ihxFile.ihxData[i]>=0 && ihxFile.ihxData[i]<256 ) {			// new data block
 		int j = 1;
-		while ( i+j<imgFile.data.length && imgFile.data[i+j]>=0 && imgFile.data[i+j]<256 ) 
+		while ( i+j<ihxFile.ihxData.length && ihxFile.ihxData[i+j]>=0 && ihxFile.ihxData[i+j]<256 ) 
 		    j++;
 
 		for (int k=ptr/pageSize + 1; k < (ptr+j+9)/pageSize + 1; k++ )	// also considers 5 bytes for the last data block
@@ -1479,7 +1263,7 @@ public class Ztex1v1 extends Ztex1 {
 		buffer[(ptr+3)/pageSize][(ptr+3) % pageSize] = (byte) (i & 255);		// address
 		ptr+=4;
 		for ( int k=0; k<j; k++ )  					// data
-		    buffer[(ptr+k)/pageSize][(ptr+k) % pageSize] = (byte) imgFile.data[i+k];
+		    buffer[(ptr+k)/pageSize][(ptr+k) % pageSize] = (byte) ihxFile.ihxData[i+k];
 		ptr+=j;
 		i+=j;
 	    }
@@ -1537,64 +1321,33 @@ public class Ztex1v1 extends Ztex1 {
 	return new Date().getTime() - t0;
     }
 
-
-// ******* nvUploadFirmware ********************************************************
 //  returns upload time in ms
 /**
   * Upload the firmware to the EEPROM.
   * In order to start the uploaded firmware the device must be reset.
-  * @param imgFile The firmware image.
+  * @param ihxFileName The file name of the firmware image in ihx format. The file can be a regular file or a system resource (e.g. a file from the current jar archive).
   * @param force Skips the compatibility check if true.
   * @throws IncompatibleFirmwareException if the given firmware is not compatible to the installed one, see {@link #compatible(int,int,int,int)} (Upload can be enforced using the <tt>force</tt> parameter.)
   * @throws InvalidFirmwareException if interface 1 is not supported.
   * @throws CapabilityException if EEPROM access is not supported by the firmware.
   * @throws FirmwareUploadException if an error occurred while attempting to upload the firmware.
-  * @see #nvDisableFirmware()
   */
-    public long nvUploadFirmware ( ZtexImgFile1 imgFile, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	return dev().fx3() ? flashUploadFirmware(imgFile, force) : eepromUploadFirmware(imgFile, force);
-    }
-  
-/**
- * @deprecated Replaced by {@link #nvUploadFirmware(ZtexImgFile1,boolean)}
- */
-    @Deprecated public long eepromUpload ( ZtexImgFile1 imgFile, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	return nvUploadFirmware(imgFile,force);
-    }
-
-//  returns upload time in ms
-/**
-  * Upload the firmware to the non-volatile memory.
-  * In order to start the uploaded firmware the device must be reset.
-  * @param imgFileName The file name of the firmware image in ihx or img format. The file can be a regular file or a system resource (e.g. a file from the current jar archive).
-  * @param force Skips the compatibility check if true.
-  * @throws IncompatibleFirmwareException if the given firmware is not compatible to the installed one, see {@link #compatible(int,int,int,int)} (Upload can be enforced using the <tt>force</tt> parameter.)
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if EEPROM access is not supported by the firmware.
-  * @throws FirmwareUploadException if an error occurred while attempting to upload the firmware.
-  * @see #nvDisableFirmware()
-  */
-    public long nvUploadFirmware ( String imgFileName, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-// load the firmware file
-	ZtexImgFile1 imgFile;
+    public long eepromUpload ( String ihxFileName, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
+	checkCapability(CAPABILITY_EEPROM);
+	
+// load the ihx file
+	ZtexIhxFile1 ihxFile;
 	try {
-	    imgFile = new ZtexImgFile1( imgFileName );
+	    ihxFile = new ZtexIhxFile1( ihxFileName );
 	}
 	catch ( IOException e ) {
 	    throw new FirmwareUploadException( e.getLocalizedMessage() );
 	}
-	catch ( ImgFileDamagedException e ) {
+	catch ( IhxFileDamagedException e ) {
 	    throw new FirmwareUploadException( e.getLocalizedMessage() );
 	}
 	
-	return nvUploadFirmware( imgFile, force );
-    }
-
-/**
- * @deprecated Replaced by {@link #nvUploadFirmware(String,boolean)}
- */
-    @Deprecated public long eepromUpload ( String imgFileName, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	return nvUploadFirmware(imgFileName,force);
+	return eepromUpload( ihxFile, force );
     }
 
 
@@ -1606,7 +1359,7 @@ public class Ztex1v1 extends Ztex1 {
   * @throws CapabilityException if EEPROM access is not supported by the firmware.
   * @throws FirmwareUploadException if an error occurred while attempting to disable the firmware.
   */
-    private void eepromDisableFirmware ( ) throws FirmwareUploadException, InvalidFirmwareException, CapabilityException {
+    public void eepromDisable ( ) throws FirmwareUploadException, InvalidFirmwareException, CapabilityException {
 	byte[] buf = { 0 };
 
 	for ( int tries=3; tries>0; tries-- ) {
@@ -1630,31 +1383,6 @@ public class Ztex1v1 extends Ztex1 {
 	}
     } 
 
-/**
- * @deprecated Replaced by {@link #nvDisableFirmware()}
- */
-    @Deprecated public void eepromDisable ( ) throws FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	nvDisableFirmware();
-    }
-
-// ******* nvDisableFirmware ***************************************************
-/**
-  * Disables the firmware stored in the non-volatile memory.
-  * This is achived by writing a "0" to the address 0 of the memory.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if EEPROM access is not supported by the firmware.
-  * @throws FirmwareUploadException if an error occurred while attempting to disable the firmware.
-  */
-    public void nvDisableFirmware ( ) throws FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	if ( dev().fx3() ) {
-	    flashDisableFirmware();
-	} 
-	else {
-	     eepromDisableFirmware();
-	}
-    }
-
-
 // ******* flashStrError *******************************************************
 /** 
   * Converts a given error code into a String.
@@ -1664,7 +1392,7 @@ public class Ztex1v1 extends Ztex1 {
     public static String flashStrError ( int errNum ) {
 	switch ( errNum ) {
 	    case FLASH_EC_NO_ERROR:
-		return "USB error";
+		return "USB error: " + LibusbJava.usb_strerror();
 	    case FLASH_EC_CMD_ERROR:
 		return "Command error";
 	    case FLASH_EC_TIMEOUT:
@@ -1679,8 +1407,6 @@ public class Ztex1v1 extends Ztex1 {
 		return "Write error";
 	    case FLASH_EC_NOTSUPPORTED:
 		return "Not supported";
-	    case FLASH_EC_RUNTIME:
-		return "Firmware runtime error";
 	}
 	return "Error " + errNum;
     }
@@ -1856,16 +1582,8 @@ public class Ztex1v1 extends Ztex1 {
 		}
 	    }
 	    else {
-		int nz = Math.max(1, 2048 / flashSectorSize);
-		byte[] buf2 = new byte[nz * flashSectorSize];
-		int bp = 0;
-		while ( num>0 ) {
-		    int n2 = Math.min(num,nz);
-		    vendorRequest2( 0x41, "Flash Read", sector, sector >> 16, buf2, flashSectorSize*n2 );
-		    System.arraycopy(buf2,0, buf, bp, flashSectorSize*n2);
-		    bp += flashSectorSize*n2;
-		    sector += n2;
-		}
+		if ( flashSectorSize*num>2048 ) System.err.println("Warning: flashReadSector: Transaction size " + flashSectorSize*num + " may be too large");
+		vendorRequest2( 0x41, "Flash Read", sector, sector >> 16, buf, flashSectorSize*num );
 	    }
         }
         catch ( UsbException e ) {
@@ -1925,17 +1643,8 @@ public class Ztex1v1 extends Ztex1 {
 		}
 	    }
 	    else {
-		int nz = Math.max(1, 2048 / flash2SectorSize);
-		byte[] buf2 = new byte[nz * flash2SectorSize];
-		int bp = 0;
-		while ( num>0 ) {
-		    int n2 = Math.min(num,nz);
-		    vendorRequest2( 0x45, "Flash 2 Read", sector, sector >> 16, buf2, flash2SectorSize*n2 );
-		    System.arraycopy(buf2,0, buf, bp, flash2SectorSize*n2);
-		    bp += flash2SectorSize*n2;
-		    sector += n2;
-		    num -= n2;
-		}
+		if ( flash2SectorSize*num>2048 ) System.err.println("Warning: flash2ReadSector: Transaction size " + flash2SectorSize*num + " may be too large");
+		vendorRequest2( 0x45, "Flash 2 Read", sector, sector >> 16, buf, flash2SectorSize*num );
 	    }
         }
         catch ( UsbException e ) {
@@ -1980,21 +1689,17 @@ public class Ztex1v1 extends Ztex1 {
 	if ( ! flashEnabled() )
 	    throw new CapabilityException(this, "No Flash memory installed or");
 
-	int oto = controlMsgTimeout;
-	controlMsgTimeout = 5000; // 5s timeout
-
 	try {
 	    if ( flashSectorSize()>2048 ) {
 	        byte[] buf2 = new byte[2048];
 	        int iz = (flashSectorSize-1) >> 11;
 		for (int sn=0; sn<num; sn++ ) {
 		
+		    int oto = controlMsgTimeout;
 		    controlMsgTimeout = 12000; // 12s timeout for erase
-	
 		    System.arraycopy(buf,sn*flashSectorSize, buf2,0, 2048);
 		    vendorCommand2( 0x42, "Flash Write", sector, 0, buf, 2048 );
-
-		    controlMsgTimeout = 5000;
+		    controlMsgTimeout = oto;
 		    
 		    for (int i=1; i<iz; i++) {
 //			System.out.println("w: "+i);
@@ -2008,26 +1713,16 @@ public class Ztex1v1 extends Ztex1 {
 	    	}
 	    }
 	    else {
-		int nz = Math.max(1, 2048 / flashSectorSize);
-		byte[] buf2 = new byte[nz * flashSectorSize];
-		int bp = 0;
-		while ( num>0 ) {
-		    int n2 = Math.min(num,nz);
-		    System.arraycopy(buf,bp, buf2,0, flashSectorSize*n2);
-		    vendorCommand2( 0x41, "Flash Write", sector, sector >> 16, buf2, flashSectorSize*n2 );
-		    bp += flash2SectorSize*n2;
-		    sector += n2;
-		    num -= n2;
-		}
+		if ( flashSectorSize*num>2048) System.err.println("Warning: flashWriteSector: Transaction size " + flashSectorSize*num + " may be too large");
+		vendorCommand2( 0x42, "Flash Write", sector, sector >> 16, buf, flashSectorSize*num );
 	    }
 	}
 	catch ( UsbException e ) {
 	    throw new UsbException( dev().dev(), "Flash Write: " + flashStrError() );
 	}
-
-	controlMsgTimeout = oto;
     }
 
+// write one sector
 /**
   * Writes one sector to the Flash.
   * @param sector The sector number to be written.
@@ -2063,20 +1758,16 @@ public class Ztex1v1 extends Ztex1 {
 	if ( ! flash2Enabled() )
 	    throw new CapabilityException(this, "No 2nd Flash memory installed or");
 
-	int oto = controlMsgTimeout;
-	controlMsgTimeout = 5000; // 5s timeout
-
 	try {
 	    if ( flash2SectorSize()>2048 ) {
 	        byte[] buf2 = new byte[2048];
 	        int iz = (flash2SectorSize-1) >> 11;
 		for (int sn=0; sn<num; sn++ ) {
 		
+		    int oto = controlMsgTimeout;
 		    controlMsgTimeout = 12000; // 12s timeout for erase
-		    
 		    System.arraycopy(buf,sn*flash2SectorSize, buf2,0, 2048);
 		    vendorCommand2( 0x46, "Flash 2 Write", sector, 0, buf, 2048 );
-
 		    controlMsgTimeout = 5000;
 		    
 		    for (int i=1; i<iz; i++) {
@@ -2088,27 +1779,18 @@ public class Ztex1v1 extends Ztex1 {
 		    int len = flash2SectorSize-iz*2048;
 		    System.arraycopy(buf,sn*flash2SectorSize+iz*2048, buf2,0, len);
 	    	    vendorCommand2( 0x46, "Flash 2 Write", sector, 512, buf2, len );
+
+		    controlMsgTimeout = oto;
 	    	}
 	    }
 	    else {
-		int nz = Math.max(1, 2048 / flash2SectorSize);
-		byte[] buf2 = new byte[nz * flash2SectorSize];
-		int bp = 0;
-		while ( num>0 ) {
-		    int n2 = Math.min(num,nz);
-		    System.arraycopy(buf,bp, buf2,0, flash2SectorSize*n2);
-		    vendorCommand2( 0x46, "Flash 2 Write", sector, sector >> 16, buf2, flash2SectorSize*n2 );
-		    bp += flash2SectorSize*n2;
-		    sector += n2;
-		    num -= n2;
-		}
+		if ( flash2SectorSize*num>2048) System.err.println("Warning: flash2WriteSector: Transaction size " + flash2SectorSize*num + " may be too large");
+		vendorCommand2( 0x46, "Flash 2 Write", sector, sector >> 16, buf, flash2SectorSize*num );
 	    }
 	}
 	catch ( UsbException e ) {
 	    throw new UsbException( dev().dev(), "Flash 2 Write: " + flash2StrError() );
 	}
-
-	controlMsgTimeout = oto;
     }
 
 // write one sector
@@ -2346,7 +2028,6 @@ public class Ztex1v1 extends Ztex1 {
   * @throws UsbException if a communication error occurs.
   * @throws CapabilityException if Flash memory access is not possible.
   * @throws BitstreamReadException if an error occurred while attempting to read the Bitstream.
-  * @see #flashResetBitstream()
   */
     public long flashUploadBitstream ( InputStream inputStream, int bs ) throws BitstreamReadException, UsbException, InvalidFirmwareException, CapabilityException {
 	int secNum = Math.max(1, 2048 / flashSectorSize());
@@ -2374,21 +2055,13 @@ public class Ztex1v1 extends Ztex1 {
 		    j += k;
 		    
 		    // remove header because S6 FPGA's does not support bitstream start word detection
-		    if ( i==0 && !dev().fx3() && j==bufferSize && (l=detectBitstreamStart(buffer[0]))>0 ) {
+		    if ( i==0 && j==bufferSize && (l=detectBitstreamStart(buffer[0]))>0 ) {
 			for (int m=0; m<bufferSize-l; m++ )
 			    buffer[0][m]=buffer[0][m+l];
 			j-=l;
-		    } 
+		    }
 		}
 		while ( j<bufferSize && k>0 );
-		
-		// detect bitstream bit order and swap bits if necessary 
-		if ( (i==0) && ( bs<0 || bs>1 ) ) {
-		    bs = detectBitstreamBitOrder ( buffer[0] );
-//		    System.out.println(bs + "   " + (fpgaFlashBitSwap != (bs==1)));
-		}
-
-		if ( fpgaFlashBitSwap != (bs==1) ) swapBits(buffer[i], j);
 	    }
 	    
 	    try {
@@ -2401,6 +2074,11 @@ public class Ztex1v1 extends Ztex1 {
 	    throw new BitstreamReadException(e.getLocalizedMessage());
 	}
 
+// detect bitstream bit order and swap bits if necessary 
+	if ( bs<0 || bs>1 )
+	    bs = detectBitstreamBitOrder(buffer[0]);
+	if ( fpgaFlashBitSwap != (bs==1) )
+	    swapBits( buffer, bufferSize*i );
 
 // upload the Bitstream file	
 	int startSector = 0;
@@ -2408,7 +2086,6 @@ public class Ztex1v1 extends Ztex1 {
 
 	if ( config!=null && config.getMaxBitstreamSize()>0 ) {
 	    config.setBitstreamSize( ((i-1)*secNum + (j-1)/flashSectorSize + 1)*flashSectorSize );
-	    startSector = (config.getBitstreamStart()+flashSectorSize-1) / flashSectorSize;
 	}
 	else {
 	    byte[] sector = new byte[flashSectorSize];
@@ -2460,7 +2137,6 @@ public class Ztex1v1 extends Ztex1 {
   * @throws UsbException if a communication error occurs.
   * @throws CapabilityException if Flash memory access is not possible.
   * @throws BitstreamReadException if an error occurred while attempting to read the Bitstream.
-  * @see #flashResetBitstream()
   */
     public long flashUploadBitstream ( String fwFileName, int bs ) throws BitstreamReadException, UsbException, InvalidFirmwareException, CapabilityException {
 	try {
@@ -2481,7 +2157,6 @@ public class Ztex1v1 extends Ztex1 {
   * @throws UsbException if a communication error occurs.
   * @throws CapabilityException if Flash memory access is not possible.
   * @throws BitstreamReadException if an error occurred while attempting to read the Bitstream.
-  * @see #flashResetBitstream()
   */
     public long flashUploadBitstream ( String fwFileName ) throws BitstreamReadException, UsbException, InvalidFirmwareException, CapabilityException {
 	return flashUploadBitstream(fwFileName, -1);
@@ -2538,7 +2213,7 @@ public class Ztex1v1 extends Ztex1 {
 	    throw new CapabilityException(this, "No Flash memory installed or");
 
 	if ( config!=null && config.getMaxBitstreamSize()>0 ) {
-	    return (config.getBitstreamStart()+flashSectorSize()-1) / flashSectorSize()  +  (Math.max(config.getMaxBitstreamSize(), config.getBitstreamSize())+flashSectorSize()-1) / flashSectorSize();
+	    return (Math.max(config.getMaxBitstreamSize(), config.getBitstreamSize())+flashSectorSize()-1) / flashSectorSize();
 	}
 	    
 	byte[] sector = new byte[flashSectorSize()];
@@ -2554,13 +2229,7 @@ public class Ztex1v1 extends Ztex1 {
     }
 
 // ******* toHumanStr **********************************************************
-/**
-  * Converts an integer into a base 1024 formatted string. 
-  * E.g. the number 1234567890 is converted to 1G153M384K722.
-  * @param i an integer which may be large.
-  * @return a human readable string representation.
-  */
-    public String toHumanStr ( long i ) {
+    private String toHumanStr ( long i ) {
 	if ( i==0 ) return "0";
 	StringBuilder sb = new StringBuilder();
 	int k = 0;
@@ -2589,7 +2258,7 @@ public class Ztex1v1 extends Ztex1 {
 	    if ( flashSize() > 0 ) {
 		sb.append( "Size: " + toHumanStr(flashSize()) + " Bytes" );
 		if ( config!=null && config.getMaxBitstreamSize()>0 ) {
-		    sb.append( ";  Bitstream (start / used / reserved): " + toHumanStr(config.getBitstreamStart()) + " / "  + toHumanStr(config.getBitstreamSize()) + " / "  + toHumanStr(config.getMaxBitstreamSize()) + " Bytes" );
+		    sb.append( ";  Bitstream (used / reserved): " + toHumanStr(config.getBitstreamSize()) + " / "  + toHumanStr(config.getMaxBitstreamSize()) + " Bytes" );
 		}
 		else {
 		    sb.append( ";  Bitstream (used): " + toHumanStr(flashFirstFreeSector()*flashSectorSize()) + " Bytes" );
@@ -2604,7 +2273,7 @@ public class Ztex1v1 extends Ztex1 {
 // ******* flash2Info *********************************************************=
 /**
   * Returns information about 2nd Flash memory. 
-  * The result contains the size and how much of the Flash available.
+  * The result contains the size and how much of the Flash is us used / reserved for / by the Bitstream.
   * If no 2nd Flash memeory is suppported an empty string is returned.
   * Returns Information about 2nd Flash memory.
   */
@@ -2704,7 +2373,7 @@ public class Ztex1v1 extends Ztex1 {
     public String xmegaStrError ( int errNum ) {
 	switch ( errNum ) {
 	    case XMEGA_EC_NO_ERROR:
-		return "USB error";
+		return "USB error: " + LibusbJava.usb_strerror();
 	    case XMEGA_EC_PDI_READ_ERROR:
 		return "PDI read error";
 	    case XMEGA_EC_NVM_TIMEOUT:
@@ -3058,11 +2727,11 @@ public class Ztex1v1 extends Ztex1 {
     	} 
     }
 
-// ******* xmegaImgWrite *******************************************************
+// ******* xmegaIhxWrite *******************************************************
 /**
   * Uploads data to NVM
 */
-    private long xmegaImgWrite ( boolean toFlash, ImgFile imgFile ) throws UsbException, InvalidFirmwareException, CapabilityException, FirmwareUploadException { 
+    private long xmegaIhxWrite ( boolean toFlash, IhxFile ihxFile ) throws UsbException, InvalidFirmwareException, CapabilityException, FirmwareUploadException { 
 	final int maxTries = 3;  // maximum amount of tries
 	int pageSize = toFlash ? xmegaFlashPageSize() : xmegaEepromPageSize();
 	checkCapability(CAPABILITY_XMEGA);
@@ -3077,7 +2746,7 @@ public class Ztex1v1 extends Ztex1 {
 	    boolean b = false;
 	    boolean c = true;
 	    for ( int j=0; (j < pageSize ) && ( i+j < 65536 ); j++ ) {
-		boolean d = (imgFile.data[i+j]>=0) && (imgFile.data[i+j]<=255);	// data vaild ?
+		boolean d = (ihxFile.ihxData[i+j]>=0) && (ihxFile.ihxData[i+j]<=255);	// data vaild ?
 		b |= d;
 		c &= d;
 	    }
@@ -3095,8 +2764,8 @@ public class Ztex1v1 extends Ztex1 {
 
 		// prepare the page buffer
     		for ( int j=0; (j < pageSize ) && ( i+j < 65536 ); j++ ) {
-		    if ( (imgFile.data[i+j]>=0) && (imgFile.data[i+j]<=255) )
-			buf1[j]= (byte) imgFile.data[i+j];
+		    if ( (ihxFile.ihxData[i+j]>=0) && (ihxFile.ihxData[i+j]<=255) )
+			buf1[j]= (byte) ihxFile.ihxData[i+j];
 		}
 		
 		for ( int k=1; b ; k++ ) {
@@ -3140,30 +2809,30 @@ public class Ztex1v1 extends Ztex1 {
 // ******* xmegaWriteFirmware **************************************************
 /**
   * Uploads firmware to the flash memory
-  * @param imgFile The firmware / data image.
+  * @param ihxFile The firmware / data image.
   * @throws InvalidFirmwareException if interface 1 is not supported.
   * @throws UsbException if a communication error occurs.
   * @throws CapabilityException if NVRAM access to ATxmega is not supported by the firmware.
   * @throws FirmwareUploadException if the verification fails.
   * @return the upload time in ms.
 */
-    public long xmegaWriteFirmware ( ImgFile imgFile ) throws UsbException, InvalidFirmwareException, CapabilityException, FirmwareUploadException { 
-	return xmegaImgWrite( true, imgFile);
+    public long xmegaWriteFirmware ( IhxFile ihxFile ) throws UsbException, InvalidFirmwareException, CapabilityException, FirmwareUploadException { 
+	return xmegaIhxWrite( true, ihxFile);
     }
 
 
 // ******* xmegaWriteEeprom ****************************************************
 /**
   * Uploads data to the EEPROM memory
-  * @param imgFile The firmware / data image.
+  * @param ihxFile The firmware / data image.
   * @throws InvalidFirmwareException if interface 1 is not supported.
   * @throws UsbException if a communication error occurs.
   * @throws CapabilityException if NVRAM access to ATxmega is not supported by the firmware.
   * @throws FirmwareUploadException if the verification fails.
   * @return the upload time in ms.
 */
-    public long xmegaWriteEeprom ( ImgFile imgFile ) throws UsbException, InvalidFirmwareException, CapabilityException, FirmwareUploadException { 
-	return xmegaImgWrite( false, imgFile);
+    public long xmegaWriteEeprom ( IhxFile ihxFile ) throws UsbException, InvalidFirmwareException, CapabilityException, FirmwareUploadException { 
+	return xmegaIhxWrite( false, ihxFile);
     }
 
 
@@ -3217,7 +2886,7 @@ public class Ztex1v1 extends Ztex1 {
   * @throws CapabilityException if FPGA configuration is not supported by the firmware.
   */
     public long configureFpgaHS ( InputStream inputStream, boolean force, int bs ) throws BitstreamReadException, UsbException, BitstreamUploadException, AlreadyConfiguredException, InvalidFirmwareException, CapabilityException {
-	final int transactionBytes = 64*1024;
+	final int transactionBytes = 16384;
 	long t0 = 0;
 	byte[] settings = new byte[2];
 	boolean releaseIF;
@@ -3232,30 +2901,21 @@ public class Ztex1v1 extends Ztex1 {
 //	System.out.println("EP "+ settings[0] + "    IF "+settings[1]+ "   claim " + releaseIF);
 	
 // read the Bitstream file	
-        ByteBuffer[] buffers = new ByteBuffer[64*1024*1024/transactionBytes];
-	byte[] buf = new byte[transactionBytes]; 
-        
+        byte[][] buffer = new byte[16*1024*1024/transactionBytes][];
 	int size = 0;
 	try {
 	    int j = transactionBytes;
-	    for ( int i=0; i<buffers.length && j==transactionBytes; i++ ) {
+	    for ( int i=0; i<buffer.length && j==transactionBytes; i++ ) {
+		buffer[i] = new byte[transactionBytes]; 
 		int k;
 		j = 0;	
 		do {
-		    k = inputStream.read( buf, j, transactionBytes-j );
-		    if ( k < 0 ) k = 0;
+		    k = inputStream.read( buffer[i], j, transactionBytes-j );
+		    if ( k < 0 ) 
+		        k = 0;
 		    j += k;
 		}
 		while ( j<transactionBytes && k>0 );
-		
-		if ( (i==0) && ( bs<0 || bs>1 ) ) {
-		    bs = detectBitstreamBitOrder ( buf );
-//		    System.out.println(bs);
-		}
-
-		if ( bs == 1 ) swapBits(buf, j);
-
-		buffers[i] = allocateByteBuffer(buf, 0, j);
 		size += j;
 	    }
 	    
@@ -3272,6 +2932,12 @@ public class Ztex1v1 extends Ztex1 {
 	if ( size < 64 ) 
 	    throw new BitstreamReadException("Invalid file size: " + size );
 	
+// detect bitstream bit order and swap bits if necessary 
+	if ( bs<0 || bs>1 )
+	    bs = detectBitstreamBitOrder ( buffer[0] );
+	if ( bs == 1 )
+	    swapBits(buffer,size);
+
 // remove NOP's from the end
 /*	System.out.println(size);
 	while ( size-2>=0 && buffer[(size-2) / transactionBytes][(size-2) % transactionBytes] == 4 && buffer[(size-1) / transactionBytes][(size-1) % transactionBytes]==0 )
@@ -3281,25 +2947,26 @@ public class Ztex1v1 extends Ztex1 {
 
 // claim interface if required
 	if ( releaseIF ) claimInterface( settings[1] & 255 );
-	
+
 //	System.out.println(size & 127);
 	
 // upload the Bitstream file	
-	for ( int tries=3; tries>0; tries-- ) {	    
+	for ( int tries=3; tries>0; tries-- ) {
+	    
     	    vendorCommand(0x34, "initHSFPGAConfiguration" );
 
 	    try {
 		t0 = -new Date().getTime();
 		    
-	    	for ( int i=0; i<buffers.length && i*transactionBytes < size; i++ ) {
+	    	for ( int i=0; i<buffer.length && i*transactionBytes < size; i++ ) {
 		    int j = size-i*transactionBytes;
 		    if (j>transactionBytes) 
 			j = transactionBytes;
 		
 		    if ( j>0 ) {
-			int l = bulkWrite(settings[0] & 255, buffers[i], 1000);
+			int l = LibusbJava.usb_bulk_write(handle(), settings[0] & 255, buffer[i], j, 1000);
 			if ( l < 0 )
-			    throw new UsbException("Error sending Bitstream: " + l + ": " + LibUsb.strError(l));
+			    throw new UsbException("Error sending Bitstream: " + l + ": " + LibusbJava.usb_strerror());
 			else if ( l != j )
 			    throw new UsbException("Error sending Bitstream: Sent " + l +" of " + j + " bytes");
 		    }
@@ -3344,7 +3011,7 @@ public class Ztex1v1 extends Ztex1 {
     	}
 	catch ( InterruptedException e) {
         } 
-
+	
 	return t0;
     } 
 
@@ -3616,7 +3283,6 @@ public class Ztex1v1 extends Ztex1 {
   * @throws InvalidFirmwareException if interface 1 is not supported.
   * @throws UsbException if a communication error occurs.
   * @throws CapabilityException if Flash memory access is not supported by the firmware.
-  * @return true if flash is enabled
   */
     public boolean printSpiState ( ) throws UsbException, InvalidFirmwareException, CapabilityException {
 	byte[] buf = new byte[10];
@@ -3633,569 +3299,5 @@ public class Ztex1v1 extends Ztex1 {
 	return flashEnabled == 1;
     }
 
-// ******* debug2GetMessage *******************************************************
-/**
-  * Reads a debug message with given Index in raw format.
-  * Valid indixes are {@link #debug2LastIdx()}-{@link #debug2Cnt()} to {@link #debug2LastIdx()}-1.
-  * Data format is:
-  * <table bgcolor="#404040" cellspacing=1 cellpadding=4>
-  *   <tr>
-  *     <td bgcolor="#d0d0d0" valign="bottom"><b>Bytes</b></td>
-  *     <td bgcolor="#d0d0d0" valign="bottom"><b>Description</b></td>
-  *   </tr>
-  *   <tr>
-  *     <td bgcolor="#ffffff" valign="top">0</td>
-  *     <td bgcolor="#ffffff" valign="top">Type</td>
-  *   </tr>
-  *   <tr>
-  *     <td bgcolor="#ffffff" valign="top">1..length</td>
-  *     <td bgcolor="#ffffff" valign="top">Message</td>
-  *   </tr>
-  * </table>
-  * @return A buffer with the raw message. (Length of the message is result.length-1)
-  * @param idx Index of message.
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws CapabilityException Debug2 feature is not supported by firmware.
-  * @throws UsbException if a communication error occurs.
-  */
-    public byte[] debug2GetMessage ( int idx ) throws UsbException, InvalidFirmwareException, CapabilityException {
-	int length = idx < 0 ? 10 : 4096;
-	byte[] buf = new byte[length];
-	checkCapability(CAPABILITY_DEBUG2);
-	length = vendorRequest(0x28, "Read Debug 2 Message", idx>>16, idx & 65535, buf, length);
-	if ( length<10 ) throw new InvalidFirmwareException(this, "Invalid result from VR 0x28");
-	debug2EC = (buf[0] & 255);
-	debug2LastIdx = (buf[1] & 255) | ((buf[2] & 255) << 8) | ((buf[3] & 255) << 16) | ((buf[4] & 255) << 24);
-	debug2Cnt = (buf[5] & 255) | ((buf[6] & 255)<<8);
-	if ( idx < 0 ) {
-	    buf[9] = -1;
-	}
-	return Arrays.copyOfRange(buf,9,length);
-    }
-
-// ******* debug2LastIdx **********************************************************
-/**
-  * Returns index of last message + 1
-  * @return index of last message + 1
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws CapabilityException Debug2 feature is not supported by firmware.
-  * @throws UsbException if a communication error occurs.
-  */
-    public int debug2LastIdx ( ) throws UsbException, InvalidFirmwareException, CapabilityException {
-	debug2GetMessage(-1);
-	return debug2LastIdx;
-    }
-
-// ******* debug2EC ************************************************************
-/**
-  * Returns an error code if a fatal error occurred (0 if no error occurred)
-  * @return error code.
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws CapabilityException Debug2 feature is not supported by firmware.
-  * @throws UsbException if a communication error occurs.
-  */
-    public int debug2EC ( ) throws UsbException, InvalidFirmwareException, CapabilityException {
-	debug2GetMessage(-1);
-	return debug2EC;
-    }
-
-// ******* debug2Cnt ************************************************************
-/**
-  * Returns the number of messages in buffer.
-  * @return Returns the number of buffered messages.
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws CapabilityException Debug2 feature is not supported by firmware.
-  * @throws UsbException if a communication error occurs.
-  */
-    public int debug2Cnt ( ) throws UsbException, InvalidFirmwareException, CapabilityException {
-	debug2GetMessage(-1);
-	return debug2Cnt;
-    }
-
-
-// ******* debug2GetNextLogMessage *********************************************
-/**
-  * Reads the next log message in string format.
-  * The message index is {@link #debug2LogIdx} which is incremented by this function.
-  * null is returned if no log message is available.
-  * @return The log message.
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws CapabilityException Debug2 feature is not supported by firmware.
-  * @throws UsbException if a communication error occurs.
-  */
-    public String debug2GetNextLogMessage () throws UsbException, InvalidFirmwareException, CapabilityException {
-        byte[] buf;
-        int i;
-	do {
-	    buf = debug2GetMessage(debug2LogIdx);
-	    if ( debug2LogIdx >= debug2LastIdx ) {
-		return null;
-	    }
-	    debug2LogIdx++;
-	} while ( buf[0]!=1 && buf[0]!=2 );
-    
-	return buf[0]==1 ? new String(buf,1,buf.length-1) : ( "Runtime error " + ( i = ((buf[1]&255) | ((buf[2]&255)<<8)) ) + " occured at line " + ( (buf[3]&255) | ((buf[4]&255)<<8) ) + " of " + new String(buf,5,buf.length-5)+": "+Fx3Errors.errStr(i));
-    }
-
-// ******* debug2PrintNextLogMessages ******************************************
-/**
-  * Prints new log message. Index if the first message is {@link #debug2LogIdx} which is incremented by this function.
-  * Returns quietly if debug2 functionality is not supported.
-  * @param out destination for printing the messages.
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws UsbException if a communication error occurs.
-  */
-    public void debug2PrintNextLogMessages ( PrintStream out ) throws UsbException, InvalidFirmwareException {
-	try {
-	    String str;
-	    do {
-		str = debug2GetNextLogMessage();
-		if ( str != null ) out.println(str);
-	    } while ( str != null );
-	} catch ( CapabilityException e ) {
-	}
-    }
-
-
-// ******* getUsb3Errors *******************************************************
-/**
-  * Reads USB 3.0 errors and stores them in {@link #usb3SndErrors} {@link #usb3RcvErrors}.
-  * @throws InvalidFirmwareException if interface 1 is not supported or invalid result is returned.
-  * @throws UsbException if a communication error occurs.
-  * @throws CapabilityException Debug2 feature is not supported by firmware.
-  */
-    public void getUsb3Errors () throws UsbException, InvalidFirmwareException, CapabilityException {
-	byte[] buf = new byte[4];
-	checkCapability(CAPABILITY_DEBUG2);
-	vendorRequest2(0x29, "Read Debug 2 Message", 0, 0, buf, 4);
-	usb3SndErrors = (buf[0] & 255) | ((buf[1] & 255) << 8);
-	usb3RcvErrors = (buf[2] & 255) | ((buf[3] & 255) << 8);
-    }
-
-
-// ******* flashUploadFirmware *************************************************
-//  returns upload time in ms
-/**
-  * Upload the firmware to the Flash.
-  * In order to start the uploaded firmware the device must be reset.
-  * @param imgFile The firmware image.
-  * @param force Skips the compatibility check if true.
-  * @throws IncompatibleFirmwareException if the given firmware is not compatible to the installed one, see {@link #compatible(int,int,int,int)} (Upload can be enforced using the <tt>force</tt> parameter.)
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if EEPROM access is not supported by the firmware.
-  * @throws FirmwareUploadException if an error occurred while attempting to upload the firmware.
-  */
-    private long flashUploadFirmware ( ZtexImgFile1 imgFile, boolean force ) throws IncompatibleFirmwareException, FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	checkCapability(CAPABILITY_FLASH);
-	checkCapability(CAPABILITY_FX3);
-	if ( !imgFile.isFx3 ) throw new IncompatibleFirmwareException("FX3 firmware required");
-    
-	final int pagesMax = 16*1024;
-	int pages = 0;
-	byte[][] buffer = new byte[pagesMax][];
-	
-	int pageSize;
-	try {
-	    pageSize = flashSectorSize();
-	}
-	catch ( UsbException e ) {
-	    throw new FirmwareUploadException(e.getLocalizedMessage());
-	}
-
-
-// check for compatibility
-	if ( ! force && dev().valid() ) {
-	    if ( imgFile.interfaceVersion() != 1 )
-		throw new IncompatibleFirmwareException("Wrong interface version: Expected 1, got " + imgFile.interfaceVersion() );
-	
-	    if ( ! dev().compatible ( imgFile.productId(0), imgFile.productId(1), imgFile.productId(2), imgFile.productId(3) ) )
-		throw new IncompatibleFirmwareException("Incompatible productId's: Current firmware: " + ZtexDevice1.byteArrayString(dev().productId()) 
-		    + "  Img File: " + ZtexDevice1.byteArrayString(imgFile.productId()) );
-	}
-	
-	buffer[0] = new byte[pageSize];
-	buffer[0][0]='C';
-	buffer[0][1]='Y';
-	buffer[0][2]=32; 	// execution binary, 30MHz SPI speed
-	buffer[0][3]=(byte) (0xb0 & 255);
-	
-	int ptr = 4, i = 0, cs = 0;
-	
-	while ( i < imgFile.data.length ) {
-	    while (i<imgFile.data.length && (imgFile.data[i]<0 || imgFile.data[i]>255) )
-		i+=1;
-		
-	    int j=0;
-	    while ( i+j*4+3<imgFile.data.length && 
-	            (  (imgFile.data[i+j*4+0]>=0 && imgFile.data[i+j*4+0]<256)
-		    || (imgFile.data[i+j*4+1]>=0 && imgFile.data[i+j*4+1]<256) 
-		    || (imgFile.data[i+j*4+2]>=0 && imgFile.data[i+j*4+2]<256) 
-		    || (imgFile.data[i+j*4+3]>=0 && imgFile.data[i+j*4+3]<256) ) )
-		j+=1;
-	    if ( j > 0 ) {
-		for (int k=ptr/pageSize + 1; k <= (ptr + 8+j*4+11)/pageSize; k++ )	// also considers 12 bytes for the last data block
-		    buffer[k] = new byte[pageSize];
-
-		buffer[(ptr+0)/pageSize][(ptr+0) % pageSize] = (byte) (j & 255);		// length
-		buffer[(ptr+1)/pageSize][(ptr+1) % pageSize] = (byte) ((j >> 8) & 255);	
-		buffer[(ptr+2)/pageSize][(ptr+2) % pageSize] = (byte) ((j >> 16) & 255);	
-		buffer[(ptr+3)/pageSize][(ptr+3) % pageSize] = (byte) ((j >> 24) & 255);	
-
-		long a = ImgFile.uncompressAddr(i);
-//		System.out.println(i+"  "+Long.toHexString(a));	    	    
-		if ( (a & 3) !=0 ) throw new InvalidFirmwareException("Invalid address alignment");
-		buffer[(ptr+4)/pageSize][(ptr+4) % pageSize] = (byte) (a & 255);		// address
-		buffer[(ptr+5)/pageSize][(ptr+5) % pageSize] = (byte) ((a >> 8) & 255);	
-		buffer[(ptr+6)/pageSize][(ptr+6) % pageSize] = (byte) ((a >> 16) & 255);	
-		buffer[(ptr+7)/pageSize][(ptr+7) % pageSize] = (byte) ((a >> 24) & 255);	
-		
-		ptr+=8;
-		for ( int k=0; k<j*4; k++ )  							// data
-		    buffer[(ptr+k)/pageSize][(ptr+k) % pageSize] = (byte) imgFile.data[i+k];
-		for ( int k=0; k<j*4; k+=4 )  							// data
-	    	    cs += (imgFile.data[i+k] & 255) | ((imgFile.data[i+k+1] & 255)<<8) | ((imgFile.data[i+k+2] & 255)<<16) | ((imgFile.data[i+k+3] & 255) << 24);
-		ptr+=j*4;
-		i+=j*4;
-	    }
-	}
-
-	buffer[(ptr+0)/pageSize][(ptr+0) % pageSize] = 0;						// last record
-	buffer[(ptr+1)/pageSize][(ptr+1) % pageSize] = 0;
-	buffer[(ptr+2)/pageSize][(ptr+2) % pageSize] = 0;
-	buffer[(ptr+3)/pageSize][(ptr+3) % pageSize] = 0;
-
-	buffer[(ptr+4)/pageSize][(ptr+4) % pageSize] = (byte) (imgFile.startVector & 255);		// start vector
-	buffer[(ptr+5)/pageSize][(ptr+5) % pageSize] = (byte) ((imgFile.startVector >> 8) & 255);	
-	buffer[(ptr+6)/pageSize][(ptr+6) % pageSize] = (byte) ((imgFile.startVector >> 16) & 255);	
-	buffer[(ptr+7)/pageSize][(ptr+7) % pageSize] = (byte) ((imgFile.startVector >> 24) & 255);	
-
-	buffer[(ptr+8)/pageSize][(ptr+8) % pageSize] = (byte) (cs & 255);				// check sum
-	buffer[(ptr+9)/pageSize][(ptr+9) % pageSize] = (byte) ((cs >> 8) & 255);	
-	buffer[(ptr+10)/pageSize][(ptr+10) % pageSize] = (byte) ((cs >> 16) & 255);	
-	buffer[(ptr+11)/pageSize][(ptr+11) % pageSize] = (byte) ((cs >> 24) & 255);	
-	
-	if ( config!=null && (ptr+11>config.getBitstreamStart()) ) {
-	    throw new FirmwareUploadException("Firmware to large for the reserved area: " + toHumanStr(ptr+11) + " Bytes > " + toHumanStr(config.getBitstreamStart()) + " Bytes" );
-	}
-		
-/*	try {
-	    FileOutputStream out = new FileOutputStream("test.img");
-	    for (int k=0; k<=(ptr+11)/pageSize; k++ )
-		out.write(buffer[k], 0, Math.min(pageSize,ptr+12-k*pageSize));
-	    out.close();
-	}
-	catch (Exception e) {
-	    System.out.println("Error: "+e.getLocalizedMessage() );
-	} */
-	
-	// write firmware
-	long t0 = new Date().getTime();
-	try {
-	    int j=(ptr+11)/pageSize;
-	    for (int k=0; k<=j; k++) {
-		System.out.print("\rWriting sector " + (k+1) + " of " + (j+1));
-		flashWriteSector( k, 1, buffer[k] );	// write the Bitstream sectors
-	    }
-	    System.out.println();
-	}
-	catch ( UsbException e ) {
-	    throw new FirmwareUploadException(e.getLocalizedMessage());
-	}
-		    
-
-	return new Date().getTime() - t0;
-    }
-
-
-// ******* flashDisableFirmware *************************************************
-/**
-  * Disables the firmware stored in the Flash.
-  * This is achieved by writing a "0" to the address 0.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if Flash access is not supported by the firmware.
-  * @throws FirmwareUploadException if an error occurred while attempting to disable the firmware.
-  */
-    private void flashDisableFirmware ( ) throws FirmwareUploadException, InvalidFirmwareException, CapabilityException {
-	checkCapability(CAPABILITY_FLASH);
-	checkCapability(CAPABILITY_FX3);
-    
-	int pageSize;
-	try {
-	    pageSize = flashSectorSize();
-	}
-	catch ( UsbException e ) {
-	    throw new FirmwareUploadException(e.getLocalizedMessage());
-	}
-
-	byte[] buf = new byte[pageSize];
-
-	if ( config!=null && (config.getBitstreamStart()==0) ) {
-	    System.err.println("Warning: No space reserved for firmware: firmware is not disabled");
-	    return;
-	}
-
-	try {
-	    flashReadSector(0, 1, buf);
-	    buf[0] = 0;
-	    buf[1] = 0;
-	    flashWriteSector(0, 1, buf);
-	}
-	catch ( UsbException e ) {
-	    throw new FirmwareUploadException(e.getLocalizedMessage());
-	}
-    }
-
-
-// ******* defaultVersion *******************************************************
-/**
-  * Returns version of the default interface or 0 if default interface is not present.
-  * @return version of the default interface
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws UsbExcption if an error occurred while attempting to read default interface information.
-  */
-    public int defaultVersion ( ) throws InvalidFirmwareException, UsbException {
-	byte[] buf = new byte[4];
-	
-	if ( defaultVersion >= 0 ) return defaultVersion;
-	try {
-	    checkCapability(CAPABILITY_DEFAULT);
-	    vendorRequest2(0x64, "getDefaultInfo", buf, 4);
-	    defaultVersion =  buf[0] & 255;
-	    defaultOutEP =  buf[1] & 255;
-	    defaultInEP =  buf[2] & 255;
-	    defaultSubVersion =  buf[3] & 255;
-	}
-	catch ( CapabilityException e ) {
-	    defaultVersion = 0;
-	}
-	return defaultVersion;
-    }
-    
-
-// ******* defaultCheckVersion **************************************************
-/**
-  * Checks version of the default interface. 
-  * If version number is less than required an exception it thrown. 
-  * If the firmware is not up-to-date a warning is issued.
-  * @param version The minimum required version. Minimum valid version is 1.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if an error occurred while attempting to read default interface information.
-  */
-    public void defaultCheckVersion ( int version ) throws InvalidFirmwareException, UsbException, CapabilityException {
-        defaultVersion();
-	if ( defaultVersion < 1 ) throw new CapabilityException("Default interface not supported: Udpdate Default Firmware");
-	else if ( defaultVersion < version ) throw new CapabilityException("Invalid default interface version. Found: " + defaultVersion + ". Required: " + version + ". Update default firmware.");
-	if ( !defaultDisableWarnings && ((defaultVersion<defaultLatestVersion) || ((defaultVersion==defaultLatestVersion) && (defaultSubVersion<defaultLatestSubVersion)) ) ) {
-	    System.err.println("Waning: Default interface is outdated. Update recommended.");
-	    defaultDisableWarnings = true;
-	}
-    }
-
-
-// ******* defaultOutEP *********************************************************
-/**
-  * Returns output Endpoint of default interface 
-  * used for high speed communication. The direction is seen from the host.
-  * @return output Endpoint for high speed communication of the default interface 
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if an error occurred while attempting to read default interface information.
-  */
-    public int defaultOutEP() throws InvalidFirmwareException, UsbException, CapabilityException {
-	defaultCheckVersion(1);
-	return defaultOutEP;
-    }
-
-
-// ******* defaultInEP **********************************************************
-/**
-  * Returns input Endpoint of default interface 
-  * used for high speed communication. The direction is seen from the host. The result is or'ed with 128.
-  * @return input Endpoint for high speed communication of the default interface 
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if an error occurred while attempting to read default interface information.
-  */
-    public int defaultInEP() throws InvalidFirmwareException, UsbException, CapabilityException {
-	defaultCheckVersion(1);
-	return defaultInEP | 128;
-    }
-
-
-// ******* defaultSubVersion ***************************************************
-/**
-  * Returns sub-version of the default interface.
-  * @return sub-version of the default interface
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws UsbExcption if an error occurred while attempting to read default interface information.
-  */
-    public int defaultSubVersion ( ) throws InvalidFirmwareException, UsbException, CapabilityException {
-	defaultCheckVersion(1);
-	return defaultSubVersion;
-    }
-    
-// ******* defaultReset *********************************************************
-/**
-  * Assert the reset signal.
-  * @param leave if true, the signal is left active. Otherwise only a short impulse is sent.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  */
-    public void defaultReset( boolean leave ) throws InvalidFirmwareException, UsbException, CapabilityException {
-	defaultCheckVersion(1);
-	vendorCommand (0x60, "Send reset signal", leave ? 1 : 0, 0);
-    }
-
-// ******* defaultReset *********************************************************
-/**
-  * Assert the reset signal.
-  * Equvalent to defaultReset(false), see {@link #defaultReset(boolean)}
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  */
-    public void defaultReset () throws InvalidFirmwareException, UsbException, CapabilityException {
-	defaultReset(false);
-    }
-
-// ******* defaultGpioCtl *******************************************************
-/**
-  * Reads and modifies the 4 GPIO pins.
-  * @param mask Bitmask for the pins which are modified. 1 means a bit is set. Only the lowest 4 bits are significant.
-  * @param value The bit values which are to be set. Only the lowest 4 bits are significant.
-  * @return current values of the GPIO's
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  */
-    public int defaultGpioCtl (int mask, int value) throws InvalidFirmwareException, UsbException, CapabilityException {
-	defaultCheckVersion(1);
-	byte[] buf = { 0 };
-	vendorRequest2 (0x61, "Set/get GPIO's", value, mask, buf, 1);
-	return buf[0];
-    }
-
-    
-// ******* defaultLsiSet *******************************************************
-/**
-  * Send data to the low speed interface of default firmwares.
-  * It's implemented as a SRAM-like interface and is typically used used to read/write configuration data, debug information or other things.
-  * This function sets one register.
-  * @param addr The address. Valid values are 0 to 255.
-  * @param val The register data with a width of 32 Bit.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  * @throws IndexOutOfBoundsException If the address is out of range.
-  */
-    public void defaultLsiSet (int addr, int val) throws InvalidFirmwareException, UsbException, CapabilityException, IndexOutOfBoundsException {
-	defaultCheckVersion(1);
-	if ((addr<0) || (addr>255)) throw new IndexOutOfBoundsException("LSI register address out of range: "+addr+". Valid values are 0..255");
-	byte[] buf = { (byte)(val), (byte)(val>>8), (byte)(val>>16), (byte)(val>>24), (byte)(addr & 255) };
-	vendorCommand2 (0x62, "Set lsi registers", 0,0, buf, 5);
-    }
-
-
-// ******* defaultLsiSet *******************************************************
-/**
-  * Send data to the low speed interface of default firmwares.
-  * It's implemented as a SRAM-like interface and is typically used used to read/write configuration data, debug information or other things.
-  * This function sets a sequential set of registers.
-  * @param addr The starting address address. Valid values are 0 to 255. Address is wrapped from 255 to 0.
-  * @param val The register data array with a word width of 32 Bit.
-  * @param length The length of the data array.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  * @throws IndexOutOfBoundsException If the address is out of range or length is > 256
-  */
-    public void defaultLsiSet (int addr, int[] val, int length) throws InvalidFirmwareException, UsbException, CapabilityException, IndexOutOfBoundsException {
-	defaultCheckVersion(1);
-	if ((addr<0) || (addr>255)) throw new IndexOutOfBoundsException("LSI register address out of range: "+addr+". Valid values are 0..255");
-	if (length>256) throw new IndexOutOfBoundsException("LSI register set length to large: "+length+". Valid values are 1..256");
-	byte buf[] = new byte[length*5];
-	for (int i=0; i<length; i++) {
-	    buf[i*5+0]=(byte)(val[i]);
-	    buf[i*5+1]=(byte)(val[i]>>8);
-	    buf[i*5+2]=(byte)(val[i]>>16);
-	    buf[i*5+3]=(byte)(val[i]>>24);
-	    buf[i*5+4]=(byte)(addr+i);
-	}
-	vendorCommand2 (0x62, "Write lsi registers", 0,0, buf, length*5);
-    }
-
-
-// ******* defaultLsiSet *******************************************************
-/**
-  * Send data to the low speed interface of default firmwares.
-  * It's implemented as a SRAM-like interface and is typically used used to read/write configuration data, debug information or other things.
-  * This function sets a random set of registers.
-  * @param addr The register addresses. Valid values are 0 to 255.
-  * @param val The register data array with a word width of 32 Bit.
-  * @param length The length of the data array.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  * @throws IndexOutOfBoundsException If the address is out of range or length is > 256
-  */
-    public void defaultLsiSet (int[] addr, int[] val, int length) throws InvalidFirmwareException, UsbException, CapabilityException, IndexOutOfBoundsException {
-	defaultCheckVersion(1);
-	if (length>256) throw new IndexOutOfBoundsException("LSI register set length to large: "+addr+". Valid values are 1..256");
-	byte buf[] = new byte[length*5];
-	for (int i=0; i<length; i++) {
-	    if ((addr[i]<0) || (addr[i]>255)) throw new IndexOutOfBoundsException("LSI register address out of range: "+addr[i]+". Valid values are 0..255");
-	    buf[i*5+0]=(byte)(val[i]);
-	    buf[i*5+1]=(byte)(val[i]>>8);
-	    buf[i*5+2]=(byte)(val[i]>>16);
-	    buf[i*5+3]=(byte)(val[i]>>24);
-	    buf[i*5+4]=(byte)(addr[i]);
-	}
-	vendorCommand2 (0x62, "Write lsi registers", 0,0, buf, length*5);
-    }
-
-// ******* defaultLsiGet *******************************************************
-/**
-  * Read data from the low speed interface of default firmwares.
-  * It's implemented as a SRAM-like interface and is typically used used to read/write configuration data, debug information or other things.
-  * This function reads one register.
-  * @param addr The address. Valid values are 0 to 255.
-  * @return The register value with a width of 32 Bit.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  * @throws IndexOutOfBoundsException If the address is out of range.
-  */
-    public int defaultLsiGet (int addr) throws InvalidFirmwareException, UsbException, CapabilityException, IndexOutOfBoundsException {
-	byte buf[] = new byte[4];
-	defaultCheckVersion(1);
-	if ((addr<0) || (addr>255)) throw new IndexOutOfBoundsException("LSI register address out of range: "+addr+". Valid values are 0..255");
-	vendorRequest2 (0x63, "Read lsi registers", 0,addr, buf, 4);
-	return (buf[0] & 255) | ((buf[1] & 255)<<8) | ((buf[2] & 255)<<16) | ((buf[3] & 255)<<24);
-    }
-
-// ******* defaultLsiGet *******************************************************
-/**
-  * Read data from the low speed interface of default firmwares.
-  * It's implemented as a SRAM-like interface and is typically used used to read/write configuration data, debug information or other things.
-  * This function reads a sequencial set of registers.
-  * @param addr The start address. Valid values are 0 to 255. Address is wrapped from 255 to 0.
-  * @param val The array where to store the register data with a word width of 32 Bit.
-  * @param length The amount of register to be read.
-  * @throws InvalidFirmwareException if interface 1 is not supported.
-  * @throws CapabilityException if default interface if not present or version number is lower than required
-  * @throws UsbExcption if a communication error occurred.
-  * @throws IndexOutOfBoundsException If the address is out of range or length is > 256
-  */
-    public void defaultLsiGet (int addr, int[] val, int length) throws InvalidFirmwareException, UsbException, CapabilityException, IndexOutOfBoundsException {
-	byte buf[] = new byte[length*4];
-	defaultCheckVersion(1);
-	if ((addr<0) || (addr>255)) throw new IndexOutOfBoundsException("LSI register address out of range: "+addr+". Valid values are 0..255");
-	if (length>256) throw new IndexOutOfBoundsException("LSI register set length to large: "+addr+". Valid values are 1..256");
-	vendorRequest2 (0x63, "Read lsi registers", 0,addr, buf, length*4);
-	for (int i=0; i<length; i++)
-	    val[i] = (buf[i*4+0] & 255) | ((buf[i*4+1] & 255)<<8) | ((buf[i*4+2] & 255)<<16) | ((buf[i*4+3] & 255)<<24);
-    }
-    
 }    
+

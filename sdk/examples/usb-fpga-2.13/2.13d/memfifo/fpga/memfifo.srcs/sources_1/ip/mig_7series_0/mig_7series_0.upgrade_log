@@ -1,0 +1,16 @@
+Copyright 1986-2014 Xilinx, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------
+| Tool Version : Vivado v.2014.2 (lin32) Build 932637 Wed Jun 11 13:08:21 MDT 2014
+| Date         : Tue Jul  8 19:52:31 2014
+| Host         : ws2 running 32-bit Debian GNU/Linux 6.0.9 (squeeze)
+| Command      : upgrade_ip
+| Device       : xc7a100tcsg324-2
+-----------------------------------------------------------------------------------
+
+Upgrade Log for IP 'mig_7series_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of mig_7series_0 from xilinx.com:ip:mig_7series:2.0 (Rev. 1) to xilinx.com:ip:mig_7series:2.1
+

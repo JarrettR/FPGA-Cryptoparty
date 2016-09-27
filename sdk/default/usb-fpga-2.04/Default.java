@@ -1,6 +1,6 @@
 /*!
-   Default firmware and loader for ZTEX USB-FPGA Modules 2.14
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Default firmware and loader for ZTEX USB-FPGA Modules 2.16
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,8 @@
 
 import java.io.*;
 import java.util.*;
-import java.nio.*;
 
-import org.usb4java.*;
+import ch.ntb.usb.*;
 
 import ztex.*;
 
@@ -63,7 +62,10 @@ class Default {
 	int variant = 0;
 	
 	try {
-// Scan the USB. This also creates and initializes a new USB context.
+// init USB stuff
+	    LibusbJava.usb_init();
+
+// scan the USB bus
 	    ZtexScanBus1 bus = new ZtexScanBus1( ZtexDevice1.ztexVendorId, ZtexDevice1.ztexProductId, true, false, 1);
 	    if ( bus.numberOfDevices() <= 0) {
 		System.err.println("No devices found");
@@ -114,7 +116,6 @@ class Default {
 
 // create the main class	    
 	    Ztex1v1 ztex = new Ztex1v1 ( bus.device(devNum) );
-	    bus.unref();
 	    
 // upload the firmware if necessary
 	    if ( force || ! ztex.valid() || ! ztex.InterfaceCapabilities(ztex.CAPABILITY_EEPROM) || ! ztex.InterfaceCapabilities(ztex.CAPABILITY_MAC_EEPROM) ) {
@@ -123,10 +124,10 @@ class Default {
 	    
     	    for (int i=0; i<args.length; i++ ) {
 		if ( args[i].equals("-re") ) {
-		    ztex.nvDisableFirmware();
+		    ztex.eepromDisable();
 		} 
 		else if ( args[i].equals("-ue") ) {
-		    System.out.println("Firmware to EEPROM upload time: " + ztex.nvUploadFirmware( "default.ihx", force ) + " ms");
+		    System.out.println("Firmware to EEPROM upload time: " + ztex.eepromUpload( "default.ihx", force ) + " ms");
 		}
 	    }
 
@@ -167,8 +168,7 @@ class Default {
 	    }
 	    
 	    if ( reset ) ztex.resetEzUsb();
-
-	    ztex.dispose();  // this also releases clamied interfaces
+	    
 		
 	}
 	catch (Exception e) {

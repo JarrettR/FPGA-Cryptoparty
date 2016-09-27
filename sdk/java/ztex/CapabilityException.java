@@ -1,6 +1,6 @@
 /*!
    Java host software API of ZTEX SDK
-   Copyright (C) 2009-2016 ZTEX GmbH.
+   Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -21,20 +21,11 @@ package ztex;
 /** * Thrown is a required capability is not available. */
 public class CapabilityException extends Exception {
 /** 
- * Constructs an instance from a given device and capability string.
+ * Constructs an instance from a givig device and capability string.
  * @param ztex The device.
  * @param cap Capability name.
  */
     public CapabilityException ( Ztex1 ztex, String cap) {
-	super( "bus=" + ztex.dev().name() + ": " + cap + " not supported" );
+	super( "bus=" + ztex.dev().dev().getBus().getDirname() + "  device=" + ztex.dev().dev().getFilename() + ": " + cap + " not supported" );
     }
-
-/** 
- * Constructs an instance from a given message string.
- * @param msg The message.
- */
-    public CapabilityException ( String msg ) {
-	super( msg );
-    }
-
 }    

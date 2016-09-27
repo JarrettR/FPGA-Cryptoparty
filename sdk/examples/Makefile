@@ -1,4 +1,4 @@
-DIRS=flashbench fx2demo fx3demo fx3sdemo memfifo mmio ucecho
+DIRS=all usb-fpga-1.11 usb-fpga-1.15 usb-fpga-1.15y usb-fpga-2.16 usb-fpga-2.13 usb-fpga-2.01 usb-fpga-2.04
 
 .PHONY: default all clean distclean avr avrclean avrdistclean
 
