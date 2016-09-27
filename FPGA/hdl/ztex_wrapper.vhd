@@ -151,12 +151,16 @@ begin
                         i_len <= i_len + 1;
                         ssid_load <= '0';
                     else
-                        --Todo: This will later be used to recieve MKs
+                        --Todo: This will later be used to recieve MK inputs
                         state <= STATE_PROCESS;
                         i_len <= 0;
                         ssid_load <= '1';
                     end if;
                 elsif state = STATE_PROCESS then
+                    if pmk1_valid = '1' then
+                        state <= STATE_OUT;
+                    end if;
+                else -- state = STATE_OUT
                     --
                 end if;
             end if;

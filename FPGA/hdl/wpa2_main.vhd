@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 --                        wpa2_main.vhd
---    Master file, starting PBKDF2 and cascading down
+--    Master file, starting at PBKDF2 and cascading down
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify

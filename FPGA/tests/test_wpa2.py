@@ -98,56 +98,7 @@ def A_cache_data_test(dut):
     else:
         log.info("Ok!")
 
-        
-#@cocotb.test()
-def Z_wavedrom_test(dut):
-    """
-    Generate a JSON wavedrom diagram of a trace
-    """
-    log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 100).start())
-    
-    mockSha1 = Sha1Model()
-    mockObject = HmacModel(mockSha1)
-    shaObject = HmacDriver(dut, None, dut.clk_i)
-    
-    #yield load_random_data(dut, log, mockObject, 80)
-    
-    
-    args = [
-            dut.rst_i,
-            dut.dat_i,
-            dut.i,
-            dut.i_mux
-            ]
 
-    with cocotb.wavedrom.trace(*args, clk=dut.clk_i) as waves:
-    
-        yield RisingEdge(dut.clk_i)
-        yield reset(dut)
-        yield load_random_data(dut, log, mockObject, 16)
-        mockObject.processInput()
-        mockObject.processBuffer()
-        
-        if _debug == True:
-            log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
-        yield load_random_data(dut, log, mockObject, 60)
-        
-        
-            
-        if _debug == True:
-            log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
-            
-        yield load_random_data(dut, log, mockObject, 90)
-        
-        if _debug == True:
-            log.info(convert_hex(dut.pbuffer1.test_word_3).zfill(8))
-            log.info(convert_hex(dut.pbuffer1.test_word_4).zfill(8))
-            
-        waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-1}, config = {'hscale':5})
-        
-
-        
 def convert_hex(input):
     input = str(input)
     replaceCount = []
