@@ -62,3 +62,14 @@
 *.elf
 *.ncd
 *.xwbt
+*.class
+*.asm
+*.lk
+*.lst
+*.mem
+*.rel
+*.rst
+*.sym
+*.tmp.c
+*.ihx
+
