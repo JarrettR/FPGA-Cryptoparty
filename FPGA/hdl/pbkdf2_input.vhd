@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
---  Scheduler for running 5 concurrent SHA1 calcs and outputting sequentially
+--                             pbkdf2_input.vhd
+--    Input stage of PBKDF2 algorithm
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
