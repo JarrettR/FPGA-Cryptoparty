@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
---                        wpa2_main.vhd
---    Master file, starting at PBKDF2 and cascading down
+--                        wpa2_prf.vhd
+--    Pseudo-random function that generates pairwise transient key from PKE
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -22,34 +22,21 @@ use ieee.std_logic_1164.all;
 use work.sha1_pkg.all;
 
 
-entity wpa2_main is
+entity wpa2_prf is
 
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     cont_i          : in    std_ulogic;
-    ssid_dat_i      : in    w_input;
     data_dat_i      : in    w_input;
     pke_dat_i       : in    w_input;
     mic_dat_i       : in    w_input;
     pmk_dat_o       : out   w_output;
     pmk_valid_o     : out   std_ulogic
     );
-end wpa2_main;
+end wpa2_prf;
 
-architecture RTL of wpa2_main is
-    
-    -- Fixed input format for benchmarking
-    -- Generates sample passwords of ten ascii digits, 0-f
-    component gen_tenhex
-    port(
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        complete_o     : out    std_ulogic;
-        dat_mk_o       : out    mk_data
-    );
-    end component;
-    
+architecture RTL of wpa2_prf is
     
     signal w: w_input;
     signal w_temp: w_input;

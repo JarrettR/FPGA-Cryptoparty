@@ -24,22 +24,22 @@ use work.sha1_pkg.all;
 
 
 entity ztex_wrapper is
+    port(
+        RESET         : in std_logic;
+        CS            : in std_logic;
+        CONT          : in std_logic;
+        IFCLK         : in std_logic;
 
-port(
-    fxclk_i               : in    std_ulogic;
-    select_i              : in    std_ulogic;
-    reset_i               : in    std_ulogic;
-    clk_reset_i           : in    std_ulogic;
-    pll_stop_i            : in    std_ulogic;
-    dcm_progclk_i         : in    std_ulogic;
-    dcm_progdata_i        : in    std_ulogic;
-    dcm_progen_i          : in    std_ulogic;
-    rd_clk_i              : in    std_ulogic;
-    wr_clk_i              : in    std_ulogic;
-    wr_start_i            : in    std_ulogic;
-    read_i                : in    std_ulogic_vector(0 to 7);
-    write_o               : out    std_ulogic_vector(0 to 7)
-    
+        FD            : out std_logic_vector(15 downto 0); 
+
+        SLOE          : out std_logic;
+        SLRD          : out std_logic;
+        SLWR          : out std_logic;
+        FIFOADR0      : out std_logic;
+        FIFOADR1      : out std_logic;
+        PKTEND        : out std_logic;
+
+        FLAGB         : in std_logic
     );
 end ztex_wrapper;
 
@@ -56,17 +56,6 @@ architecture RTL of ztex_wrapper is
         mk_length_i     : in    integer range 0 to 63;
         pmk_dat_o       : out   w_output;
         pmk_valid_o     : out   std_ulogic
-    );
-    end component;
-    
-    -- Fixed input format for benchmarking
-    -- Will only work if password happens to be ten ascii digits, 0-f
-    component gen_tenhex
-    port(
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        complete_o     : out    std_ulogic;
-        dat_mk_o       : out    mk_data
     );
     end component;
     
@@ -121,12 +110,12 @@ architecture RTL of ztex_wrapper is
 begin
 
 
-    MAIN1: wpa2_main port map (fxclk_i,reset_i,ssid_w,ssid_load,ssid_len,w_mk,ssid_load,ssid_len,w_pmk1,pmk1_valid);
-    --MAIN2: wpa2_main port map (fxclk_i,reset_i,std_ulogic_vector(w_load),latch_input(1),w_pmk);
+    MAIN1: wpa2_main port map (IFCLK,reset_i,ssid_w,ssid_load,ssid_len,w_mk,ssid_load,ssid_len,w_pmk1,pmk1_valid);
+    --MAIN2: wpa2_main port map (IFCLK,reset_i,std_ulogic_vector(w_load),latch_input(1),w_pmk);
     
-    process(fxclk_i)   
+    process(IFCLK)   
     begin
-        if (fxclk_i'event and fxclk_i = '1') then
+        if (IFCLK'event and IFCLK = '1') then
             if reset_i = '1' then
                 latch_input <= "00";
                 state <= STATE_IDLE;
@@ -151,16 +140,12 @@ begin
                         i_len <= i_len + 1;
                         ssid_load <= '0';
                     else
-                        --Todo: This will later be used to recieve MK inputs
+                        --Todo: This will later be used to recieve MKs
                         state <= STATE_PROCESS;
                         i_len <= 0;
                         ssid_load <= '1';
                     end if;
                 elsif state = STATE_PROCESS then
-                    if pmk1_valid = '1' then
-                        state <= STATE_OUT;
-                    end if;
-                else -- state = STATE_OUT
                     --
                 end if;
             end if;

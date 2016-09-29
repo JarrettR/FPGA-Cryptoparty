@@ -148,26 +148,31 @@ class Wpa2 extends Ztex1v1 {
 
             // scan the command line arguments
             for (int i=0; i<args.length; i++ ) {
+                //Select device
                 if ( args[i].equals("-d") ) {
                     i++;
                     try {
                         if (i>=args.length) throw new Exception();
-                            devNum = Integer.parseInt( args[i] );
+                        devNum = Integer.parseInt( args[i] );
                     }
                     catch (Exception e) {
                         throw new ParameterException("Device number expected after -d");
                     }
                 }
+                //Force firmware upload
                 else if ( args[i].equals("-f") ) {
                     force = true;
                 }
+                //Print bus info
                 else if ( args[i].equals("-p") ) {
                     bus.printBus(System.out);
                     System.exit(0);
                 }
+                //Enable workarounds
                 else if ( args[i].equals("-w") ) {
                     workarounds = true;
                 }
+                //Hjalp!
                 else if ( args[i].equals("-h") ) {
                     System.err.println(ParameterException.helpMsg);
                     System.exit(0);
