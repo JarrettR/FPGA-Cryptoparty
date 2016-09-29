@@ -66,7 +66,8 @@ def A_gen_data_test(dut):
         
     for x in xrange(0xff):
         print str(int(dut.main1.i.value)) + ' - ' + \
-            str(int(dut.main1.gen1.complete_o.value)) + ': ' + \
+            str(int(dut.main1.gen1.complete_o.value)) + '- ' + \
+            str(dut.main1.gen1.mk_dat_test.value)  + ': ' + \
             '{:x}'.format(int(dut.main1.gen1.mk_test9.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test8.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test7.value)) + \

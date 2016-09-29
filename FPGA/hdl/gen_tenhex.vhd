@@ -40,7 +40,10 @@ architecture RTL of gen_tenhex is
     signal w_temp: w_input;
     
     --Ten digit, hex (16^10)
-    signal mk :  mk_data;
+    type mk_int_data is array(0 to 9) of unsigned(0 to 3);
+    signal mk :  mk_int_data;
+    
+    signal mk_dat_test :  unsigned(0 to 7);
     
     signal mk_test0 :  unsigned(0 to 3);
     signal mk_test1 :  unsigned(0 to 3);
@@ -100,7 +103,15 @@ begin
         end if;
     end process;
     
-    dat_mk_o <= mk;
+    -- Int to ascii
+    gen_mk: for i in 0 to 9 generate
+    begin
+        dat_mk_o(i) <= mk(i) + X"57" when mk(i) > 9 else mk(i) + X"30";
+    end generate gen_mk;
+    
+
+    mk_dat_test <= mk(0) + X"57" when mk(0) > 9 else mk(0) + X"30";
+    
     
     mk_test0 <= mk(0);
     mk_test1 <= mk(1);
