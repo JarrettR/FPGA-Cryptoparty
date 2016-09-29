@@ -25,21 +25,21 @@ use work.sha1_pkg.all;
 
 entity ztex_wrapper is
     port(
-        RESET         : in std_logic;
-        CS            : in std_logic;
-        CONT          : in std_logic;
-        IFCLK         : in std_logic;
+        rst_i         : in std_logic;   --RESET
+        CS            : in std_logic;   --CS
+        cont_i          : in std_logic;   --CONT
+        clk_i         : in std_logic;   --IFCLK
 
-        FD            : out std_logic_vector(15 downto 0); 
+        dat_i         : out std_ulogic_vector(0 to 15);  --FD
 
-        SLOE          : out std_logic;
-        SLRD          : out std_logic;
-        SLWR          : out std_logic;
-        FIFOADR0      : out std_logic;
-        FIFOADR1      : out std_logic;
-        PKTEND        : out std_logic;
+        SLOE          : out std_logic;  --SLOE
+        SLRD          : out std_logic;  --SLRD
+        SLWR          : out std_logic;  --SLWR
+        FIFOADR0      : out std_logic;  --FIFOADR0
+        FIFOADR1      : out std_logic;  --FIFOADR1
+        PKTEND        : out std_logic;  --PKTEND
 
-        FLAGB         : in std_logic
+        FLAGB         : in std_logic    --FLAGB
     );
 end ztex_wrapper;
 
@@ -48,12 +48,11 @@ architecture RTL of ztex_wrapper is
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
+        cont_i          : in    std_ulogic;
         ssid_dat_i      : in    w_input;
-        ssid_load_i     : in    std_ulogic;
-        ssid_length_i   : in    integer range 0 to 63;
-        mk_dat_i        : in    mk_data;
-        mk_load_i       : in    std_ulogic;
-        mk_length_i     : in    integer range 0 to 63;
+        data_dat_i      : in    w_input;
+        pke_dat_i       : in    w_input;
+        mic_dat_i       : in    w_input;
         pmk_dat_o       : out   w_output;
         pmk_valid_o     : out   std_ulogic
     );
@@ -98,25 +97,16 @@ architecture RTL of ztex_wrapper is
     signal i_word : integer range 0 to 3;
     signal i_mux : integer range 0 to 1;
     signal latch_input: std_ulogic_vector(0 to 1);
-    
-    -- synthesis translate_off
-    signal test_1              : std_ulogic_vector(0 to 31);
-    signal test_2              : std_ulogic_vector(0 to 31);
-    signal test_3              : std_ulogic_vector(0 to 31);
-    signal test_4              : std_ulogic_vector(0 to 31);
-    -- synthesis translate_on
-
 
 begin
 
-
-    MAIN1: wpa2_main port map (IFCLK,reset_i,ssid_w,ssid_load,ssid_len,w_mk,ssid_load,ssid_len,w_pmk1,pmk1_valid);
-    --MAIN2: wpa2_main port map (IFCLK,reset_i,std_ulogic_vector(w_load),latch_input(1),w_pmk);
+    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i, ssid_w,ssid_w,ssid_w,ssid_w,w_pmk1,pmk1_valid);
+    --MAIN2: wpa2_main port map (clk_i,rst_i,std_ulogic_vector(w_load),latch_input(1),w_pmk);
     
-    process(IFCLK)   
+    process(clk_i)   
     begin
-        if (IFCLK'event and IFCLK = '1') then
-            if reset_i = '1' then
+        if (clk_i'event and clk_i = '1') then
+            if rst_i = '1' then
                 latch_input <= "00";
                 state <= STATE_IDLE;
                 ssid_len <= 0;
@@ -126,27 +116,8 @@ begin
                 ssid_load <= '0';
             else
                 if state = STATE_IDLE then
-                    ssid_len <= to_integer(unsigned(read_i));
+                    --ssid_len <= to_integer(unsigned(dat_i));
                     state <= STATE_SSID;
-                elsif state = STATE_SSID then
-                    if i_word < 3 then
-                        i_word <= i_word + 1;
-                        w_load_temp <= rotate_left(unsigned(w_load), 8) + unsigned(read_i);
-                    else
-                        i_word <= 0;
-                        ssid_w(i_len) <= std_ulogic_vector(rotate_left(unsigned(w_load), 8) + unsigned(read_i));
-                    end if;
-                    if i_len < 15 then
-                        i_len <= i_len + 1;
-                        ssid_load <= '0';
-                    else
-                        --Todo: This will later be used to recieve MKs
-                        state <= STATE_PROCESS;
-                        i_len <= 0;
-                        ssid_load <= '1';
-                    end if;
-                elsif state = STATE_PROCESS then
-                    --
                 end if;
             end if;
         end if;

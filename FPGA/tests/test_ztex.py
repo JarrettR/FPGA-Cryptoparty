@@ -43,23 +43,49 @@ def load_data(dut, log, mockObject, words):
             mockObject.addByte(input)
         if dut != None:
             dut.read_i <= input
-            yield RisingEdge(dut.fxclk_i)
+            yield RisingEdge(dut.clk_i)
         if _debug == True:
             log.info(str(i) + " - {} - ".format(int(str(dut.pbuffer1.i), 2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_3)))
 
 @cocotb.coroutine
 def reset(dut):
-    dut.reset_i <= 1
-    yield RisingEdge(dut.fxclk_i)
-    dut.reset_i <= 0
+    dut.rst_i <= 1
+    yield RisingEdge(dut.clk_i)
+    dut.rst_i <= 0
 
 @cocotb.test()
-def A_load_data_test(dut):
+def A_gen_data_test(dut):
     """
-    Tests that initial data loads properly
+    Tests that gen_tenhex generates sane values
     """
     log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.fxclk_i, 10000).start())
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    yield reset(dut)
+    yield RisingEdge(dut.clk_i)
+        
+    for x in xrange(0xff):
+        print str(int(dut.main1.i.value)) + ' - ' + \
+            str(int(dut.main1.gen1.complete_o.value)) + ': ' + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test9.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test8.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test7.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test6.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test5.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test4.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test3.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test2.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test1.value)) + \
+            '{:x}'.format(int(dut.main1.gen1.mk_test0.value))
+        yield RisingEdge(dut.clk_i)
+
+#@cocotb.test()
+def Y_populate_prf_test(dut):
+    """
+    Pushes PRF data with known values
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
     
     objSha = Sha1Model()
     objHmac = HmacModel(objSha)
@@ -102,7 +128,7 @@ def Z_wavedrom_test(dut):
     Generate a JSON wavedrom diagram of a trace
     """
     log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.fxclk_i, 100).start())
+    cocotb.fork(Clock(dut.clk_i, 100).start())
 
 def convert_hex(input):
     input = str(input)

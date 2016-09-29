@@ -45,8 +45,23 @@ architecture RTL of wpa2_main is
     port(
         clk_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
+        start_val_i    : in    std_ulogic;
         complete_o     : out    std_ulogic;
         dat_mk_o       : out    mk_data
+    );
+    end component;
+    
+    component wpa2_compare
+    port(
+        clk_i           : in    std_ulogic;
+        rst_i           : in    std_ulogic;
+        cont_i          : in    std_ulogic;
+        pmk_dat_i       : in    w_input;
+        data_dat_i      : in    w_input;
+        pke_dat_i       : in    w_input;
+        mic_dat_i       : in    w_input;
+        pmk_dat_o       : out   w_output;
+        pmk_valid_o     : out   std_ulogic
     );
     end component;
     
@@ -54,17 +69,26 @@ architecture RTL of wpa2_main is
     signal w: w_input;
     signal w_temp: w_input;
     
-    signal mk: w_input;
+    signal mk: mk_data;
     signal pmk: w_input;
+    
+    signal i : integer range 0 to 4;
+    
+    signal gen_complete: std_ulogic;
 
 begin
+
+    gen1: gen_tenhex port map (clk_i,rst_i,cont_i,gen_complete,mk);
+
+
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
+                i <= 0;
                 pmk_valid_o <= '0';
             else
-                if cont_i = '1' then
+                if i = 4 then
                     i <= 0;
                 else
                     i <= i + 1;

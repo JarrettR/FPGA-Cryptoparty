@@ -28,6 +28,7 @@ port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     cont_i          : in    std_ulogic;
+    pmk_dat_i       : in    w_input;
     data_dat_i      : in    w_input;
     pke_dat_i       : in    w_input;
     mic_dat_i       : in    w_input;
@@ -43,6 +44,11 @@ architecture RTL of wpa2_compare is
     
     signal mk: w_input;
     signal pmk: w_input;
+    signal ptk: w_input;
+    
+    signal mic: w_input;
+    
+    signal i : integer range 0 to 4;
 
 begin
     process(clk_i)   
@@ -50,11 +56,18 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 pmk_valid_o <= '0';
+                i <= 0;
             else
                 if cont_i = '1' then
-                    i <= 0;
-                else
-                    i <= i + 1;
+                    if i < 4 then
+                        --PKE -> PTK
+                        --r = r . HMAC_SHA1(PMK, a . "\0" . b . chr(i));
+                        i <= i + 1;
+                    else
+                        --PTK -> MIC
+                        --mic = HMAC_SHA1(ptk[0:16], data[60:121]);
+                        i <= 0;
+                    end if;
                 end if;
             end if;
         end if;
