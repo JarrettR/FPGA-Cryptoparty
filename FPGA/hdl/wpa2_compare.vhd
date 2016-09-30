@@ -47,6 +47,19 @@ architecture RTL of wpa2_compare is
     
     signal pmk_found: std_ulogic;
     
+    signal mk_test_comp :  unsigned(0 to 7);
+    
+    signal mk_test0 :  unsigned(0 to 7);
+    signal mk_test1 :  unsigned(0 to 7);
+    signal mk_test2 :  unsigned(0 to 7);
+    signal mk_test3 :  unsigned(0 to 7);
+    signal mk_test4 :  unsigned(0 to 7);
+    signal mk_test5 :  unsigned(0 to 7);
+    signal mk_test6 :  unsigned(0 to 7);
+    signal mk_test7 :  unsigned(0 to 7);
+    signal mk_test8 :  unsigned(0 to 7);
+    signal mk_test9 :  unsigned(0 to 7);
+    
     signal i : integer range 0 to 4;
 
 --We're gonna use this for benchmarking the host software for now
@@ -60,15 +73,15 @@ begin
                 pmk_found_var := '0';
                 i <= 0;
                 mk(0) <= "00110000"; --0x30, char 0
-                mk(1) <= "00110110"; --0x33, char 3
-                mk(2) <= "00000000";
-                mk(3) <= "00000000";
-                mk(4) <= "00000000";
-                mk(5) <= "00000000";
-                mk(6) <= "00000000";
-                mk(7) <= "00000000";
-                mk(8) <= "00000000";
-                mk(9) <= "00000000";
+                mk(1) <= "00110110"; --0x36, char 6
+                mk(2) <= "00110000";
+                mk(3) <= "00110000";
+                mk(4) <= "00110000";
+                mk(5) <= "00110000";
+                mk(6) <= "00110000";
+                mk(7) <= "00110000";
+                mk(8) <= "00110000";
+                mk(9) <= "00110000";
             else
                 if pmk_found = '0' then
                     pmk_found_var := '1';
@@ -80,6 +93,9 @@ begin
                     
                     if pmk_found_var = '1' then
                         pmk_found <= '1';
+                        for i in 0 to 9 loop
+                            pmk_dat_o(i) <= mk_dat_i(i);
+                        end loop;
                     end if;
                 end if;
             end if;
@@ -88,6 +104,19 @@ begin
     
 
     pmk_valid_o <= pmk_found;
+    
+    mk_test_comp <= mk(0);
+    
+    mk_test0 <= mk_dat_i(0);
+    mk_test1 <= mk_dat_i(1);
+    mk_test2 <= mk_dat_i(2);
+    mk_test3 <= mk_dat_i(3);
+    mk_test4 <= mk_dat_i(4);
+    mk_test5 <= mk_dat_i(5);
+    mk_test6 <= mk_dat_i(6);
+    mk_test7 <= mk_dat_i(7);
+    mk_test8 <= mk_dat_i(8);
+    mk_test9 <= mk_dat_i(9);
 
 end RTL; 
 

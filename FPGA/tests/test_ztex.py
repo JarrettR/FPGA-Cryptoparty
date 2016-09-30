@@ -33,20 +33,6 @@ from python_prf import PrfModel, PrfDriver
 
 _debug = False
 
-
-@cocotb.coroutine
-def load_data(dut, log, mockObject, words):
-    for i in range(words):
-        #input = 0xffffffff
-        input = random.randint(0, 0xff)
-        if mockObject != None:
-            mockObject.addByte(input)
-        if dut != None:
-            dut.read_i <= input
-            yield RisingEdge(dut.clk_i)
-        if _debug == True:
-            log.info(str(i) + " - {} - ".format(int(str(dut.pbuffer1.i), 2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_2)) + " {}".format(convert_hex(dut.pbuffer1.test_word_3)))
-
 @cocotb.coroutine
 def reset(dut):
     dut.rst_i <= 1
@@ -61,14 +47,17 @@ def A_gen_data_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
+    outStr = ''
+    
     yield reset(dut)
     yield RisingEdge(dut.clk_i)
         
     for x in xrange(0xff):
-        print str(int(dut.main1.i.value)) + ' - ' + \
-            str(int(dut.main1.gen1.complete_o.value)) + '- ' + \
-            str(dut.main1.gen1.mk_dat_test.value)  + ': ' + \
-            '{:x}'.format(int(dut.main1.gen1.mk_test9.value)) + \
+        complete = int(dut.main1.gen1.complete_o.value)
+        if complete != 0:
+            raise TestFailure("Premature completion")
+        
+        outStr = '{:x}'.format(int(dut.main1.gen1.mk_test9.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test8.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test7.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test6.value)) + \
@@ -78,7 +67,53 @@ def A_gen_data_test(dut):
             '{:x}'.format(int(dut.main1.gen1.mk_test2.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test1.value)) + \
             '{:x}'.format(int(dut.main1.gen1.mk_test0.value))
+       
+        
         yield RisingEdge(dut.clk_i)
+        
+    if outStr != "00000000fe":
+        raise TestFailure("Wrong loaded values!")
+    else:
+        log.info("Ok!")
+
+@cocotb.test()
+def B_compare_data_test(dut):
+    """
+    Tests that generated data gets compared against test values
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 10000).start())
+    
+    outStr = ''
+    
+    yield reset(dut)
+    yield RisingEdge(dut.clk_i)
+        
+    for x in xrange(0x90):
+        complete = int(dut.main1.comp_complete)
+        
+        outStr = str(x) + ' - ' + str(int(dut.main1.i.value)) + ' - ' + str(complete) + ' - ' + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test_comp.value)) + ": " + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test9.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test8.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test7.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test6.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test5.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test4.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test3.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test2.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test1.value)) + \
+            '{:x}'.format(int(dut.main1.comp1.mk_test0.value))
+            
+        if complete == 1:
+            break
+        
+        yield RisingEdge(dut.clk_i)
+        
+    if complete == 0:
+        raise TestFailure("Comparison never reached")
+    else:
+        log.info("Ok!")
 
 #@cocotb.test()
 def Y_populate_prf_test(dut):
