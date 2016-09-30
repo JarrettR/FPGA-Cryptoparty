@@ -28,44 +28,41 @@ entity wpa2_compare is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    cont_i          : in    std_ulogic;
     mk_dat_i        : in    mk_data;
     data_dat_i      : in    w_input;
     pke_dat_i       : in    w_input;
     mic_dat_i       : in    w_input;
-    pmk_dat_o       : out   w_output;
+    pmk_dat_o       : out   pmk_data;
     pmk_valid_o     : out   std_ulogic
     );
 end wpa2_compare;
 
 architecture RTL of wpa2_compare is
     
-    signal w: w_input;
-    signal w_temp: w_input;
-    
     signal mk: mk_data;
     signal pmk: w_input;
     signal ptk: w_input;
-  
     
     signal mic: w_input;
+    
+    signal pmk_found: std_ulogic;
     
     signal i : integer range 0 to 4;
 
 --We're gonna use this for benchmarking the host software for now
 begin
     process(clk_i)   
-    variable pmk_match: std_ulogic;
+    variable pmk_found_var: std_ulogic;
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                pmk_valid_o <= '0';
+                pmk_found <= '0';
+                pmk_found_var := '0';
                 i <= 0;
-                pmk_match := '0';
-                mk(0) <= "00000000";
-                mk(1) <= "00000000";
+                mk(0) <= "00110000"; --0x30, char 0
+                mk(1) <= "00110110"; --0x33, char 3
                 mk(2) <= "00000000";
-                mk(3) <= "00110000"; --0x30, char 0
+                mk(3) <= "00000000";
                 mk(4) <= "00000000";
                 mk(5) <= "00000000";
                 mk(6) <= "00000000";
@@ -73,19 +70,24 @@ begin
                 mk(8) <= "00000000";
                 mk(9) <= "00000000";
             else
-                if cont_i = '1' then
-                    pmk_match := '1';
+                if pmk_found = '0' then
+                    pmk_found_var := '1';
                     for i in 0 to 9 loop
                         if mk(i) /= mk_dat_i(i) then
-                            pmk_match := '0';
+                            pmk_found_var := '0';
                         end if;
                     end loop;
+                    
+                    if pmk_found_var = '1' then
+                        pmk_found <= '1';
+                    end if;
                 end if;
             end if;
         end if;
     end process;
     
 
+    pmk_valid_o <= pmk_found;
 
 end RTL; 
 
