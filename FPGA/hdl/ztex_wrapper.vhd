@@ -54,7 +54,8 @@ architecture RTL of ztex_wrapper is
         pke_dat_i       : in    w_input;
         mic_dat_i       : in    w_input;
         pmk_dat_o       : out   w_output;
-        pmk_valid_o     : out   std_ulogic
+        pmk_valid_o     : out   std_ulogic;
+        wpa2_complete_o : out   std_ulogic
     );
     end component;
     
@@ -79,6 +80,8 @@ architecture RTL of ztex_wrapper is
     signal w_mk:   mk_data;
     signal w_pmk:  pmk_data;
     
+    signal wpa2_complete:  std_ulogic;
+    
     --PMK
     signal w_pmk1: w_output;
     signal w_pmk2: w_input;
@@ -100,7 +103,7 @@ architecture RTL of ztex_wrapper is
 
 begin
 
-    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i, ssid_w,ssid_w,ssid_w,ssid_w,w_pmk1,pmk1_valid);
+    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i, ssid_w,ssid_w,ssid_w,ssid_w,w_pmk1,pmk1_valid,wpa2_complete);
     --MAIN2: wpa2_main port map (clk_i,rst_i,std_ulogic_vector(w_load),latch_input(1),w_pmk);
     
     process(clk_i)   

@@ -27,7 +27,8 @@ package sha1_pkg is
   type w_input is array(0 to 15) of std_ulogic_vector(0 to 31);
   type w_output is array(0 to 4) of std_ulogic_vector(0 to 31);
   
-  ---This may be temporary for benchmarking (enforces a pretty arbitrary input)
-  type mk_data is array(0 to 9) of unsigned(0 to 7);
-  type pmk_data is array(0 to 9) of unsigned(0 to 7);
+  ---All of the below may be temporary for benchmarking (enforces a pretty arbitrary input)
+  type mk_int_data is array(0 to 9) of unsigned(0 to 3);    --Initial integer gen
+  type mk_data is array(0 to 9) of unsigned(0 to 7);        --Converted to ascii
+  type pmk_data is array(0 to 9) of unsigned(0 to 7);       --Calc output
 end package sha1_pkg;

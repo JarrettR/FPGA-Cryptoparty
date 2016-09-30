@@ -19,6 +19,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.sha1_pkg.all;
 
 
@@ -28,7 +29,7 @@ port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     cont_i          : in    std_ulogic;
-    pmk_dat_i       : in    w_input;
+    mk_dat_i        : in    mk_data;
     data_dat_i      : in    w_input;
     pke_dat_i       : in    w_input;
     mic_dat_i       : in    w_input;
@@ -42,32 +43,43 @@ architecture RTL of wpa2_compare is
     signal w: w_input;
     signal w_temp: w_input;
     
-    signal mk: w_input;
+    signal mk: mk_data;
     signal pmk: w_input;
     signal ptk: w_input;
+  
     
     signal mic: w_input;
     
     signal i : integer range 0 to 4;
 
+--We're gonna use this for benchmarking the host software for now
 begin
     process(clk_i)   
+    variable pmk_match: std_ulogic;
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 pmk_valid_o <= '0';
                 i <= 0;
+                pmk_match := '0';
+                mk(0) <= "00000000";
+                mk(1) <= "00000000";
+                mk(2) <= "00000000";
+                mk(3) <= "00110000"; --0x30, char 0
+                mk(4) <= "00000000";
+                mk(5) <= "00000000";
+                mk(6) <= "00000000";
+                mk(7) <= "00000000";
+                mk(8) <= "00000000";
+                mk(9) <= "00000000";
             else
                 if cont_i = '1' then
-                    if i < 4 then
-                        --PKE -> PTK
-                        --r = r . HMAC_SHA1(PMK, a . "\0" . b . chr(i));
-                        i <= i + 1;
-                    else
-                        --PTK -> MIC
-                        --mic = HMAC_SHA1(ptk[0:16], data[60:121]);
-                        i <= 0;
-                    end if;
+                    pmk_match := '1';
+                    for i in 0 to 9 loop
+                        if mk(i) /= mk_dat_i(i) then
+                            pmk_match := '0';
+                        end if;
+                    end loop;
                 end if;
             end if;
         end if;
@@ -76,3 +88,31 @@ begin
 
 
 end RTL; 
+
+--The real meat
+-- begin
+    -- process(clk_i)   
+    -- begin
+        -- if (clk_i'event and clk_i = '1') then
+            -- if rst_i = '1' then
+                -- pmk_valid_o <= '0';
+                -- i <= 0;
+            -- else
+                -- if cont_i = '1' then
+                    -- if i < 4 then
+                        -- --PKE -> PTK
+                        -- --r = r . HMAC_SHA1(PMK, a . "\0" . b . chr(i));
+                        -- i <= i + 1;
+                    -- else
+                        -- --PTK -> MIC
+                        -- --mic = HMAC_SHA1(ptk[0:16], data[60:121]);
+                        -- i <= 0;
+                    -- end if;
+                -- end if;
+            -- end if;
+        -- end if;
+    -- end process;
+    
+
+
+-- end RTL; 

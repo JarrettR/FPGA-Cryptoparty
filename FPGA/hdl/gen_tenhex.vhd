@@ -28,7 +28,8 @@ entity gen_tenhex is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    start_val_i     : in    std_ulogic; --Todo: make this work
+    start_val_i     : in    mk_int_data;
+    init_load_i    : in    std_ulogic;
     complete_o      : out    std_ulogic;
     dat_mk_o        : out    mk_data
     );
@@ -40,7 +41,6 @@ architecture RTL of gen_tenhex is
     signal w_temp: w_input;
     
     --Ten digit, hex (16^10)
-    type mk_int_data is array(0 to 9) of unsigned(0 to 3);
     signal mk :  mk_int_data;
     
     signal mk_dat_test :  unsigned(0 to 7);
@@ -62,20 +62,28 @@ begin
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                --mk <= 0;
                 complete_o <= '0';
                 carry := '0';
-                -- Todo: fix this, this is terrible
-                mk(0) <= "0000";
-                mk(1) <= "0000";
-                mk(2) <= "0000";
-                mk(3) <= "0000";
-                mk(4) <= "0000";
-                mk(5) <= "0000";
-                mk(6) <= "0000";
-                mk(7) <= "0000";
-                mk(8) <= "0000";
-                mk(9) <= "0000";
+                if init_load_i = '1' then
+                    for i in 0 to 9 loop
+                        mk(i) <= start_val_i(i);
+                    end loop;
+                else
+                    for i in 0 to 9 loop
+                        mk(i) <= "0000";
+                    end loop;
+                end if;
+                
+                -- mk(0) <= "0000";
+                -- mk(1) <= "0000";
+                -- mk(2) <= "0000";
+                -- mk(3) <= "0000";
+                -- mk(4) <= "0000";
+                -- mk(5) <= "0000";
+                -- mk(6) <= "0000";
+                -- mk(7) <= "0000";
+                -- mk(8) <= "0000";
+                -- mk(9) <= "0000";
             else
                 for i in 0 to 10 loop
                     if i = 0 then

@@ -33,7 +33,8 @@ port(
     pke_dat_i       : in    w_input;
     mic_dat_i       : in    w_input;
     pmk_dat_o       : out   w_output;
-    pmk_valid_o     : out   std_ulogic
+    pmk_valid_o     : out   std_ulogic;
+    wpa2_complete_o : out   std_ulogic
     );
 end wpa2_main;
 
@@ -45,7 +46,8 @@ architecture RTL of wpa2_main is
     port(
         clk_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
-        start_val_i    : in    std_ulogic;
+        start_val_i    : in    mk_int_data;
+        init_load_i    : in    std_ulogic;
         complete_o     : out    std_ulogic;
         dat_mk_o       : out    mk_data
     );
@@ -56,7 +58,7 @@ architecture RTL of wpa2_main is
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
         cont_i          : in    std_ulogic;
-        pmk_dat_i       : in    w_input;
+        mk_dat_i        : in    mk_data;
         data_dat_i      : in    w_input;
         pke_dat_i       : in    w_input;
         mic_dat_i       : in    w_input;
@@ -69,6 +71,8 @@ architecture RTL of wpa2_main is
     signal w: w_input;
     signal w_temp: w_input;
     
+    signal mk_start: mk_int_data;
+    signal mk_init_load: std_ulogic;
     signal mk: mk_data;
     signal pmk: w_input;
     
@@ -78,7 +82,7 @@ architecture RTL of wpa2_main is
 
 begin
 
-    gen1: gen_tenhex port map (clk_i,rst_i,cont_i,gen_complete,mk);
+    gen1: gen_tenhex port map (clk_i,rst_i,mk_start,mk_init_load,gen_complete,mk);
 
 
     process(clk_i)   
@@ -87,7 +91,17 @@ begin
             if rst_i = '1' then
                 i <= 0;
                 pmk_valid_o <= '0';
+                wpa2_complete_o <= '0';
+                
+                --Can be changed to make interesting start conditions
+                --Todo: expose to outer interface
+                for i in 0 to 9 loop
+                    mk_start(i) <= "0000";
+                end loop;
+                
+                mk_init_load <= '1';
             else
+                mk_init_load <= '0';
                 if i = 4 then
                     i <= 0;
                 else
