@@ -26,11 +26,11 @@ use work.sha1_pkg.all;
 entity ztex_wrapper is
     port(
         rst_i         : in std_logic;   --RESET
-        CS            : in std_logic;   --CS
-        cont_i          : in std_logic;   --CONT
+        cs_i          : in std_logic;   --CS
+        cont_i        : in std_logic;   --CONT
         clk_i         : in std_logic;   --IFCLK
 
-        dat_i         : out std_ulogic_vector(0 to 15);  --FD
+        dat_i         : inout std_ulogic_vector(0 to 15);  --FD
 
         SLOE          : out std_logic;  --SLOE
         SLRD          : out std_logic;  --SLRD
@@ -38,7 +38,8 @@ entity ztex_wrapper is
         FIFOADR0      : out std_logic;  --FIFOADR0
         FIFOADR1      : out std_logic;  --FIFOADR1
         PKTEND        : out std_logic;  --PKTEND
-
+   
+        FLAGA         : in std_logic    --FLAGA   EP2 FIFO Empty flag (FLAGA)
         FLAGB         : in std_logic    --FLAGB
     );
 end ztex_wrapper;
@@ -49,79 +50,75 @@ architecture RTL of ztex_wrapper is
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
         cont_i          : in    std_ulogic;
-        ssid_dat_i      : in    w_input;
-        data_dat_i      : in    w_input;
-        pke_dat_i       : in    w_input;
-        mic_dat_i       : in    w_input;
-        pmk_dat_o       : out   w_output;
-        pmk_valid_o     : out   std_ulogic;
+        ssid_dat_i      : in    ssid_data;
+        data_dat_i      : in    packet_data;
+        pke_dat_i       : in    pke_data;
+        mic_dat_i       : in    mic_data;
+        mk_dat_o        : out   mk_data;
+        mk_valid_o     : out   std_ulogic;
         wpa2_complete_o : out   std_ulogic
     );
     end component;
-    
-    -- Fixed input for benchmarking
-    -- Manually set+programmed for each SSID :(
-    --component gen_ssid
-    --port(
-    --    clk_i          : in    std_ulogic;
-    --    rst_i          : in    std_ulogic;
-    --    complete_o     : out    std_ulogic;
-    --    dat_mk_o       : out    mk_data
-    --);
-    --end component;
    
 	type state_type is (STATE_IDLE, STATE_SSID, STATE_MK, STATE_PROCESS, STATE_OUT);
     
-	signal state       : state_type := STATE_IDLE;
+	signal state         : state_type := STATE_IDLE;
    
-    signal w_load:  unsigned(0 to 23);
-    signal w_load_temp:  unsigned(0 to 23);
+    --Inputs
+    signal ssid_dat      : ssid_data;
+    signal data_dat      : packet_data;
+    signal pke_dat       : pke_data;
+    signal mic_dat       : mic_data;
+    signal mk_initial    : mk_data;
     
-    signal w_mk:   mk_data;
-    signal w_pmk:  pmk_data;
+    signal ssid_len      : integer range 0 to 63;
+    signal mk_len        : integer range 0 to 63;
     
-    signal wpa2_complete:  std_ulogic;
+    --Outputs
+    signal mk_dat        : mk_data;
+        
+    signal wpa2_complete : std_ulogic;
+    signal pmk_valid     : std_ulogic;
     
-    --PMK
-    signal w_pmk1: w_output;
-    signal w_pmk2: w_input;
-    signal w_pmk3: w_input;
-    signal w_pmk4: w_input;
-    signal w_pmk5: w_input;
-    
-    signal pmk1_valid: std_ulogic;
-    
-    --SSID
-    signal ssid_w: w_input;
-    signal ssid_load: std_ulogic;
-
-    signal ssid_len : integer range 0 to 63;
+    --Internal
     signal i_len : integer range 0 to 15;
     signal i_word : integer range 0 to 3;
     signal i_mux : integer range 0 to 1;
-    signal latch_input: std_ulogic_vector(0 to 1);
 
 begin
 
     MAIN1: wpa2_main port map (clk_i,rst_i,cont_i, ssid_w,ssid_w,ssid_w,ssid_w,w_pmk1,pmk1_valid,wpa2_complete);
-    --MAIN2: wpa2_main port map (clk_i,rst_i,std_ulogic_vector(w_load),latch_input(1),w_pmk);
     
-    process(clk_i)   
+    SLOE <= '1'     when cs_i = '1' else 'Z';
+    SLRD <= '1'     when cs_i = '1' else 'Z';
+    SLWR <= SLWR_R  when cs_i = '1' else 'Z';
+    FIFOADR0 <= '0' when cs_i = '1' else 'Z';
+    FIFOADR1 <= '0' when cs_i = '1' else 'Z';
+    PKTEND <= '1'   when cs_i = '1' else 'Z';		-- no data alignment
+    FD <= FD_R      when cs_i = '1' else (others => 'Z');
+    
+
+        elsif IFCLK'event and IFCLK = '1' 
+	then
+    process(clk_i, rst_i)   
     begin
-        if (clk_i'event and clk_i = '1') then
-            if rst_i = '1' then
-                latch_input <= "00";
-                state <= STATE_IDLE;
-                ssid_len <= 0;
-                i_len <= 0;
-                i_word <= 0;
-                i_mux <= 0;
-                ssid_load <= '0';
-            else
-                if state = STATE_IDLE then
-                    --ssid_len <= to_integer(unsigned(dat_i));
-                    state <= STATE_SSID;
-                end if;
+        if rst_i = '1' then
+            GEN_CNT <= ( others => '0' );
+            INT_CNT <= ( others => '0' );
+            FIFO_WORD <= '0';
+            SLWR_R <= '1';
+            
+            latch_input <= "00";
+            state <= STATE_IDLE;
+            ssid_len <= 0;
+            i_len <= 0;
+            i_word <= 0;
+            i_mux <= 0;
+            ssid_load <= '0';
+        elsif (clk_i'event and clk_i = '1') then
+            if state = STATE_IDLE then
+                --ssid_len <= to_integer(unsigned(dat_i));
+                state <= STATE_SSID;
             end if;
         end if;
     end process;

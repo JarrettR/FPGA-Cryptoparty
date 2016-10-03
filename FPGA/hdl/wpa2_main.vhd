@@ -28,12 +28,12 @@ port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     cont_i          : in    std_ulogic;
-    ssid_dat_i      : in    w_input;
-    data_dat_i      : in    w_input;
-    pke_dat_i       : in    w_input;
-    mic_dat_i       : in    w_input;
-    pmk_dat_o       : out   w_output;
-    pmk_valid_o     : out   std_ulogic;
+    ssid_dat_i      : in    ssid_data;
+    data_dat_i      : in    packet_data;
+    pke_dat_i       : in    pke_data;
+    mic_dat_i       : in    mic_data;
+    mk_dat_o        : out   mk_data;
+    mk_valid_o      : out   std_ulogic;
     wpa2_complete_o : out   std_ulogic
     );
 end wpa2_main;

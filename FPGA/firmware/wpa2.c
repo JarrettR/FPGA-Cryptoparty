@@ -75,9 +75,9 @@ ENABLE_HS_FPGA_CONF(6);
 
 // set mode
 ADD_EP0_VENDOR_COMMAND((0x60,,
-	IOA7 = 1;				// reset on
-	IOA0 = SETUPDAT[2] ? 1 : 0;
-	IOA7 = 0;				// reset off
+	IOA7 = 1;				    // reset on
+	IOA0 = SETUPDAT[2] ? 1 : 0; // CONT = LSB Address byte
+	IOA7 = 0;				    // reset off
 ,,
 	NOP;
 ));;
