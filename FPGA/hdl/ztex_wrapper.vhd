@@ -30,7 +30,8 @@ entity ztex_wrapper is
         cont_i        : in std_logic;   --CONT
         clk_i         : in std_logic;   --IFCLK
 
-        dat_i         : inout std_ulogic_vector(0 to 15);  --FD
+        din_i         : in std_ulogic_vector(0 to 7);  --FD
+        dout_i        : out std_ulogic_vector(0 to 7);  --pc
 
         SLOE          : out std_logic;  --SLOE
         SLRD          : out std_logic;  --SLRD
@@ -97,9 +98,6 @@ begin
     PKTEND <= '1'   when cs_i = '1' else 'Z';		-- no data alignment
     FD <= FD_R      when cs_i = '1' else (others => 'Z');
     
-
-        elsif IFCLK'event and IFCLK = '1' 
-	then
     process(clk_i, rst_i)   
     begin
         if rst_i = '1' then
@@ -117,7 +115,7 @@ begin
             ssid_load <= '0';
         elsif (clk_i'event and clk_i = '1') then
             if state = STATE_IDLE then
-                --ssid_len <= to_integer(unsigned(dat_i));
+                --ssid_len <= to_integer(unsigned(din_i));
                 state <= STATE_SSID;
             end if;
         end if;
