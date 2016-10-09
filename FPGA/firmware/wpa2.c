@@ -87,9 +87,35 @@ ADD_EP0_VENDOR_COMMAND((0x60,,
 
 void main(void)	
 {
+    BYTE b, c;
+    char stopped[4];
+    char watchdog_cnt;
+    // init everything
     init_USB();
 
+    watchdog_cnt = 1;
+    for ( b = 0; b<NUMBER_OF_FPGAS; b++ ) {
+        stopped[b] = 1;
+    }
+
+    
     while (1) {	
+    
+        wait(10);
+
+
+        watchdog_cnt += 1;
+        /*
+        if ( watchdog_cnt == WATCHDOG_TIMEOUT ) {
+        
+            c = select_num;
+            for ( b = 0; b<NUMBER_OF_FPGAS; b++ ) {
+            select_fpga(b);
+            stopped[b] = 1;
+            PLL_STOP = 1;
+            }
+            select_fpga(c);
+        }*/
     }
 }
 

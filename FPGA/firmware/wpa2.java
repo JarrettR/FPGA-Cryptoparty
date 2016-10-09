@@ -145,6 +145,7 @@ class Wpa2 extends Ztex1v1 {
                 System.err.println("No devices found");
                 System.exit(0);
             }
+            System.out.println("Found " + bus.numberOfDevices + "devices.")
 
             // scan the command line arguments
             for (int i=0; i<args.length; i++ ) {
