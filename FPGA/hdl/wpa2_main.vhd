@@ -91,7 +91,6 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 i <= 0;
-                pmk_valid_o <= '0';
                 wpa2_complete_o <= '0';
                 
                 --Can be changed to make interesting start conditions
