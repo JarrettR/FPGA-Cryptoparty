@@ -30,8 +30,12 @@ port(
     cont_i          : in    std_ulogic;
     ssid_dat_i      : in    ssid_data;
     data_dat_i      : in    packet_data;
-    pke_dat_i       : in    pke_data;
-    mic_dat_i       : in    mic_data;
+    anonce_dat      : in    nonce_data;
+    cnonce_dat      : in    nonce_data;
+    amac_dat        : in    mac_data;
+    cmac_dat        : in    mac_data;
+    mk_initial      : in   mk_data;
+    mk_end          : in   mk_data;
     mk_dat_o        : out   mk_data;
     mk_valid_o      : out   std_ulogic;
     wpa2_complete_o : out   std_ulogic

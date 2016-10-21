@@ -39,6 +39,12 @@ def reset(dut):
     yield RisingEdge(dut.clk_i)
     dut.rst_i <= 0
 
+@cocotb.coroutine
+def load_data(dut):
+    dut.rst_i <= 1
+    yield RisingEdge(dut.clk_i)
+    dut.rst_i <= 0
+
 @cocotb.test()
 def A_gen_data_test(dut):
     """
