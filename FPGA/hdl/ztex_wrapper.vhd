@@ -212,7 +212,6 @@ begin
                 
             elsif state = STATE_PROCESS and  wpa2_complete = '1' then
                     state <= STATE_OUT;
-                --
             end if;
         end if;
     end process;

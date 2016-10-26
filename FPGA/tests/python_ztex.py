@@ -60,8 +60,46 @@ class ZtexModel(object):
         
         
     def reset(self):
-        self.message = [0] * 64
-        self.messageLength = 0
+        #pmk = '9051ba43660caec7a909fbbe6b91e4685f1457b5a2e23660d728afbd2c7abfba'
+        #apMac = '001dd0f694b0'
+        #cMac = '489d2477179a'
+        #apNonce = '87f2718bad169e4987c94255395e054bcaf77c8d791698bf03dc85ed3c90832a'
+        #cNonce = '143fbb4333341f36e17667f88aa02c5230ab82c508cc4bd5947dd7e50475ad36'
+        self.ssid = 'testSSID'
+        self.pmk = '01b809f9ab2fb5dc47984f52fb2d112e13d84ccb6b86d4a7193ec5299f851c48'
+        self.apMac = '001e2ae0bdd0'
+        self.cMac = 'cc08e0620bc8'
+        self.apNonce = '61c9a3f5cdcdf5fae5fd760836b8008c863aa2317022c7a202434554fb38452b'
+        self.cNonce = '60eff10088077f8b03a0e2fc2fc37e1fe1f30f9f7cfbcfb2826f26f3379c4318'
+        
+        #ptk = objPrf.PRF(pmk, apMac, cMac, apNonce, cNonce)
+        goal = "bf49a95f0494f44427162f38696ef8b6"
+        #print "Result: " + ptk
+        
+        self.data = "0103005ffe0109002000000000000000010000000000000000000000000000000000000" + \
+            "00000000000000000000000000000000000000000000000000000000000000000000000000" + \
+            "00000000000000000000000000000000000000000000000000000"
+
+        #mic = objPrf.MIC(ptk, data)
+        
+        self.mkStart = "0000000000"
+        self.mkEnd = "FFFFFFFFF"
+        self.goal = "45282522bc6707d6a70a0317a3ed48f0"
+        
+    def genPacket(self):
+        packet = ''
+        
+        packet = packet + '{}'.format(self.ssid)
+        packet = packet + '{}'.format(self.data)
+        packet = packet + '{}'.format(self.apNonce)
+        packet = packet + '{}'.format(self.cNonce)
+        packet = packet + '{}'.format(self.apMac)
+        packet = packet + '{}'.format(self.cMac)
+        packet = packet + '{}'.format(self.mkStart)
+        packet = packet + '{}'.format(self.mkEnd)
+        packet = packet + '{}'.format(self.goal)
+        
+        return packet
         
     def addByte(self, input):
         self.shiftMessage()
