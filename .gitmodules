@@ -10,3 +10,6 @@
 [submodule "tools/wavedrom"]
 	path = tools/wavedrom
 	url = https://github.com/drom/wavedrom.git
+[submodule "tools/wpa2slow"]
+	path = tools/wpa2slow
+	url = git@github.com:JarrettR/WPA-Slowed-Down.git
