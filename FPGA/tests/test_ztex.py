@@ -27,9 +27,9 @@ from cocotb.log import SimLog
 from cocotb.wavedrom import Wavedrom
 import random
 from shutil import copyfile
-from python_sha1 import Sha1Model, Sha1Driver
-from python_hmac import HmacModel, HmacDriver
-from python_compare import PrfModel, PrfDriver
+from wpa2slow.sha1 import Sha1Model #, Sha1Driver
+from wpa2slow.hmac import HmacModel #, HmacDriver
+from wpa2slow.compare import PrfModel #, PrfDriver
 from python_ztex import ZtexModel, ZtexDriver
 
 _debug = False
