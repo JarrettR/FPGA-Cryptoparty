@@ -30,8 +30,8 @@ entity ztex_wrapper is
         cont_i        : in std_logic;   --CONT
         clk_i         : in std_logic;   --IFCLK
 
-        din_i         : in unsigned(0 to 7);  --FD
-        dout_i        : out std_ulogic_vector(0 to 7);  --pc
+        dat_i         : in unsigned(0 to 7);  --FD
+        dat_o         : out std_ulogic_vector(0 to 7);  --pc
 
         SLOE          : out std_logic;  --SLOE
         SLRD          : out std_logic;  --SLRD
@@ -40,7 +40,7 @@ entity ztex_wrapper is
         FIFOADR1      : out std_logic;  --FIFOADR1
         PKTEND        : out std_logic;  --PKTEND
    
-        FLAGA         : in std_logic;    --FLAGA   EP2 FIFO Empty flag (FLAGA)
+        FLAGA         : in std_logic;   --FLAGA   EP2 FIFO Empty flag (FLAGA)
         FLAGB         : in std_logic    --FLAGB
     );
 end ztex_wrapper;
@@ -65,44 +65,57 @@ architecture RTL of ztex_wrapper is
     );
     end component;
    
-	type state_type is (STATE_IDLE,
-        STATE_SSID, STATE_DATA, STATE_ANONCE, STATE_CNONCE, STATE_AMAC, STATE_CMAC,
-        STATE_START, STATE_END, STATE_PROCESS, STATE_OUT);
+	type state_type is (STATE_IDLE, STATE_PACKET, STATE_START, STATE_END, STATE_PROCESS, STATE_OUT);
     
-	signal state         : state_type := STATE_IDLE;
+	signal state           : state_type := STATE_IDLE;
    
     --Inputs
-    signal ssid_dat      : ssid_data;
-    signal data_dat      : packet_data;
-    signal anonce_dat    : nonce_data;
-    signal cnonce_dat    : nonce_data;
-    signal amac_dat      : mac_data;
-    signal cmac_dat      : mac_data;
-    signal mk_initial    : mk_data;
-    signal mk_end        : mk_data;
+    signal handshake_dat   : handshake_data;
+    signal mk_initial      : mk_data;
+    signal mk_end          : mk_data;
+    
+    --Input split
+    signal ssid_dat        : ssid_data;
+    signal data_dat        : packet_data;
+    signal datalength_dat  : integer range 0 to 255;
+    signal anonce_dat      : nonce_data;
+    signal cnonce_dat      : nonce_data;
+    signal amac_dat        : mac_data;
+    signal cmac_dat        : mac_data;
     
     --signal ssid_len      : integer range 0 to 63;
     --signal mk_len        : integer range 0 to 63;
-    constant mk_len      : integer := 9;
+    constant mk_len        : integer := 10;
     
     --Outputs
-    signal mk_dat        : mk_data;
+    signal mk_dat          : mk_data;
         
-    signal wpa2_complete : std_ulogic;
-    signal pmk_valid     : std_ulogic;
+    signal wpa2_complete   : std_ulogic;
+    signal pmk_valid       : std_ulogic;
     
     --Internal
-    signal i : integer range 0 to 63;
-    signal i_word : integer range 0 to 3;
-    signal i_mux : integer range 0 to 1;
+    signal i               : integer range 0 to 391;
+    signal i_word          : integer range 0 to 3;
+    signal i_mux           : integer range 0 to 1;
 
+    -- synthesis translate_off
+    signal test_byte_1: unsigned(0 to 7);
+    signal test_byte_2: std_ulogic_vector(0 to 7);
+    signal test_byte_3: std_ulogic_vector(0 to 7);
+    signal test_byte_4: std_ulogic_vector(0 to 7);
+    signal test_byte_5: std_ulogic_vector(0 to 7);
+    -- synthesis translate_on
+    
 begin
 
-    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i,ssid_dat,data_dat,anonce_dat,cnonce_dat,amac_dat,cmac_dat,mk_initial,mk_end,mk_dat,pmk_valid,wpa2_complete);
+    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i,
+            ssid_dat,data_dat,anonce_dat,cnonce_dat,amac_dat,cmac_dat,
+            mk_initial,mk_end,
+            mk_dat,pmk_valid,wpa2_complete);
     
     SLOE <= '1'     when cs_i = '1' else 'Z';
     SLRD <= '1'     when cs_i = '1' else 'Z';
-    --SLWR <= SLWR_R  when cs_i = '1' else 'Z';
+    SLWR <= '0'  when cs_i = '1' else 'Z';
     FIFOADR0 <= '0' when cs_i = '1' else 'Z';
     FIFOADR1 <= '0' when cs_i = '1' else 'Z';
     PKTEND <= '1'   when cs_i = '1' else 'Z';		-- no data alignment
@@ -125,65 +138,14 @@ begin
             
         elsif (clk_i'event and clk_i = '1') then
             if state = STATE_IDLE then
-                state <= STATE_SSID;
-                ssid_dat(0) <= din_i;
+                state <= STATE_PACKET;
                 
-                i <= 1;
+                i <= 0;
                 
-            elsif state = STATE_SSID then
-                ssid_dat(i) <= din_i;
+            elsif state = STATE_PACKET then
+                handshake_dat(i) <= dat_i;
                 
-                if i = 63 then
-                    state <= STATE_DATA;
-                    i <= 0;
-                else
-                    i <= i + 1;
-                end if;
-                
-            elsif state = STATE_DATA then
-                data_dat(i) <= din_i;
-                
-                if i = 63 then
-                    state <= STATE_ANONCE;
-                    i <= 0;
-                else
-                    i <= i + 1;
-                end if;
-                
-            elsif state = STATE_ANONCE then
-                anonce_dat(i) <= din_i;
-                
-                if i = 63 then
-                    state <= STATE_CNONCE;
-                    i <= 0;
-                else
-                    i <= i + 1;
-                end if;
-                
-            elsif state = STATE_CNONCE then
-                cnonce_dat(i) <= din_i;
-                
-                if i = 63 then
-                    state <= STATE_AMAC;
-                    i <= 0;
-                else
-                    i <= i + 1;
-                end if;
-                
-            elsif state = STATE_AMAC then
-                amac_dat(i) <= din_i;
-                
-                if i = 63 then
-                    state <= STATE_CMAC;
-                    i <= 0;
-                else
-                    i <= i + 1;
-                end if;
-                
-            elsif state = STATE_CMAC then
-                cmac_dat(i) <= din_i;
-                
-                if i = 63 then
+                if i = 391 then
                     state <= STATE_START;
                     i <= 0;
                 else
@@ -191,9 +153,9 @@ begin
                 end if;
                 
             elsif state = STATE_START then
-                mk_initial(i) <= din_i;
+                mk_initial(i) <= dat_i;
                 
-                if i = mk_len then
+                if i = mk_len - 1 then
                     state <= STATE_END;
                     i <= 0;
                 else
@@ -201,21 +163,25 @@ begin
                 end if;
                 
             elsif state = STATE_END then
-                mk_end(i) <= din_i;
+                mk_end(i) <= dat_i;
                 
-                if i = mk_len then
+                if i = mk_len - 1 then
                     state <= STATE_PROCESS;
                     i <= 0;
                 else
                     i <= i + 1;
                 end if;
                 
-            elsif state = STATE_PROCESS and  wpa2_complete = '1' then
+            elsif state = STATE_PROCESS and wpa2_complete = '1' then
                     state <= STATE_OUT;
             end if;
         end if;
     end process;
     
 	--write_o <= std_logic_vector( pb_buf ) when select_i = '1' else (others => 'Z');
+    -- synthesis translate_off
+    test_byte_1 <= handshake_dat(3);
+    -- synthesis translate_on
+
     
 end RTL; 

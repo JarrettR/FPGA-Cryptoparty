@@ -27,10 +27,14 @@ from cocotb.log import SimLog
 from cocotb.wavedrom import Wavedrom
 import random
 from shutil import copyfile
+import wpa2slow
+from wpa2slow.handshake import Handshake
 from wpa2slow.sha1 import Sha1Model #, Sha1Driver
 from wpa2slow.hmac import HmacModel #, HmacDriver
 from wpa2slow.compare import PrfModel #, PrfDriver
 from python_ztex import ZtexModel, ZtexDriver
+
+import binstr
 
 _debug = False
 
@@ -41,13 +45,66 @@ def reset(dut):
     dut.rst_i <= 0
 
 @cocotb.coroutine
-def load_data(dut):
-    dut.rst_i <= 1
-    yield RisingEdge(dut.clk_i)
-    dut.rst_i <= 0
+def load_data(dut, data, length):
+    for x in xrange(length):
+        dut.dat_i <= data[x]
+        yield RisingEdge(dut.clk_i)
+
+@cocotb.coroutine
+def load_file(dut, filename):
+    length = 280
+    f = open(filename, 'rb')
+    
+    while f:
+        fbyte = f.read(1)
+        
+        if not fbyte:
+            break
+            
+        dut.dat_i.value <= fbyte
+        yield RisingEdge(dut.clk_i)
+        dat_i_test = dut.dat_i.value
+        
+        print dat_i_test
+        
+    f.close()
 
 @cocotb.test()
-def A_load_data_test(dut):
+def A_load_packet_test(dut):
+    """
+    Test proper load of filedata into DUT
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    cocotb.fork(Clock(dut.clk_i, 1000).start())
+    
+    filename = '../test_data/wpa2-psk-linksys.hccap'
+    
+    obj = wpa2slow.handshake.Handshake()
+    objSha = wpa2slow.sha1.Sha1Model()
+    objHmac = wpa2slow.hmac.HmacModel(objSha)
+    objPbkdf2 = wpa2slow.pbkdf2.Pbkdf2Model()
+    objPrf = wpa2slow.compare.PrfModel(objHmac)
+    
+    (ssid, mac1, mac2, nonce1, nonce2, eapol, eapol_size, keymic) = obj.load(filename)
+    
+    outStr = ''
+    
+    yield reset(dut)
+    yield load_file(dut, filename)
+    
+    ssid_test = dut.test_byte_1.value
+    
+    print ssid
+    print ssid_test
+    
+    if ssid[0][3] != ssid_test:
+        raise TestFailure("Comparison never reached")
+    else:
+        log.info("Ok!")
+
+        
+@cocotb.test()
+def B_load_data_test(dut):
     """
     Fills up all required values from packet
     """
@@ -65,27 +122,6 @@ def A_load_data_test(dut):
     else:
         log.info("Ok!")
 
-@cocotb.test()
-def B_compare_data_test(dut):
-    """
-    Tests that generated data gets compared against test values
-    """
-    log = SimLog("cocotb.%s" % dut._name)
-    cocotb.fork(Clock(dut.clk_i, 1000).start())
-    
-    outStr = ''
-    
-    yield reset(dut)
-    yield RisingEdge(dut.clk_i)
-        
-    complete = 1
-
-    if complete == 0:
-        raise TestFailure("Comparison never reached")
-    else:
-        log.info("Ok!")
-
-        
 #@cocotb.test()
 def Z_wavedrom_test(dut):
     """

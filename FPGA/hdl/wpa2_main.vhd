@@ -86,8 +86,8 @@ architecture RTL of wpa2_main is
 
 begin
 
-    gen1: gen_tenhex port map (clk_i,rst_i,mk_start,mk_init_load,gen_complete,mk);
-    comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
+    --gen1: gen_tenhex port map (clk_i,rst_i,mk_start,mk_init_load,gen_complete,mk);
+    --comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
     process(clk_i)   
