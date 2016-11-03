@@ -18,7 +18,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
-
+import logging
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge, FallingEdge
@@ -52,7 +52,6 @@ def load_data(dut, data, length):
 
 @cocotb.coroutine
 def load_file(dut, filename):
-    length = 280
     f = open(filename, 'rb')
     
     while f:
@@ -61,11 +60,13 @@ def load_file(dut, filename):
         if not fbyte:
             break
             
-        dut.dat_i.value <= fbyte
+        #print fbyte
+        #print "{:02x}".format(ord(fbyte))
+        dut.dat_i <= ord(fbyte)
         yield RisingEdge(dut.clk_i)
-        dat_i_test = dut.dat_i.value
-        
-        print dat_i_test
+        dat_i_test = dut.test_byte_1
+    
+        #print dat_i_test
         
     f.close()
 
@@ -75,6 +76,7 @@ def A_load_packet_test(dut):
     Test proper load of filedata into DUT
     """
     log = SimLog("cocotb.%s" % dut._name)
+    log.setLevel(logging.DEBUG)
     cocotb.fork(Clock(dut.clk_i, 1000).start())
     
     filename = '../test_data/wpa2-psk-linksys.hccap'
@@ -89,15 +91,36 @@ def A_load_packet_test(dut):
     
     outStr = ''
     
+    dut.cs_i <= 1
     yield reset(dut)
+    yield RisingEdge(dut.clk_i)
+    
     yield load_file(dut, filename)
     
-    ssid_test = dut.test_byte_1.value
+    ssid_test = dut.test_byte_1
+   
+    #ssid_array = dut._ssid_dat__0
+    #print ssid_array
     
-    print ssid
+    #arrayObj = cocotb.handle.HierarchyArrayObject(dut)
+    
+    dut._discover_all()
+    print "--"
+    print dut._sub_handles
+    print "--"
+    print type(dut)
+    print "--"
+    print dir(dut)
+    print "--"
+    print dut.__dict__
+    #print type(dut.__base__)
+    
+    arrayObj = cocotb.handle.HierarchyArrayObject
+    
+    print ssid[0]
     print ssid_test
     
-    if ssid[0][3] != ssid_test:
+    if ord(ssid[0][3]) != int(str(ssid_test), 2):
         raise TestFailure("Comparison never reached")
     else:
         log.info("Ok!")

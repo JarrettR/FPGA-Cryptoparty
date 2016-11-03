@@ -82,6 +82,8 @@ architecture RTL of ztex_wrapper is
     signal cnonce_dat      : nonce_data;
     signal amac_dat        : mac_data;
     signal cmac_dat        : mac_data;
+    signal mic_dat         : mic_data;
+    
     
     --signal ssid_len      : integer range 0 to 63;
     --signal mk_len        : integer range 0 to 63;
@@ -177,6 +179,15 @@ begin
             end if;
         end if;
     end process;
+
+    ssid_dat <= ssid_data(handshake_dat(0 to 35));      --36
+    amac_dat <= mac_data(handshake_dat(36 to 41));      --6
+    cmac_dat <= mac_data(handshake_dat(42 to 47));      --6
+    anonce_dat <= nonce_data(handshake_dat(48 to 79));    --32
+    cnonce_dat <= nonce_data(handshake_dat(80 to 111));    --32
+    data_dat <= packet_data(handshake_dat(112 to 367));      --256
+    --datalength_dat <= to_integer(unsigned(handshake_dat(368 to 371)));--4
+    mic_dat <= mic_data(handshake_dat(376 to 391));       --16
     
 	--write_o <= std_logic_vector( pb_buf ) when select_i = '1' else (others => 'Z');
     -- synthesis translate_off

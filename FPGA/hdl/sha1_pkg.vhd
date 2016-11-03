@@ -29,12 +29,13 @@ package sha1_pkg is
     type w_output is array(0 to 4) of std_ulogic_vector(0 to 31);
 
     type handshake_data is array(0 to 391) of unsigned(0 to 7);
-    type ssid_data is array(0 to 63) of unsigned(0 to 7);
-    type packet_data is array(0 to 63) of unsigned(0 to 7);
-    type nonce_data is array(0 to 63) of unsigned(0 to 7);
-    type mac_data is array(0 to 63) of unsigned(0 to 7);
-    type pke_data is array(0 to 63) of unsigned(0 to 7);
-    type mic_data is array(0 to 63) of unsigned(0 to 7);
+    type ssid_data is array(0 to 35) of unsigned(0 to 7);
+    type packet_data is array(0 to 255) of unsigned(0 to 7);
+    type nonce_data is array(0 to 31) of unsigned(0 to 7);
+    type mac_data is array(0 to 5) of unsigned(0 to 7);
+    --Todo: add back in with correct length
+    --type pke_data is array(0 to 63) of unsigned(0 to 7);
+    type mic_data is array(0 to 15) of unsigned(0 to 7);
     type mk_data is array(0 to 9) of unsigned(0 to 7);
     type pmk_data is array(0 to 9) of unsigned(0 to 7);
     
