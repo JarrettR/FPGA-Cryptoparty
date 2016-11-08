@@ -45,6 +45,13 @@ def reset(dut):
     dut.rst_i <= 0
 
 @cocotb.coroutine
+def preamble(dut, data, length):
+    #Todo: setup file loading, handshake objects, etc
+    for x in xrange(length):
+        dut.dat_i <= data[x]
+        yield RisingEdge(dut.clk_i)
+
+@cocotb.coroutine
 def load_data(dut, data, length):
     for x in xrange(length):
         dut.dat_i <= data[x]
@@ -70,7 +77,7 @@ def load_file(dut, filename):
         
     f.close()
 
-@cocotb.test()
+#@cocotb.test()
 def A_load_packet_test(dut):
     """
     Test proper load of filedata into DUT
@@ -89,7 +96,45 @@ def A_load_packet_test(dut):
     
     (ssid, mac1, mac2, nonce1, nonce2, eapol, eapol_size, keymic) = obj.load(filename)
     
-    outStr = ''
+    dut.cs_i <= 1
+    yield reset(dut)
+    yield RisingEdge(dut.clk_i)
+    
+    yield load_file(dut, filename)
+    
+    packet_test1 = dut.test_ssid_1
+    packet_test2 = dut.test_ssid_2
+    packet_test3 = dut.test_ssid_3
+    
+    if ord(ssid[0][0]) != int(str(ssid_test1), 2):
+        raise TestFailure("ssid_test1 differs from mock")
+    elif ord(ssid[0][3]) != int(str(ssid_test2), 2):
+        raise TestFailure("ssid_test2 differs from mock")
+    elif ord(ssid[0][6]) != int(str(ssid_test3), 2):
+        raise TestFailure("ssid_test3 differs from mock")
+    elif ord(ssid[0][6]) == int(str(ssid_test1), 2):    #Todo: remove false positive if 1st and 7th chars equal
+        raise TestFailure("SSID comparisons failing.")
+    else:
+        log.info("SSID Ok!")
+    
+@cocotb.test()
+def B_load_ssid_test(dut):
+    """
+    Test correct SSID gets loaded into DUT
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    log.setLevel(logging.DEBUG)
+    cocotb.fork(Clock(dut.clk_i, 1000).start())
+    
+    filename = '../test_data/wpa2-psk-linksys.hccap'
+    
+    obj = wpa2slow.handshake.Handshake()
+    objSha = wpa2slow.sha1.Sha1Model()
+    objHmac = wpa2slow.hmac.HmacModel(objSha)
+    objPbkdf2 = wpa2slow.pbkdf2.Pbkdf2Model()
+    objPrf = wpa2slow.compare.PrfModel(objHmac)
+    
+    (ssid, mac1, mac2, nonce1, nonce2, eapol, eapol_size, keymic) = obj.load(filename)
     
     dut.cs_i <= 1
     yield reset(dut)
@@ -97,37 +142,54 @@ def A_load_packet_test(dut):
     
     yield load_file(dut, filename)
     
-    ssid_test = dut.test_byte_1
-   
-    #ssid_array = dut._ssid_dat__0
-    #print ssid_array
+    ssid_test1 = dut.test_ssid_1
+    ssid_test2 = dut.test_ssid_2
+    ssid_test3 = dut.test_ssid_3
     
-    #arrayObj = cocotb.handle.HierarchyArrayObject(dut)
-    
-    dut._discover_all()
-    print "--"
-    print dut._sub_handles
-    print "--"
-    print type(dut)
-    print "--"
-    print dir(dut)
-    print "--"
-    print dut.__dict__
-    #print type(dut.__base__)
-    
-    arrayObj = cocotb.handle.HierarchyArrayObject
-    
-    print ssid[0]
-    print ssid_test
-    
-    if ord(ssid[0][3]) != int(str(ssid_test), 2):
-        raise TestFailure("Comparison never reached")
+    if ord(ssid[0][0]) != int(str(ssid_test1), 2):
+        raise TestFailure("ssid_test1 differs from mock")
+    elif ord(ssid[0][3]) != int(str(ssid_test2), 2):
+        raise TestFailure("ssid_test2 differs from mock")
+    elif ord(ssid[0][6]) != int(str(ssid_test3), 2):
+        raise TestFailure("ssid_test3 differs from mock")
+    elif ord(ssid[0][6]) == int(str(ssid_test1), 2):    #Todo: remove false positive if 1st and 7th chars equal
+        raise TestFailure("SSID comparisons failing.")
     else:
-        log.info("Ok!")
+        log.info("SSID Ok!")
+        
+    mac_test1 = dut.test_mac_1
+    mac_test2 = dut.test_mac_2
+    mac_test3 = dut.test_mac_3
+        
+    if ord(mac1[0][0]) != int(str(mac_test1), 2):
+        raise TestFailure("mac_test1 differs from mock")
+    elif ord(mac1[0][3]) != int(str(mac_test2), 2):
+        raise TestFailure("mac_test2 differs from mock")
+    elif ord(mac2[0][5]) != int(str(mac_test3), 2):
+        raise TestFailure("mac_test3 differs from mock")
+    elif ord(mac1[0][5]) == int(str(mac_test1), 2):    #Todo: remove false positive
+        raise TestFailure("MAC comparisons failing.")
+    else:
+        log.info("MAC Ok!")
+        
+    nonce_test1 = dut.test_nonce_1
+    nonce_test2 = dut.test_nonce_2
+    nonce_test3 = dut.test_nonce_3
+        
+    if ord(nonce1[0][0]) != int(str(nonce_test1), 2):
+        raise TestFailure("nonce_test1 differs from mock")
+    elif ord(nonce1[0][3]) != int(str(nonce_test2), 2):
+        raise TestFailure("nonce_test2 differs from mock")
+    elif ord(nonce2[0][6]) != int(str(nonce_test3), 2):
+        raise TestFailure("nonce_test3 differs from mock")
+    elif ord(nonce1[0][5]) == int(str(nonce_test1), 2):    #Todo: remove false positive
+        raise TestFailure("nonce comparisons failing.")
+    else:
+        log.info("Nonce Ok!")
 
         
 @cocotb.test()
-def B_load_data_test(dut):
+def C_load_data_test(dut):
     """
     Fills up all required values from packet
     """

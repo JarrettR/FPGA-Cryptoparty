@@ -101,11 +101,25 @@ architecture RTL of ztex_wrapper is
     signal i_mux           : integer range 0 to 1;
 
     -- synthesis translate_off
+    signal test_ssid_1: unsigned(0 to 7);
+    signal test_ssid_2: unsigned(0 to 7);
+    signal test_ssid_3: unsigned(0 to 7);
     signal test_byte_1: unsigned(0 to 7);
+    
+    signal test_mac_1: unsigned(0 to 7);
+    signal test_mac_2: unsigned(0 to 7);
+    signal test_mac_3: unsigned(0 to 7);
+    
+    signal test_nonce_1: unsigned(0 to 7);
+    signal test_nonce_2: unsigned(0 to 7);
+    signal test_nonce_3: unsigned(0 to 7);
+    
     signal test_byte_2: std_ulogic_vector(0 to 7);
     signal test_byte_3: std_ulogic_vector(0 to 7);
     signal test_byte_4: std_ulogic_vector(0 to 7);
     signal test_byte_5: std_ulogic_vector(0 to 7);
+    
+    signal test_state: integer range 0 to 6;
     -- synthesis translate_on
     
 begin
@@ -192,6 +206,27 @@ begin
 	--write_o <= std_logic_vector( pb_buf ) when select_i = '1' else (others => 'Z');
     -- synthesis translate_off
     test_byte_1 <= handshake_dat(3);
+    
+    test_ssid_1 <= ssid_dat(0);
+    test_ssid_2 <= ssid_dat(3);
+    test_ssid_3 <= ssid_dat(6);
+    
+    test_mac_1 <= amac_dat(0);
+    test_mac_2 <= amac_dat(3);
+    test_mac_3 <= cmac_dat(5);
+    
+    test_nonce_1 <= anonce_dat(0);
+    test_nonce_2 <= anonce_dat(3);
+    test_nonce_3 <= cnonce_dat(6);
+    
+    with state select
+        test_state <= 0 when STATE_IDLE,
+            1 when STATE_PACKET,
+            2 when STATE_START,
+            3 when STATE_END,
+            4 when STATE_PROCESS,
+            5 when STATE_OUT,
+            6 when others;
     -- synthesis translate_on
 
     
