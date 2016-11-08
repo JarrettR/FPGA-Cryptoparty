@@ -69,10 +69,27 @@ def load_file(dut, filename):
             
         #print fbyte
         #print "{:02x}".format(ord(fbyte))
+        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(fbyte)
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
     
+        #print dat_i_test
+        
+    f.close()
+
+@cocotb.coroutine
+def wait_process(dut):
+    print "Processing"
+    process = 1
+    
+    while process == 1:
+    
+        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        yield RisingEdge(dut.clk_i)
+        
+        if int(str(dut.wpa2_complete), 2) == 1:
+            process = 0
         #print dat_i_test
         
     f.close()
@@ -141,6 +158,8 @@ def B_load_ssid_test(dut):
     yield RisingEdge(dut.clk_i)
     
     yield load_file(dut, filename)
+    
+    yield wait_process(dut)
     
     ssid_test1 = dut.test_ssid_1
     ssid_test2 = dut.test_ssid_2
@@ -274,6 +293,17 @@ def Z_wavedrom_test(dut):
             
         waves.write('wavedrom.json', header = {'text':'D_wavedrom_test', 'tick':-1}, config = {'hscale':5})
         
+        
+def lookup_state(state):
+    stateList = {
+        0: "STATE_IDLE",
+        1: "STATE_PACKET",
+        2: "STATE_START",
+        3: "STATE_END",
+        4: "STATE_PROCESS",
+        5: "STATE_OUT",
+    }
+    return stateList.get(state, "Unknown")
 
 def convert_hex(input):
     input = str(input)
