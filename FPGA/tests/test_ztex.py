@@ -28,10 +28,6 @@ from cocotb.wavedrom import Wavedrom
 import random
 from shutil import copyfile
 import wpa2slow
-from wpa2slow.handshake import Handshake
-from wpa2slow.sha1 import Sha1Model #, Sha1Driver
-from wpa2slow.hmac import HmacModel #, HmacDriver
-from wpa2slow.compare import PrfModel #, PrfDriver
 from python_ztex import ZtexModel, ZtexDriver
 
 import binstr
@@ -135,9 +131,9 @@ def A_load_packet_test(dut):
         log.info("SSID Ok!")
     
 @cocotb.test()
-def B_load_ssid_test(dut):
+def B_load_handshake_test(dut):
     """
-    Test correct SSID gets loaded into DUT
+    Test correct handshake parameters get loaded into DUT
     """
     log = SimLog("cocotb.%s" % dut._name)
     log.setLevel(logging.DEBUG)
@@ -145,13 +141,21 @@ def B_load_ssid_test(dut):
     
     filename = '../test_data/wpa2-psk-linksys.hccap'
     
-    obj = wpa2slow.handshake.Handshake()
-    objSha = wpa2slow.sha1.Sha1Model()
-    objHmac = wpa2slow.hmac.HmacModel(objSha)
-    objPbkdf2 = wpa2slow.pbkdf2.Pbkdf2Model()
-    objPrf = wpa2slow.compare.PrfModel(objHmac)
+    obj = wpa2slow.Handshake()
+    objSha = wpa2slow.Sha1()
+    objHmac = wpa2slow.Hmac_Sha1(objSha)
+    objPbkdf2 = wpa2slow.Pbkdf2()
+    objPrf = wpa2slow.Prf(objHmac)
     
-    (ssid, mac1, mac2, nonce1, nonce2, eapol, eapol_size, keymic) = obj.load(filename)
+    obj.load(filename)
+    ssid = obj.ssid
+    mac1 = obj.mac1
+    mac2 = obj.mac2
+    nonce1 = obj.nonce1
+    nonce2 = obj.nonce2
+    eapol = obj.eapol
+    eapol_size = obj.eapol_size
+    keymic = obj.keymic
     
     dut.cs_i <= 1
     yield reset(dut)
@@ -159,19 +163,19 @@ def B_load_ssid_test(dut):
     
     yield load_file(dut, filename)
     
-    yield wait_process(dut)
+    #yield wait_process(dut)
     
     ssid_test1 = dut.test_ssid_1
     ssid_test2 = dut.test_ssid_2
     ssid_test3 = dut.test_ssid_3
     
-    if ord(ssid[0][0]) != int(str(ssid_test1), 2):
+    if ord(ssid[0]) != int(str(ssid_test1), 2):
         raise TestFailure("ssid_test1 differs from mock")
-    elif ord(ssid[0][3]) != int(str(ssid_test2), 2):
+    elif ord(ssid[3]) != int(str(ssid_test2), 2):
         raise TestFailure("ssid_test2 differs from mock")
-    elif ord(ssid[0][6]) != int(str(ssid_test3), 2):
+    elif ord(ssid[6]) != int(str(ssid_test3), 2):
         raise TestFailure("ssid_test3 differs from mock")
-    elif ord(ssid[0][6]) == int(str(ssid_test1), 2):    #Todo: remove false positive if 1st and 7th chars equal
+    elif ord(ssid[6]) == int(str(ssid_test1), 2):    #Todo: remove false positive if 1st and 7th chars equal
         raise TestFailure("SSID comparisons failing.")
     else:
         log.info("SSID Ok!")
@@ -180,13 +184,13 @@ def B_load_ssid_test(dut):
     mac_test2 = dut.test_mac_2
     mac_test3 = dut.test_mac_3
         
-    if ord(mac1[0][0]) != int(str(mac_test1), 2):
+    if ord(mac1[0]) != int(str(mac_test1), 2):
         raise TestFailure("mac_test1 differs from mock")
-    elif ord(mac1[0][3]) != int(str(mac_test2), 2):
+    elif ord(mac1[3]) != int(str(mac_test2), 2):
         raise TestFailure("mac_test2 differs from mock")
-    elif ord(mac2[0][5]) != int(str(mac_test3), 2):
+    elif ord(mac2[5]) != int(str(mac_test3), 2):
         raise TestFailure("mac_test3 differs from mock")
-    elif ord(mac1[0][5]) == int(str(mac_test1), 2):    #Todo: remove false positive
+    elif ord(mac1[5]) == int(str(mac_test1), 2):    #Todo: remove false positive
         raise TestFailure("MAC comparisons failing.")
     else:
         log.info("MAC Ok!")
@@ -195,13 +199,13 @@ def B_load_ssid_test(dut):
     nonce_test2 = dut.test_nonce_2
     nonce_test3 = dut.test_nonce_3
         
-    if ord(nonce1[0][0]) != int(str(nonce_test1), 2):
+    if ord(nonce1[0]) != int(str(nonce_test1), 2):
         raise TestFailure("nonce_test1 differs from mock")
-    elif ord(nonce1[0][3]) != int(str(nonce_test2), 2):
+    elif ord(nonce1[3]) != int(str(nonce_test2), 2):
         raise TestFailure("nonce_test2 differs from mock")
-    elif ord(nonce2[0][6]) != int(str(nonce_test3), 2):
+    elif ord(nonce2[6]) != int(str(nonce_test3), 2):
         raise TestFailure("nonce_test3 differs from mock")
-    elif ord(nonce1[0][5]) == int(str(nonce_test1), 2):    #Todo: remove false positive
+    elif ord(nonce1[5]) == int(str(nonce_test1), 2):    #Todo: remove false positive
         raise TestFailure("nonce comparisons failing.")
     else:
         log.info("Nonce Ok!")
