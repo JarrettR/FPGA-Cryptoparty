@@ -163,6 +163,9 @@ def B_load_handshake_test(dut):
     
     yield load_file(dut, filename)
     
+    #Todo: Take note, this clock shouldn't be necessary
+    yield RisingEdge(dut.clk_i)
+    
     #yield wait_process(dut)
     
     ssid_test1 = dut.test_ssid_1
@@ -206,6 +209,21 @@ def B_load_handshake_test(dut):
     elif ord(nonce2[6]) != int(str(nonce_test3), 2):
         raise TestFailure("nonce_test3 differs from mock")
     elif ord(nonce1[5]) == int(str(nonce_test1), 2):    #Todo: remove false positive
+        raise TestFailure("nonce comparisons failing.")
+    else:
+        log.info("Nonce Ok!")
+        
+    mic_test1 = dut.test_keymic_1
+    mic_test2 = dut.test_keymic_2
+    mic_test3 = dut.test_keymic_3
+        
+    if ord(keymic[0]) != int(str(mic_test1), 2):
+        raise TestFailure("mic_test1 differs from mock")
+    elif ord(keymic[14]) != int(str(mic_test2), 2):
+        raise TestFailure("mic_test2 differs from mock")
+    elif ord(keymic[15]) != int(str(mic_test3), 2):
+        raise TestFailure("mic_test3 differs from mock")
+    elif ord(keymic[5]) == int(str(mic_test1), 2):    #Todo: remove false positive
         raise TestFailure("nonce comparisons failing.")
     else:
         log.info("Nonce Ok!")

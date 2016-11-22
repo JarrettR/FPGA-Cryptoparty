@@ -114,6 +114,10 @@ architecture RTL of ztex_wrapper is
     signal test_nonce_2: unsigned(0 to 7);
     signal test_nonce_3: unsigned(0 to 7);
     
+    signal test_keymic_1: unsigned(0 to 7);
+    signal test_keymic_2: unsigned(0 to 7);
+    signal test_keymic_3: unsigned(0 to 7);
+    
     signal test_byte_2: std_ulogic_vector(0 to 7);
     signal test_byte_3: std_ulogic_vector(0 to 7);
     signal test_byte_4: std_ulogic_vector(0 to 7);
@@ -218,6 +222,10 @@ begin
     test_nonce_1 <= anonce_dat(0);
     test_nonce_2 <= anonce_dat(3);
     test_nonce_3 <= cnonce_dat(6);
+    
+    test_keymic_1 <= mic_dat(0);
+    test_keymic_2 <= mic_dat(14);
+    test_keymic_3 <= mic_dat(15);
     
     with state select
         test_state <= 0 when STATE_IDLE,
