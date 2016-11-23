@@ -75,6 +75,22 @@ def load_file(dut, filename):
     f.close()
 
 @cocotb.coroutine
+def load_mk(dut, mk):
+    
+    for i in xrange(10):
+        print i
+            
+        print mk[i]
+        print "{:02x}".format(ord(mk[i]))
+        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        dut.dat_i <= ord(mk[i])
+        yield RisingEdge(dut.clk_i)
+        dat_i_test = dut.test_byte_1
+    
+        #print dat_i_test
+        
+
+@cocotb.coroutine
 def wait_process(dut):
     print "Processing"
     process = 1
@@ -142,10 +158,6 @@ def B_load_handshake_test(dut):
     filename = '../test_data/wpa2-psk-linksys.hccap'
     
     obj = wpa2slow.Handshake()
-    objSha = wpa2slow.Sha1()
-    objHmac = wpa2slow.Hmac_Sha1(objSha)
-    objPbkdf2 = wpa2slow.Pbkdf2()
-    objPrf = wpa2slow.Prf(objHmac)
     
     obj.load(filename)
     ssid = obj.ssid
@@ -224,29 +236,118 @@ def B_load_handshake_test(dut):
     elif ord(keymic[15]) != int(str(mic_test3), 2):
         raise TestFailure("mic_test3 differs from mock")
     elif ord(keymic[5]) == int(str(mic_test1), 2):    #Todo: remove false positive
-        raise TestFailure("nonce comparisons failing.")
+        raise TestFailure("MIC comparisons failing.")
     else:
-        log.info("Nonce Ok!")
+        log.info("MIC Ok!")
 
         
 @cocotb.test()
-def C_load_data_test(dut):
+def C_load_next_test(dut):
     """
-    Fills up all required values from packet
+    Resets data and tries again
     """
     log = SimLog("cocotb.%s" % dut._name)
+    log.setLevel(logging.DEBUG)
     cocotb.fork(Clock(dut.clk_i, 1000).start())
     
-    outStr = ''
+    filename = '../test_data/wpa2-psk-linksys.hccap'
     
+    obj = wpa2slow.Handshake()
+    
+    obj.load(filename)
+    ssid = obj.ssid
+    mac1 = obj.mac1
+    mac2 = obj.mac2
+    nonce1 = obj.nonce1
+    nonce2 = obj.nonce2
+    eapol = obj.eapol
+    eapol_size = obj.eapol_size
+    keymic = obj.keymic
+    
+    dut.cs_i <= 1
     yield reset(dut)
     yield RisingEdge(dut.clk_i)
-        
-        
-    if outStr == "00000000fe":
-        raise TestFailure("Wrong loaded values!")
+    
+    yield load_file(dut, filename)
+    
+    #Todo: Take note, this clock shouldn't be necessary
+    yield RisingEdge(dut.clk_i)
+    
+    #yield wait_process(dut)
+    
+    ssid_test1 = dut.test_ssid_1
+    ssid_test2 = dut.test_ssid_2
+    ssid_test3 = dut.test_ssid_3
+    
+    if ord(ssid[0]) != int(str(ssid_test1), 2):
+        raise TestFailure("ssid_test1 differs from mock")
+    elif ord(ssid[3]) != int(str(ssid_test2), 2):
+        raise TestFailure("ssid_test2 differs from mock")
+    elif ord(ssid[6]) != int(str(ssid_test3), 2):
+        raise TestFailure("ssid_test3 differs from mock")
+    elif ord(ssid[6]) == int(str(ssid_test1), 2):    #Todo: remove false positive if 1st and 7th chars equal
+        raise TestFailure("SSID comparisons failing.")
     else:
-        log.info("Ok!")
+        log.info("SSID Ok!")
+    mic_test1 = dut.test_keymic_1
+    mic_test2 = dut.test_keymic_2
+    mic_test3 = dut.test_keymic_3
+        
+    if ord(keymic[0]) != int(str(mic_test1), 2):
+        raise TestFailure("mic_test1 differs from mock")
+    elif ord(keymic[14]) != int(str(mic_test2), 2):
+        raise TestFailure("mic_test2 differs from mock")
+    elif ord(keymic[15]) != int(str(mic_test3), 2):
+        raise TestFailure("mic_test3 differs from mock")
+    elif ord(keymic[5]) == int(str(mic_test1), 2):    #Todo: remove false positive
+        raise TestFailure("MIC comparisons failing.")
+    else:
+        log.info("MIC Ok!")
+        
+@cocotb.test()
+def D_set_session_params_test(dut):
+    """
+    Loads handshake, start, end MK values
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    log.setLevel(logging.DEBUG)
+    cocotb.fork(Clock(dut.clk_i, 1000).start())
+    
+    filename = '../test_data/wpa2-psk-linksys.hccap'
+    start = '1000000000'
+    end =   '1000000200'
+    
+    obj = wpa2slow.Handshake() 
+    obj.load(filename)
+
+    dut.cs_i <= 1
+    yield reset(dut)
+    yield RisingEdge(dut.clk_i)
+    
+    yield load_file(dut, filename)
+    
+    yield load_mk(dut, start)
+    
+    yield load_mk(dut, end)
+    
+    #Todo: Take note, this clock shouldn't be necessary
+    yield RisingEdge(dut.clk_i)
+    
+    #yield wait_process(dut)
+    
+    mk_test1 = dut.test_mk1
+    mk_test2 = dut.test_mk2
+    mk_test3 = dut.test_mk3
+    
+    if ord(start[0]) != int(str(mk_test1), 2):
+        raise TestFailure("Start MK inequal")
+    elif ord(end[7]) != int(str(mk_test2), 2):
+        raise TestFailure("End MK inequal1")
+    elif ord(end[9]) != int(str(mk_test3), 2):
+        raise TestFailure("End MK inequal2")
+    else:
+        log.info("Start/End Params Ok!")
+        
 
 #@cocotb.test()
 def Z_wavedrom_test(dut):
