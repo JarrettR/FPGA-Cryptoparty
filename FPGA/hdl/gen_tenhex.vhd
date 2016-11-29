@@ -28,7 +28,7 @@ entity gen_tenhex is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    start_val_i     : in    mk_int_data;
+    start_val_i     : in    mk_data;
     init_load_i     : in    std_ulogic;
     complete_o      : out    std_ulogic;
     dat_mk_o        : out    mk_data
@@ -41,7 +41,7 @@ architecture RTL of gen_tenhex is
     signal w_temp: w_input;
     
     --Ten digit, hex (16^10)
-    signal mk :  mk_int_data := (others => "0000");
+    signal mk :  mk_data := (others => "00000000");
     
 begin
     process(clk_i)   
@@ -57,7 +57,7 @@ begin
                     end loop;
                 else
                     for i in 0 to 9 loop
-                        mk(i) <= "0000";
+                        mk(i) <= X"30";
                     end loop;
                 end if;
                 
@@ -72,20 +72,13 @@ begin
                 -- mk(8) <= "0000";
                 -- mk(9) <= "0000";
             else
-                for i in 0 to 10 loop
-                    if i = 0 then
-                        if mk(0) = "1111" then
-                            mk(0) <= "0000";
-                            carry := '1';
-                        else
-                            mk(0) <= mk(0) + 1;
+                for i in 9 downto 0 loop
+                    if carry = '1' or i = 9 then
+                        if mk(i) = X"39" then
+                            mk(i) <= X"61";
                             carry := '0';
-                        end if;
-                    elsif i = 10 and carry = '1' then
-                        complete_o <= '1';
-                    elsif carry = '1' then
-                        if mk(i) = "1111" then
-                            mk(i) <= "0000";
+                        elsif mk(i) = X"66" then
+                            mk(i) <= X"30";
                             carry := '1';
                         else
                             mk(i) <= mk(i) + 1;
@@ -93,17 +86,17 @@ begin
                         end if;
                     end if;
                 end loop;
-                
             end if;
         end if;
     end process;
     
+    dat_mk_o <= mk;
     -- Int to ascii
-    gen_mk: for i in 0 to 9 generate
-    begin
-        dat_mk_o(i) <= mk(i) + X"57" when mk(i) > 9 else
-                       mk(i) + X"30" when mk(i) <= 9 else
-                       X"30";
-    end generate gen_mk;
+    --gen_mk: for i in 0 to 9 generate
+    --begin
+    --    dat_mk_o(i) <= mk(i) + X"57" when mk(i) > 9 else
+    --                  mk(i) + X"30" when mk(i) <= 9 else
+    --                   X"30";
+    --end generate gen_mk;
 
 end RTL; 

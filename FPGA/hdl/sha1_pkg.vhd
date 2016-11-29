@@ -40,5 +40,5 @@ package sha1_pkg is
     type pmk_data is array(0 to 9) of unsigned(0 to 7);
     
     --Temporary for benchmark PMK generation (enforces a pretty arbitrary input)
-    type mk_int_data is array(0 to 9) of unsigned(0 to 3);    --Initial integer gen (must convert to ascii)
+    --type mk_int_data is array(0 to 9) of unsigned(0 to 3);    --Initial integer gen (must convert to ascii)
 end package sha1_pkg;

@@ -43,7 +43,7 @@ def reset(dut):
 
 @cocotb.coroutine
 def preamble(dut, data, length):
-    #Todo: setup file loading, handshake objects, etc
+    #Todo: set up file loading, handshake objects, etc
     for x in xrange(length):
         dut.dat_i <= data[x]
         yield RisingEdge(dut.clk_i)
@@ -79,11 +79,10 @@ def load_file(dut, filename):
 def load_mk(dut, mk):
     
     for i in xrange(10):
-        #print i
-            
-        #print mk[i]
-        #print "{:02x}".format(ord(mk[i]))
-        #print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        print i, mk[i], \
+            "{:02x}".format(ord(mk[i])), \
+            str(int(str(dut.i), 2)), '-', \
+            lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(mk[i])
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
@@ -99,10 +98,13 @@ def wait_process(dut):
     while process == 1:
     
         print int(str(dut.i), 2), ' - ', \
-            lookup_state(int(str(dut.test_state), 2)), ' - ', \
-            chr(int(str(dut.main1.test_mk1), 2)), \
-            chr(int(str(dut.main1.test_mk2), 2)), \
-            chr(int(str(dut.main1.test_mk3), 2))
+            lookup_state(int(str(dut.test_state), 2)), '-', \
+            int(str(dut.main1.test_start1), 2), \
+            int(str(dut.main1.test_start2), 2), \
+            int(str(dut.main1.test_start3), 2), \
+            "{:02x}".format(int(str(dut.main1.test_mk1), 2)), \
+            "{:02x}".format(int(str(dut.main1.test_mk2), 2)), \
+            "{:02x}".format(int(str(dut.main1.test_mk3), 2))
         yield RisingEdge(dut.clk_i)
         
         if int(str(dut.wpa2_complete), 2) == 1:

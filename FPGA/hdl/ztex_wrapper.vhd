@@ -104,7 +104,6 @@ architecture RTL of ztex_wrapper is
     signal test_ssid_1: unsigned(0 to 7);
     signal test_ssid_2: unsigned(0 to 7);
     signal test_ssid_3: unsigned(0 to 7);
-    signal test_byte_1: unsigned(0 to 7);
     
     signal test_mac_1: unsigned(0 to 7);
     signal test_mac_2: unsigned(0 to 7);
@@ -122,6 +121,7 @@ architecture RTL of ztex_wrapper is
     signal test_mk2: unsigned(0 to 7);
     signal test_mk3: unsigned(0 to 7);
     
+    signal test_byte_1: unsigned(0 to 7);
     signal test_byte_2: std_ulogic_vector(0 to 7);
     signal test_byte_3: std_ulogic_vector(0 to 7);
     signal test_byte_4: std_ulogic_vector(0 to 7);

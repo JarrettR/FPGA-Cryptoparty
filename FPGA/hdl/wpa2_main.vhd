@@ -51,7 +51,7 @@ architecture RTL of wpa2_main is
     port(
         clk_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
-        start_val_i    : in    mk_int_data;
+        start_val_i    : in    mk_data;
         init_load_i    : in    std_ulogic;
         complete_o     : out    std_ulogic;
         dat_mk_o       : out    mk_data
@@ -75,20 +75,19 @@ architecture RTL of wpa2_main is
     signal w: w_input;
     signal w_temp: w_input;
     
-    signal mk_start: mk_int_data;
     signal mk_init_load: std_ulogic;
     signal mk: mk_data;
     signal pmk: pmk_data;
     
-    signal i : integer range 0 to 4;
+    --signal i : integer range 0 to 4;
     
     signal gen_complete: std_ulogic;
     signal comp_complete: std_ulogic;
 	
     -- synthesis translate_off
-    signal test_start1: unsigned(0 to 3);
-    signal test_start2: unsigned(0 to 3);
-    signal test_start3: unsigned(0 to 3);
+    signal test_start1: unsigned(0 to 7);
+    signal test_start2: unsigned(0 to 7);
+    signal test_start3: unsigned(0 to 7);
     
     signal test_mk1: unsigned(0 to 7);
     signal test_mk2: unsigned(0 to 7);
@@ -99,7 +98,7 @@ architecture RTL of wpa2_main is
 
 begin
 
-    gen1: gen_tenhex port map (clk_i,rst_i,mk_start,mk_init_load,gen_complete,mk);
+    gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_init_load,gen_complete,mk);
     --comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
@@ -107,34 +106,31 @@ begin
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                i <= 0;
                 wpa2_complete_o <= '0';
                 
-                --Can be changed to make interesting start conditions
-                --Todo: expose to outer interface
-                for x in 0 to 9 loop
-                    mk_start(x) <= "0000";
-                end loop;
+                --for x in 0 to 9 loop
+                --    mk_start(x) <= "0000";
+                --end loop;
                 
                 mk_init_load <= '1';
             else
                 mk_init_load <= '0';
-                if i = 4 then
-                    i <= 0;
-                else
-                    i <= i + 1;
-                end if;
+             
+                --mk_start(i * 2) <= mk_initial(i)(0 to 3);
+                --mk_start((i * 2) + 1) <= mk_initial(i)(4 to 7);
+                
             end if;
         end if;
     end process;
     
+    
     -- synthesis translate_off
-    test_start1 <= mk_start(0);
-    test_start2 <= mk_start(7);
-    test_start3 <= mk_start(9);
+    test_start1 <= mk_initial(0);
+    test_start2 <= mk_initial(7);
+    test_start3 <= mk_initial(9);
     
     test_mk1 <= mk(0);
-    test_mk2 <= mk(7);
+    test_mk2 <= mk(8);
     test_mk3 <= mk(9);
     -- synthesis translate_on
 
