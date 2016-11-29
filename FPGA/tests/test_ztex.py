@@ -36,6 +36,7 @@ _debug = False
 
 @cocotb.coroutine
 def reset(dut):
+    dut.cont_i <= 0
     dut.rst_i <= 1
     yield RisingEdge(dut.clk_i)
     dut.rst_i <= 0
@@ -65,7 +66,7 @@ def load_file(dut, filename):
             
         #print fbyte
         #print "{:02x}".format(ord(fbyte))
-        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        #print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(fbyte)
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
@@ -78,11 +79,11 @@ def load_file(dut, filename):
 def load_mk(dut, mk):
     
     for i in xrange(10):
-        print i
+        #print i
             
-        print mk[i]
-        print "{:02x}".format(ord(mk[i]))
-        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        #print mk[i]
+        #print "{:02x}".format(ord(mk[i]))
+        #print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(mk[i])
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
@@ -97,7 +98,11 @@ def wait_process(dut):
     
     while process == 1:
     
-        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        print int(str(dut.i), 2), ' - ', \
+            lookup_state(int(str(dut.test_state), 2)), ' - ', \
+            chr(int(str(dut.main1.test_mk1), 2)), \
+            chr(int(str(dut.main1.test_mk2), 2)), \
+            chr(int(str(dut.main1.test_mk3), 2))
         yield RisingEdge(dut.clk_i)
         
         if int(str(dut.wpa2_complete), 2) == 1:
@@ -175,7 +180,7 @@ def B_load_handshake_test(dut):
     
     yield load_file(dut, filename)
     
-    #Todo: Take note, this clock shouldn't be necessary
+    #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
     
     #yield wait_process(dut)
@@ -183,6 +188,7 @@ def B_load_handshake_test(dut):
     ssid_test1 = dut.test_ssid_1
     ssid_test2 = dut.test_ssid_2
     ssid_test3 = dut.test_ssid_3
+    
     
     if ord(ssid[0]) != int(str(ssid_test1), 2):
         raise TestFailure("ssid_test1 differs from mock")
@@ -270,7 +276,7 @@ def C_load_next_test(dut):
     
     yield load_file(dut, filename)
     
-    #Todo: Take note, this clock shouldn't be necessary
+    #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
     
     #yield wait_process(dut)
@@ -333,7 +339,7 @@ def D_set_session_params_test(dut):
     #Todo: Take note, this clock shouldn't be necessary
     yield RisingEdge(dut.clk_i)
     
-    #yield wait_process(dut)
+    yield wait_process(dut)
     
     mk_test1 = dut.test_mk1
     mk_test2 = dut.test_mk2

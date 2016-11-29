@@ -19,6 +19,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.sha1_pkg.all;
 
 
@@ -83,10 +84,22 @@ architecture RTL of wpa2_main is
     
     signal gen_complete: std_ulogic;
     signal comp_complete: std_ulogic;
+	
+    -- synthesis translate_off
+    signal test_start1: unsigned(0 to 3);
+    signal test_start2: unsigned(0 to 3);
+    signal test_start3: unsigned(0 to 3);
+    
+    signal test_mk1: unsigned(0 to 7);
+    signal test_mk2: unsigned(0 to 7);
+    signal test_mk3: unsigned(0 to 7);
+    
+    
+    -- synthesis translate_on
 
 begin
 
-    --gen1: gen_tenhex port map (clk_i,rst_i,mk_start,mk_init_load,gen_complete,mk);
+    gen1: gen_tenhex port map (clk_i,rst_i,mk_start,mk_init_load,gen_complete,mk);
     --comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
@@ -99,8 +112,8 @@ begin
                 
                 --Can be changed to make interesting start conditions
                 --Todo: expose to outer interface
-                for i in 0 to 9 loop
-                    mk_start(i) <= "0000";
+                for x in 0 to 9 loop
+                    mk_start(x) <= "0000";
                 end loop;
                 
                 mk_init_load <= '1';
@@ -115,6 +128,15 @@ begin
         end if;
     end process;
     
+    -- synthesis translate_off
+    test_start1 <= mk_start(0);
+    test_start2 <= mk_start(7);
+    test_start3 <= mk_start(9);
+    
+    test_mk1 <= mk(0);
+    test_mk2 <= mk(7);
+    test_mk3 <= mk(9);
+    -- synthesis translate_on
 
 
 end RTL; 

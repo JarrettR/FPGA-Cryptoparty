@@ -198,6 +198,11 @@ begin
                 
             elsif state = STATE_PROCESS and wpa2_complete = '1' then
                     state <= STATE_OUT;
+                    --Testing only, this will fail past 391 attempts
+                    i <= 0;
+            elsif state = STATE_PROCESS then
+                    --Testing only, this will fail past 391 attempts
+                    i <= i + 1;
             end if;
         end if;
     end process;
