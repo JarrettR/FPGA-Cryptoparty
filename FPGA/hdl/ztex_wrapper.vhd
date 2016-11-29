@@ -92,8 +92,8 @@ architecture RTL of ztex_wrapper is
     --Outputs
     signal mk_dat          : mk_data;
         
-    signal wpa2_complete   : std_ulogic;
-    signal pmk_valid       : std_ulogic;
+    signal wpa2_complete   : std_ulogic := '0';
+    signal pmk_valid       : std_ulogic := '0';
     
     --Internal
     signal i               : integer range 0 to 391;

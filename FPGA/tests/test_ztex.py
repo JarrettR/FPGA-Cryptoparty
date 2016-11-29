@@ -110,8 +110,8 @@ def wait_process(dut):
         if int(str(dut.wpa2_complete), 2) == 1:
             process = 0
         #print dat_i_test
+    print "Processing done"
         
-    f.close()
 
 #@cocotb.test()
 def A_load_packet_test(dut):

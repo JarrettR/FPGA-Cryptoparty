@@ -81,8 +81,8 @@ architecture RTL of wpa2_main is
     
     --signal i : integer range 0 to 4;
     
-    signal gen_complete: std_ulogic;
-    signal comp_complete: std_ulogic;
+    signal gen_complete: std_ulogic := '0';
+    signal comp_complete: std_ulogic := '0';
 	
     -- synthesis translate_off
     signal test_start1: unsigned(0 to 7);
@@ -99,7 +99,7 @@ architecture RTL of wpa2_main is
 begin
 
     gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_init_load,gen_complete,mk);
-    --comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
+    comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
     process(clk_i)   
@@ -115,6 +115,7 @@ begin
                 mk_init_load <= '1';
             else
                 mk_init_load <= '0';
+                wpa2_complete_o <= comp_complete;
              
                 --mk_start(i * 2) <= mk_initial(i)(0 to 3);
                 --mk_start((i * 2) + 1) <= mk_initial(i)(4 to 7);
@@ -122,6 +123,7 @@ begin
             end if;
         end if;
     end process;
+    
     
     
     -- synthesis translate_off
