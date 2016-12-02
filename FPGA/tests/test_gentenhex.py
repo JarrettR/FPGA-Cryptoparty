@@ -38,16 +38,13 @@ def reset(dut):
 
 @cocotb.coroutine
 def wait_process(dut):
-    print "Processing"
-    
     while True:
-        print_mk(dut) 
+        #print_mk(dut) 
         yield RisingEdge(dut.clk_i)
         
         if int(str(dut.complete_o), 2) == 1:
             break
             
-    print "Processing done"
     
 def print_mk(dut):
     print chr(int(str(dut.test_mk_val0), 2)) + \
@@ -109,45 +106,13 @@ def A_load_config_test(dut):
     yield wait_process(dut)
     #print_mk(dut) 
     
-    # if ord(ssid[0]) != int(str(ssid_test1), 2):
-        # raise TestFailure("ssid_test1 differs from mock")
-    # elif ord(ssid[3]) != int(str(ssid_test2), 2):
-        # raise TestFailure("ssid_test2 differs from mock")
-    # elif ord(ssid[6]) != int(str(ssid_test3), 2):
-        # raise TestFailure("ssid_test3 differs from mock")
-    # elif ord(ssid[6]) == int(str(ssid_test1), 2):    #Todo: remove false positive if 1st and 7th chars equal
-        # raise TestFailure("SSID comparisons failing.")
-    # else:
-        # log.info("SSID Ok!")
-
-def lookup_state(state):
-    stateList = {
-        0: "STATE_IDLE",
-        1: "STATE_PACKET",
-        2: "STATE_START",
-        3: "STATE_END",
-        4: "STATE_PROCESS",
-        5: "STATE_OUT",
-    }
-    return stateList.get(state, "Unknown")
-
-def convert_hex(input):
-    input = str(input)
-    replaceCount = []
-    while 'UUUU' in input: 
-        replaceCount.append(input.find('UUUU') / 4)
-        input = input.replace('UUUU', '1111', 1)
-    
-    try:
-        output = list("{:x}".format(int(str(input), 2)))
-    except:
-        output = list("{}".format(str(input)))
-    
-    
-    for x in replaceCount:
-        if len(output) > x:
-            output[x] = 'U'
-        else:
-            output.append('U')
-        
-    return "".join(output)
+    if mk_end[1] != chr(int(str(dut.test_mk_val1), 2)):
+        raise TestFailure("MK Final Value 1 Mismatch")
+    if mk_end[3] != chr(int(str(dut.test_mk_val3), 2)):
+        raise TestFailure("MK Final Value 3 Mismatch")
+    if mk_end[7] != chr(int(str(dut.test_mk_val7), 2)):
+        raise TestFailure("MK Final Value 7 Mismatch")
+    if mk_end[9] != chr(int(str(dut.test_mk_val9), 2)):
+        raise TestFailure("MK Final Value 9 Mismatch")
+    else:
+        log.info("MK Generation Ok!")
