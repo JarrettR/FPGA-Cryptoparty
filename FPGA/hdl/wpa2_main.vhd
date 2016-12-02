@@ -52,6 +52,7 @@ architecture RTL of wpa2_main is
         clk_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
         start_val_i    : in    mk_data;
+        end_val_i    : in    mk_data;
         init_load_i    : in    std_ulogic;
         complete_o     : out    std_ulogic;
         dat_mk_o       : out    mk_data
@@ -98,7 +99,7 @@ architecture RTL of wpa2_main is
 
 begin
 
-    gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_init_load,gen_complete,mk);
+    gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_end,mk_init_load,gen_complete,mk);
     comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
@@ -107,19 +108,13 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 wpa2_complete_o <= '0';
-                
-                --for x in 0 to 9 loop
-                --    mk_start(x) <= "0000";
-                --end loop;
-                
                 mk_init_load <= '1';
             else
                 mk_init_load <= '0';
-                wpa2_complete_o <= comp_complete;
-             
-                --mk_start(i * 2) <= mk_initial(i)(0 to 3);
-                --mk_start((i * 2) + 1) <= mk_initial(i)(4 to 7);
-                
+                if gen_complete = '1' or comp_complete = '1' then
+                    wpa2_complete_o <= '1';
+                end if;
+                mk_valid_o <= comp_complete;                
             end if;
         end if;
     end process;

@@ -66,8 +66,10 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     #TOPLEVEL = sha1_scheduler
     #For testing HMAC:
     #TOPLEVEL = hmac_scheduler
+    #For testing MK generation:
+    TOPLEVEL = gen_tenhex
     #For testing whole ZTEX board:
-    TOPLEVEL = ztex_wrapper
+    #TOPLEVEL = ztex_wrapper
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
@@ -78,8 +80,10 @@ endif
 #MODULE=test_hmac
 #For testing PBKDF2:
 #MODULE=test_wpa2
+#For testing MK generation:
+MODULE=test_gentenhex
 #For testing the whoooole thing:
-MODULE=test_ztex
+#MODULE=test_ztex
 
 CUSTOM_COMPILE_DEPS = hal
 

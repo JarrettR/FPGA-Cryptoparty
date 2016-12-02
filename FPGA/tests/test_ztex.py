@@ -79,10 +79,10 @@ def load_file(dut, filename):
 def load_mk(dut, mk):
     
     for i in xrange(10):
-        print i, mk[i], \
-            "{:02x}".format(ord(mk[i])), \
-            str(int(str(dut.i), 2)), '-', \
-            lookup_state(int(str(dut.test_state), 2))
+        #print i, mk[i], \
+        #    "{:02x}".format(ord(mk[i])), \
+        #    str(int(str(dut.i), 2)), '-', \
+        #    lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(mk[i])
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
@@ -92,13 +92,15 @@ def load_mk(dut, mk):
 
 @cocotb.coroutine
 def wait_process(dut):
-    print "Processing"
+    #print "Processing"
     process = 1
     
     while process == 1:
     
         print int(str(dut.i), 2), ' - ', \
             lookup_state(int(str(dut.test_state), 2)), '-', \
+            int(str(dut.wpa2_complete), 2), \
+            int(str(dut.pmk_valid), 2), \
             int(str(dut.main1.test_start1), 2), \
             int(str(dut.main1.test_start2), 2), \
             int(str(dut.main1.test_start3), 2), \
@@ -110,7 +112,7 @@ def wait_process(dut):
         if int(str(dut.wpa2_complete), 2) == 1:
             process = 0
         #print dat_i_test
-    print "Processing done"
+    #print "Processing done"
         
 
 #@cocotb.test()
@@ -250,7 +252,7 @@ def B_load_handshake_test(dut):
 
         
 @cocotb.test()
-def C_load_next_test(dut):
+def C_load_second_test(dut):
     """
     Resets data and tries again
     """
@@ -338,7 +340,7 @@ def D_set_session_params_test(dut):
     
     yield load_mk(dut, end)
     
-    #Todo: Take note, this clock shouldn't be necessary
+    #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
     
     yield wait_process(dut)
@@ -355,6 +357,44 @@ def D_set_session_params_test(dut):
         raise TestFailure("End MK inequal2")
     else:
         log.info("Start/End Params Ok!")
+        
+        
+@cocotb.test()
+def E_find_mk_test(dut):
+    """
+    Finds MK successfully
+    """
+    log = SimLog("cocotb.%s" % dut._name)
+    log.setLevel(logging.DEBUG)
+    cocotb.fork(Clock(dut.clk_i, 1000).start())
+    
+    filename = '../test_data/wpa2-psk-linksys.hccap'
+    start = '1000000000'
+    end =   '1000000010'
+    
+    obj = wpa2slow.Handshake() 
+    obj.load(filename)
+
+    dut.cs_i <= 1
+    yield reset(dut)
+    yield RisingEdge(dut.clk_i)
+    
+    yield load_file(dut, filename)
+    
+    yield load_mk(dut, start)
+    
+    yield load_mk(dut, end)
+    
+    #This clock isn't necessary while pipelining
+    yield RisingEdge(dut.clk_i)
+    
+    yield wait_process(dut)
+    
+    
+    if int(str(dut.pmk_valid), 2) == 0:
+        raise TestFailure("MK search failed")
+    else:
+        log.info("Master key found!")
         
 
 #@cocotb.test()
