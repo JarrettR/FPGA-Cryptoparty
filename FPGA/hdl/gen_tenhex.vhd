@@ -41,6 +41,8 @@ architecture RTL of gen_tenhex is
     signal w: w_input;
     signal w_temp: w_input;
     
+    signal complete: std_ulogic := '0';
+    
     signal carry: unsigned(0 to 10) := "00000000001";
     -- synthesis translate_off
     --Testing only - Because GHDL VPI does not yet support arrays :<
@@ -88,11 +90,12 @@ architecture RTL of gen_tenhex is
     
 begin
     process(clk_i)   
-    variable continue: std_ulogic;
+    variable continue_carry: std_ulogic;
+    variable complete_v: std_ulogic;
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                complete_o <= '0';
+                complete <= '0';
                 if init_load_i = '1' then
                     for i in 0 to 9 loop
                         --Todo: fix to start_val_i and end_val_i
@@ -100,20 +103,30 @@ begin
                         mk_end(i) <= end_val(i);
                     end loop;
                 end if;
-            else
+            elsif complete = '0' then
+                complete_v := '1';
                 for i in 9 downto 0 loop
-                    if carry(i + 1) = '1' and continue = '1' then
-                        mk(i) <= mk_next(i);
-                    else
-                        continue := '0';
+                    if mk(i) /= mk_end(i) then
+                        complete_v := '0';
                     end if;
                 end loop;
-                continue := '1';
+                if complete_v = '0' then
+                    for i in 9 downto 0 loop
+                        if carry(i + 1) = '1' and continue_carry = '1' then
+                            mk(i) <= mk_next(i);
+                        else
+                            continue_carry := '0';
+                        end if;
+                    end loop;
+                    continue_carry := '1';
+                end if;
+                complete <= complete_v;
             end if;
         end if;
     end process;
     
     dat_mk_o <= mk;
+    complete_o <= complete;
     
     -- synthesis translate_off
     --Todo: remove after testing
@@ -163,13 +176,5 @@ begin
                      '1' when X"66",
                      '0' when others;
     end generate mk_inc;
-
-    -- Int to ascii
-    --gen_mk: for i in 0 to 9 generate
-    --begin
-    --    dat_mk_o(i) <= mk(i) + X"57" when mk(i) > 9 else
-    --                  mk(i) + X"30" when mk(i) <= 9 else
-    --                   X"30";
-    --end generate gen_mk;
 
 end RTL; 

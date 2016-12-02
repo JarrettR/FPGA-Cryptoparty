@@ -39,15 +39,13 @@ def reset(dut):
 @cocotb.coroutine
 def wait_process(dut):
     print "Processing"
-    process = 1
     
-    while process == 1:
-    
+    while True:
         print_mk(dut) 
         yield RisingEdge(dut.clk_i)
         
         if int(str(dut.complete_o), 2) == 1:
-            process = 0
+            break
             
     print "Processing done"
     
@@ -74,7 +72,7 @@ def A_load_config_test(dut):
     cocotb.fork(Clock(dut.clk_i, 1000).start())
     
     mk_start = '1222222222'
-    mk_end = '12222222f2'
+    mk_end = '1222222f22'
     
     #Todo: fix this garbage when GHDL implements arrays in their VPI
     dut.test_start_val0 <= ord(mk_start[0])
