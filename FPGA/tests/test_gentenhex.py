@@ -59,7 +59,9 @@ def print_mk(dut):
         chr(int(str(dut.test_mk_val4), 2)) + \
         chr(int(str(dut.test_mk_val5), 2)) + \
         chr(int(str(dut.test_mk_val6), 2)) + \
-        chr(int(str(dut.test_mk_val7), 2))
+        chr(int(str(dut.test_mk_val7), 2)) + \
+        chr(int(str(dut.test_mk_val8), 2)) + \
+        chr(int(str(dut.test_mk_val9), 2))
     print dut.complete_o #dut.carry#, dut.continue
         
 @cocotb.test()
@@ -74,6 +76,7 @@ def A_load_config_test(dut):
     mk_start = '1222222222'
     mk_end = '12222222f2'
     
+    #Todo: fix this garbage when GHDL implements arrays in their VPI
     dut.test_start_val0 <= ord(mk_start[0])
     dut.test_start_val1 <= ord(mk_start[1])
     dut.test_start_val2 <= ord(mk_start[2])
@@ -82,6 +85,8 @@ def A_load_config_test(dut):
     dut.test_start_val5 <= ord(mk_start[5])
     dut.test_start_val6 <= ord(mk_start[6])
     dut.test_start_val7 <= ord(mk_start[7])
+    dut.test_start_val8 <= ord(mk_start[8])
+    dut.test_start_val9 <= ord(mk_start[9])
     
     dut.test_end_val0 <= ord(mk_end[0])
     dut.test_end_val1 <= ord(mk_end[1])
@@ -91,6 +96,8 @@ def A_load_config_test(dut):
     dut.test_end_val5 <= ord(mk_end[5])
     dut.test_end_val6 <= ord(mk_end[6])
     dut.test_end_val7 <= ord(mk_end[7])
+    dut.test_end_val8 <= ord(mk_end[8])
+    dut.test_end_val9 <= ord(mk_end[9])
     
     dut.init_load_i <= 1
     yield RisingEdge(dut.clk_i)
