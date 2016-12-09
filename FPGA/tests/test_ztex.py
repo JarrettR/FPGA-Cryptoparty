@@ -66,7 +66,7 @@ def load_file(dut, filename):
             
         #print fbyte
         #print "{:02x}".format(ord(fbyte))
-        #print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
+        print str(int(str(dut.i), 2)) + " - " + lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(fbyte)
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
@@ -79,10 +79,10 @@ def load_file(dut, filename):
 def load_mk(dut, mk):
     
     for i in xrange(10):
-        #print i, mk[i], \
-        #    "{:02x}".format(ord(mk[i])), \
-        #    str(int(str(dut.i), 2)), '-', \
-        #    lookup_state(int(str(dut.test_state), 2))
+        print i, mk[i], \
+            "{:02x}".format(ord(mk[i])), \
+            str(int(str(dut.i), 2)), '-', \
+            lookup_state(int(str(dut.test_state), 2))
         dut.dat_i <= ord(mk[i])
         yield RisingEdge(dut.clk_i)
         dat_i_test = dut.test_byte_1
@@ -92,7 +92,7 @@ def load_mk(dut, mk):
 
 @cocotb.coroutine
 def wait_process(dut):
-    #print "Processing"
+    print "Processing"
     process = 1
     
     while process == 1:
@@ -101,6 +101,7 @@ def wait_process(dut):
             lookup_state(int(str(dut.test_state), 2)), '-', \
             int(str(dut.wpa2_complete), 2), \
             int(str(dut.pmk_valid), 2), \
+            int(str(dut.main1.gen_complete), 2), \
             int(str(dut.main1.test_start1), 2), \
             int(str(dut.main1.test_start2), 2), \
             int(str(dut.main1.test_start3), 2), \
@@ -112,7 +113,7 @@ def wait_process(dut):
         if int(str(dut.wpa2_complete), 2) == 1:
             process = 0
         #print dat_i_test
-    #print "Processing done"
+    print "Processing done"
         
 
 #@cocotb.test()
@@ -326,9 +327,6 @@ def D_set_session_params_test(dut):
     filename = '../test_data/wpa2-psk-linksys.hccap'
     start = '1000000000'
     end =   '1000000200'
-    
-    obj = wpa2slow.Handshake() 
-    obj.load(filename)
 
     dut.cs_i <= 1
     yield reset(dut)
@@ -343,7 +341,7 @@ def D_set_session_params_test(dut):
     #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
     
-    yield wait_process(dut)
+    #yield wait_process(dut)
     
     mk_test1 = dut.test_mk1
     mk_test2 = dut.test_mk2
@@ -370,12 +368,10 @@ def E_find_mk_test(dut):
     
     filename = '../test_data/wpa2-psk-linksys.hccap'
     start = '1000000000'
-    end =   '1000000010'
-    
-    obj = wpa2slow.Handshake() 
-    obj.load(filename)
+    end =   '1000000200'
 
     dut.cs_i <= 1
+    yield reset(dut)
     yield reset(dut)
     yield RisingEdge(dut.clk_i)
     
