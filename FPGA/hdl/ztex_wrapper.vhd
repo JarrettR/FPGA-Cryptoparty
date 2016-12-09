@@ -51,6 +51,7 @@ architecture RTL of ztex_wrapper is
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
         cont_i          : in    std_ulogic;
+        load_i          : in    std_ulogic;
         ssid_dat_i      : in    ssid_data;
         data_dat_i      : in    packet_data;
         anonce_dat      : in    nonce_data;
@@ -84,7 +85,7 @@ architecture RTL of ztex_wrapper is
     signal cmac_dat        : mac_data;
     signal mic_dat         : mic_data;
     
-    
+    signal load_dat       : std_ulogic := '0';
     --signal ssid_len      : integer range 0 to 63;
     --signal mk_len        : integer range 0 to 63;
     constant mk_len        : integer := 10;
@@ -132,7 +133,7 @@ architecture RTL of ztex_wrapper is
     
 begin
 
-    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i,
+    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i,load_dat,
             ssid_dat,data_dat,anonce_dat,cnonce_dat,amac_dat,cmac_dat,
             mk_initial,mk_end,
             mk_dat,pmk_valid,wpa2_complete);
@@ -192,6 +193,7 @@ begin
                 if i = mk_len - 1 then
                     state <= STATE_PROCESS;
                     i <= 0;
+                    load_dat <= '1';
                 else
                     i <= i + 1;
                 end if;
@@ -199,10 +201,11 @@ begin
             elsif state = STATE_PROCESS and wpa2_complete = '1' then
                     state <= STATE_OUT;
                     --Testing only, this will fail past 391 attempts
-                    i <= 0;
+                    --i <= 0;
             elsif state = STATE_PROCESS then
                     --Testing only, this will fail past 391 attempts
-                    i <= i + 1;
+                    --i <= i + 1;
+                    load_dat <= '0';
             end if;
         end if;
     end process;

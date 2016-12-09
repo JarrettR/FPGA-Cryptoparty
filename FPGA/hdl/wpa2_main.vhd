@@ -29,6 +29,7 @@ port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     cont_i          : in    std_ulogic;
+    load_i          : in    std_ulogic;
     ssid_dat_i      : in    ssid_data;
     data_dat_i      : in    packet_data;
     anonce_dat      : in    nonce_data;
@@ -99,7 +100,7 @@ architecture RTL of wpa2_main is
 
 begin
 
-    gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_end,mk_init_load,gen_complete,mk);
+    gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_end,load_i,gen_complete,mk);
     --comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 

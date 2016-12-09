@@ -94,15 +94,15 @@ begin
     variable complete_v: std_ulogic;
     begin
         if (clk_i'event and clk_i = '1') then
+            if init_load_i = '1' then
+                for i in 0 to 9 loop
+                    --Todo: fix to start_val_i and end_val_i
+                    mk(i) <= start_val_i(i);
+                    mk_end(i) <= end_val_i(i);
+                end loop;
+            end if;
             if rst_i = '1' then
                 complete <= '0';
-                if init_load_i = '1' then
-                    for i in 0 to 9 loop
-                        --Todo: fix to start_val_i and end_val_i
-                        mk(i) <= start_val_i(i);
-                        mk_end(i) <= end_val_i(i);
-                    end loop;
-                end if;
             elsif complete = '0' then
                 complete_v := '1';
                 for i in 9 downto 0 loop

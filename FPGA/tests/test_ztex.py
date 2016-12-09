@@ -372,7 +372,6 @@ def E_find_mk_test(dut):
 
     dut.cs_i <= 1
     yield reset(dut)
-    yield reset(dut)
     yield RisingEdge(dut.clk_i)
     
     yield load_file(dut, filename)
@@ -384,6 +383,8 @@ def E_find_mk_test(dut):
     #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
     
+    yield wait_process(dut)
+    yield RisingEdge(dut.clk_i)
     yield wait_process(dut)
     
     
