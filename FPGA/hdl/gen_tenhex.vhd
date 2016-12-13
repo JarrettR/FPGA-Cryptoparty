@@ -97,8 +97,10 @@ begin
             if init_load_i = '1' then
                 for i in 0 to 9 loop
                     --Todo: fix to start_val_i and end_val_i
-                    mk(i) <= start_val_i(i);
-                    mk_end(i) <= end_val_i(i);
+                    --mk(i) <= start_val_i(i);
+                    --mk_end(i) <= end_val_i(i);
+                    mk(i) <= start_val(i);
+                    mk_end(i) <= end_val(i);
                 end loop;
             end if;
             if rst_i = '1' then
