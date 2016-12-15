@@ -67,13 +67,13 @@ ifeq ($(TOPLEVEL_LANG),vhdl)
     #For testing HMAC:
     #TOPLEVEL = hmac_scheduler
     #For testing MK generation:
-    TOPLEVEL = gen_tenhex
+    #TOPLEVEL = gen_tenhex
     #For testing MK/PMK Comparison:
     #TOPLEVEL = wpa2_compare
     #For testing full WPA2:
     #TOPLEVEL = wpa2_main
     #For testing whole ZTEX board:
-    #TOPLEVEL = ztex_wrapper
+    TOPLEVEL = ztex_wrapper
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
@@ -85,11 +85,11 @@ endif
 #For testing PBKDF2:
 #MODULE=test_wpa2
 #For testing MK generation:
-MODULE=test_gentenhex
+#MODULE=test_gentenhex
 #For testing PMK comparison:
 #MODULE=test_wpa2compare
 #For testing the whoooole thing:
-#MODULE=test_ztex
+MODULE=test_ztex
 
 CUSTOM_COMPILE_DEPS = hal
 

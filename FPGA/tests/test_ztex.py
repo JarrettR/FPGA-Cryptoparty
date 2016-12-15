@@ -89,25 +89,31 @@ def load_mk(dut, mk):
     
         #print dat_i_test
         
-
+def print_process_vars(dut):
+    print int(str(dut.i), 2), ' - ', \
+                lookup_state(int(str(dut.test_state), 2)), '-', \
+                int(str(dut.wpa2_complete), 2), \
+                int(str(dut.pmk_valid), 2), \
+                int(str(dut.main1.gen_complete), 2), \
+                int(str(dut.load_dat), 2), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val0), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val1), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val2), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val3), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val4), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val5), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val6), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val7), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val8), 2)), \
+                "{:02x}".format(int(str(dut.main1.gen1.test_mk_val9), 2))
 @cocotb.coroutine
 def wait_process(dut):
     print "Processing"
     process = 1
     
     while process == 1:
-    
-        print int(str(dut.i), 2), ' - ', \
-            lookup_state(int(str(dut.test_state), 2)), '-', \
-            int(str(dut.wpa2_complete), 2), \
-            int(str(dut.pmk_valid), 2), \
-            int(str(dut.main1.gen_complete), 2), \
-            int(str(dut.main1.test_start1), 2), \
-            int(str(dut.main1.test_start2), 2), \
-            int(str(dut.main1.test_start3), 2), \
-            "{:02x}".format(int(str(dut.main1.test_mk1), 2)), \
-            "{:02x}".format(int(str(dut.main1.test_mk2), 2)), \
-            "{:02x}".format(int(str(dut.main1.test_mk3), 2))
+        print_process_vars(dut)
+        
         yield RisingEdge(dut.clk_i)
         
         if int(str(dut.wpa2_complete), 2) == 1:
@@ -374,9 +380,13 @@ def E_find_mk_test(dut):
     yield reset(dut)
     yield RisingEdge(dut.clk_i)
     
+    print_process_vars(dut)
     yield load_file(dut, filename)
+    print_process_vars(dut)
     yield load_mk(dut, start)
+    print_process_vars(dut)
     yield load_mk(dut, end)
+    print_process_vars(dut)
     
     #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
@@ -387,6 +397,7 @@ def E_find_mk_test(dut):
         lookup_state(int(str(dut.test_state), 2)), '-', \
         int(str(dut.wpa2_complete), 2), \
         int(str(dut.pmk_valid), 2), \
+        int(str(dut.load_dat), 2), \
         int(str(dut.main1.gen_complete), 2), \
         int(str(dut.main1.test_start1), 2), \
         int(str(dut.main1.test_start2), 2), \
@@ -414,16 +425,31 @@ def F_find_mk_test(dut):
     start = '2000000000'
     end =   '2000000300'    #Comparison currently hardcoded as 1000000200
 
+    print_process_vars(dut)
+    
     dut.cs_i <= 1
     yield reset(dut)
     yield RisingEdge(dut.clk_i)
     
+    print_process_vars(dut)
+        
     yield load_file(dut, filename)
     yield load_mk(dut, start)
     yield load_mk(dut, end)
     
+    # dut.init_load_i <= 1
+    # yield RisingEdge(dut.clk_i)
+    # dut.rst_i <= 1
+    
+    # yield RisingEdge(dut.clk_i)
+    # dut.rst_i <= 0
+    # yield RisingEdge(dut.clk_i)
+    # dut.init_load_i <= 0
+	
     #This clock isn't necessary while pipelining
     yield RisingEdge(dut.clk_i)
+    
+    print_process_vars(dut)
     
     yield wait_process(dut)
     

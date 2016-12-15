@@ -128,7 +128,7 @@ def B_load_second_test(dut):
     cocotb.fork(Clock(dut.clk_i, 1000).start())
     
     mk_start = '1022222222'
-    mk_end = '1022222f22'
+    mk_end = '10222222f2'
     
     #Todo: fix this garbage when GHDL implements arrays in their VPI
     dut.test_start_val0 <= ord(mk_start[0])

@@ -45,7 +45,7 @@ architecture RTL of gen_tenhex is
     
     signal carry: unsigned(0 to 10) := "00000000001";
     -- synthesis translate_off
-    --Testing only - Because GHDL VPI does not yet support arrays :<
+    --Testing only - Because GHDL VPI does not support multidimensional arrays :<
     signal start_val: mk_data;
     signal end_val: mk_data;
     signal test_start_val0: unsigned(0 to 7);
@@ -97,11 +97,12 @@ begin
             if init_load_i = '1' then
                 for i in 0 to 9 loop
                     --Todo: fix to start_val_i and end_val_i
-                    --mk(i) <= start_val_i(i);
-                    --mk_end(i) <= end_val_i(i);
-                    mk(i) <= start_val(i);
-                    mk_end(i) <= end_val(i);
+                    mk(i) <= start_val_i(i);
+                    mk_end(i) <= end_val_i(i);
+                    --mk(i) <= start_val(i);
+                    --mk_end(i) <= end_val(i);
                 end loop;
+                complete <= '0';
             end if;
             if rst_i = '1' then
                 complete <= '0';
