@@ -30,7 +30,6 @@ port(
     rst_i           : in    std_ulogic;
     start_val_i     : in    mk_data;
     end_val_i       : in    mk_data;
-    init_load_i     : in    std_ulogic;
     complete_o      : out    std_ulogic := '0';
     dat_mk_o        : out    mk_data
     );
@@ -94,7 +93,8 @@ begin
     variable complete_v: std_ulogic;
     begin
         if (clk_i'event and clk_i = '1') then
-            if init_load_i = '1' then
+            if rst_i = '1' then
+                complete <= '0';
                 for i in 0 to 9 loop
                     --Todo: fix to start_val_i and end_val_i
                     mk(i) <= start_val_i(i);
@@ -102,14 +102,6 @@ begin
                     --mk(i) <= start_val(i);
                     --mk_end(i) <= end_val(i);
                 end loop;
-                complete <= '0';
-            end if;
-            if rst_i = '1' then
-                complete <= '0';
-                -- for i in 0 to 9 loop
-                    -- mk(i) <= "00000000";
-                    -- mk_end(i) <= "00000000";
-                -- end loop;
             elsif complete = '0' then
                 complete_v := '1';
                 for i in 9 downto 0 loop

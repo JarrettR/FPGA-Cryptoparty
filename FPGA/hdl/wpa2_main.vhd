@@ -28,8 +28,7 @@ entity wpa2_main is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    cont_i          : in    std_ulogic;
-    load_i          : in    std_ulogic;
+    start_i          : in    std_ulogic;
     ssid_dat_i      : in    ssid_data;
     data_dat_i      : in    packet_data;
     anonce_dat      : in    nonce_data;
@@ -54,7 +53,6 @@ architecture RTL of wpa2_main is
         rst_i          : in    std_ulogic;
         start_val_i    : in    mk_data;
         end_val_i    : in    mk_data;
-        init_load_i    : in    std_ulogic;
         complete_o     : out    std_ulogic;
         dat_mk_o       : out    mk_data
     );
@@ -77,7 +75,7 @@ architecture RTL of wpa2_main is
     signal w: w_input;
     signal w_temp: w_input;
     
-    signal mk_init_load: std_ulogic;
+    --signal mk_init_load: std_ulogic;
     signal mk: mk_data;
     signal pmk: pmk_data;
     
@@ -100,7 +98,7 @@ architecture RTL of wpa2_main is
 
 begin
 
-    gen1: gen_tenhex port map (clk_i,rst_i,mk_initial,mk_end,load_i,gen_complete,mk);
+    gen1: gen_tenhex port map (clk_i,start_i,mk_initial,mk_end,gen_complete,mk);
     comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
@@ -109,20 +107,20 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 wpa2_complete_o <= '0';
-                mk_init_load <= '1';
+                --mk_init_load <= '1';
             else
-                mk_init_load <= '0';
+                --mk_init_load <= '0';
                 if gen_complete = '1' or comp_complete = '1' then
                     wpa2_complete_o <= '1';
                 else
                     wpa2_complete_o <= '0';
-                end if;
-                mk_valid_o <= comp_complete;                
+                end if;             
             end if;
         end if;
     end process;
     
     
+    mk_valid_o <= comp_complete;   
     
     -- synthesis translate_off
     test_start1 <= mk_initial(0);

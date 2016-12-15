@@ -50,8 +50,7 @@ architecture RTL of ztex_wrapper is
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
-        cont_i          : in    std_ulogic;
-        load_i          : in    std_ulogic;
+        start_i          : in    std_ulogic;
         ssid_dat_i      : in    ssid_data;
         data_dat_i      : in    packet_data;
         anonce_dat      : in    nonce_data;
@@ -95,6 +94,7 @@ architecture RTL of ztex_wrapper is
         
     signal wpa2_complete   : std_ulogic := '0';
     signal pmk_valid       : std_ulogic := '0';
+    signal start_wpa2       : std_ulogic := '0';
     
     --Internal
     signal i               : integer range 0 to 391;
@@ -133,7 +133,7 @@ architecture RTL of ztex_wrapper is
     
 begin
 
-    MAIN1: wpa2_main port map (clk_i,rst_i,cont_i,load_dat,
+    MAIN1: wpa2_main port map (clk_i,rst_i,start_wpa2,
             ssid_dat,data_dat,anonce_dat,cnonce_dat,amac_dat,cmac_dat,
             mk_initial,mk_end,
             mk_dat,pmk_valid,wpa2_complete);
@@ -156,6 +156,7 @@ begin
             
             --latch_input <= "00";
             state <= STATE_IDLE;
+            start_wpa2 <= '0';
             
             i <= 0;
             i_word <= 0;
@@ -193,19 +194,17 @@ begin
                 if i = mk_len - 1 then
                     state <= STATE_PROCESS;
                     i <= 0;
-                    load_dat <= '1';
+                    start_wpa2 <= '1';
                 else
+                    --load_dat <= '0';
                     i <= i + 1;
                 end if;
                 
             elsif state = STATE_PROCESS and wpa2_complete = '1' then
                     state <= STATE_OUT;
-                    --Testing only, this will fail past 391 attempts
-                    --i <= 0;
+                    start_wpa2 <= '0';
             elsif state = STATE_PROCESS then
-                    --Testing only, this will fail past 391 attempts
-                    --i <= i + 1;
-                    load_dat <= '0';
+                    start_wpa2 <= '0';
             end if;
         end if;
     end process;

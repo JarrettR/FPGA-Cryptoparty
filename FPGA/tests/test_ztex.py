@@ -427,34 +427,24 @@ def F_find_second_mk_test(dut):
     yield load_mk(dut, start)
     print_process_vars(dut)
     yield load_mk(dut, end)
-    
-    dut.main1.load_i <= 1
-    yield RisingEdge(dut.clk_i)
+    #dut.main1.load_i <= 1
+    #yield RisingEdge(dut.clk_i)
     # dut.rst_i <= 1
     
     # yield RisingEdge(dut.clk_i)
     # dut.rst_i <= 0
     # yield RisingEdge(dut.clk_i)
-    dut.main1.load_i <= 0
+    #dut.main1.load_i <= 0
 	
     #This clock isn't necessary while pipelining
-    yield RisingEdge(dut.clk_i)
+    #yield RisingEdge(dut.clk_i)
     
     print_process_vars(dut)
     
     yield wait_process(dut)
     
-    print int(str(dut.i), 2), ' - ', \
-        lookup_state(int(str(dut.test_state), 2)), '-', \
-        int(str(dut.wpa2_complete), 2), \
-        int(str(dut.pmk_valid), 2), \
-        int(str(dut.main1.gen_complete), 2), \
-        int(str(dut.main1.test_start1), 2), \
-        int(str(dut.main1.test_start2), 2), \
-        int(str(dut.main1.test_start3), 2), \
-        "{:02x}".format(int(str(dut.main1.test_mk1), 2)), \
-        "{:02x}".format(int(str(dut.main1.test_mk2), 2)), \
-        "{:02x}".format(int(str(dut.main1.test_mk3), 2))
+   
+    print_process_vars(dut)
     
     if int(str(dut.pmk_valid), 2) == 0:
         raise TestFailure("MK search failed")
