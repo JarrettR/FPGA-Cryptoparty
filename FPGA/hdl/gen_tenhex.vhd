@@ -106,6 +106,10 @@ begin
             end if;
             if rst_i = '1' then
                 complete <= '0';
+                -- for i in 0 to 9 loop
+                    -- mk(i) <= "00000000";
+                    -- mk_end(i) <= "00000000";
+                -- end loop;
             elsif complete = '0' then
                 complete_v := '1';
                 for i in 9 downto 0 loop

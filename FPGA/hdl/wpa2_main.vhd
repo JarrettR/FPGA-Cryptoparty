@@ -114,6 +114,8 @@ begin
                 mk_init_load <= '0';
                 if gen_complete = '1' or comp_complete = '1' then
                     wpa2_complete_o <= '1';
+                else
+                    wpa2_complete_o <= '0';
                 end if;
                 mk_valid_o <= comp_complete;                
             end if;
