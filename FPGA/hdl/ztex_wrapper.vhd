@@ -31,7 +31,7 @@ entity ztex_wrapper is
         clk_i         : in std_logic;   --IFCLK
 
         dat_i         : in unsigned(0 to 7);  --FD
-        dat_o         : out std_ulogic_vector(0 to 7);  --pc
+        dat_o         : out unsigned(0 to 7);  --pc
 
         SLOE          : out std_logic;  --SLOE
         SLRD          : out std_logic;  --SLRD
