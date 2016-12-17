@@ -101,14 +101,26 @@ begin
         start_mk(4) <= "00110000";
         start_mk(5) <= "00110000";
         start_mk(6) <= "00110000";
-        start_mk(7) <= "00110010";
+        start_mk(7) <= "00110000";
         start_mk(8) <= "00110000";
-        start_mk(9) <= "00110000";
+        start_mk(9) <= "00110001";
+        
+        end_mk(0) <= "00110001"; --0x31, char 1
+        end_mk(1) <= "00110000";
+        end_mk(2) <= "00110000";
+        end_mk(3) <= "00110000";
+        end_mk(4) <= "00110000";
+        end_mk(5) <= "00110000";
+        end_mk(6) <= "00110000";
+        end_mk(7) <= "00110010";
+        end_mk(8) <= "00110000";
+        end_mk(9) <= "00110000";
         
         wait until rising_edge(clk_i);	
         rst_i <= '1';
         wait until rising_edge(clk_i);     
         rst_i <= '0';   
+        wait until rising_edge(clk_i);  
         while not endfile(file_handshake) loop
             read(file_handshake, char_buffer);
             dat_i <= to_unsigned(character'pos(char_buffer), 8);
@@ -119,6 +131,11 @@ begin
         
         for x in 0 to 9 loop
             dat_i <= start_mk(x);
+            i <= i + 1;
+            wait until rising_edge(clk_i);
+        end loop; 
+        for x in 0 to 9 loop
+            dat_i <= end_mk(x);
             i <= i + 1;
             wait until rising_edge(clk_i);
         end loop; 
