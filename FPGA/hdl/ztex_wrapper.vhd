@@ -138,7 +138,8 @@ begin
             mk_initial,mk_end,
             mk_dat,pmk_valid,wpa2_complete);
     
-    SLOE <= '1'     when cs_i = '1' else 'Z';
+    --I guess this is the completion flag for now
+    SLOE <= wpa2_complete     when cs_i = '1' else 'Z';
     SLRD <= '1'     when cs_i = '1' else 'Z';
     SLWR <= '0'  when cs_i = '1' else 'Z';
     FIFOADR0 <= '0' when cs_i = '1' else 'Z';

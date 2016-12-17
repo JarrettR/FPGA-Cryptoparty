@@ -89,9 +89,11 @@ begin
     
     stim_proc: process
     file file_handshake : t_char_file open read_mode is "wpa2-psk-linksys.hccap";
+    file file_handshake2 : t_char_file open read_mode is "wpa2-psk-linksys.hccap";
     variable char_buffer : character;
     begin        
         rst_i <= '0';
+        cs_i <= '1';
         i <= 0;
         
         start_mk(0) <= "00110001"; --0x31, char 1
@@ -112,7 +114,7 @@ begin
         end_mk(4) <= "00110000";
         end_mk(5) <= "00110000";
         end_mk(6) <= "00110000";
-        end_mk(7) <= "00110010";
+        end_mk(7) <= "00110011";
         end_mk(8) <= "00110000";
         end_mk(9) <= "00110000";
         
@@ -128,6 +130,34 @@ begin
             wait until rising_edge(clk_i);
         end loop; 
         file_close(file_handshake);
+        
+        for x in 0 to 9 loop
+            dat_i <= start_mk(x);
+            i <= i + 1;
+            wait until rising_edge(clk_i);
+        end loop; 
+        for x in 0 to 9 loop
+            dat_i <= end_mk(x);
+            i <= i + 1;
+            wait until rising_edge(clk_i);
+        end loop; 
+        
+        --Do it all again
+        while SLOE = '0' loop
+            wait until rising_edge(clk_i);
+        end loop;
+        
+        rst_i <= '1';
+        wait until rising_edge(clk_i);     
+        rst_i <= '0';   
+        wait until rising_edge(clk_i);  
+        while not endfile(file_handshake2) loop
+            read(file_handshake2, char_buffer);
+            dat_i <= to_unsigned(character'pos(char_buffer), 8);
+            i <= i + 1;
+            wait until rising_edge(clk_i);
+        end loop; 
+        file_close(file_handshake2);
         
         for x in 0 to 9 loop
             dat_i <= start_mk(x);
