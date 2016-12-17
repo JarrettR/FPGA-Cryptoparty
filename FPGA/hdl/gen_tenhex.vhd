@@ -28,6 +28,8 @@ entity gen_tenhex is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
+    load_i           : in    std_ulogic;
+    start_i           : in    std_ulogic;
     start_val_i     : in    mk_data;
     end_val_i       : in    mk_data;
     complete_o      : out    std_ulogic := '0';
@@ -41,6 +43,7 @@ architecture RTL of gen_tenhex is
     signal w_temp: w_input;
     
     signal complete: std_ulogic := '0';
+    signal running: std_ulogic := '0';
     
     signal carry: unsigned(0 to 10) := "00000000001";
     -- synthesis translate_off
@@ -95,6 +98,8 @@ begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 complete <= '0';
+                running <= '0';
+            elsif load_i = '1' then
                 for i in 0 to 9 loop
                     --Todo: fix to start_val_i and end_val_i
                     mk(i) <= start_val_i(i);
@@ -102,7 +107,9 @@ begin
                     --mk(i) <= start_val(i);
                     --mk_end(i) <= end_val(i);
                 end loop;
-            elsif complete = '0' then
+            elsif start_i = '1' then
+                running <= '1';
+            elsif running = '1' then
                 complete_v := '1';
                 for i in 9 downto 0 loop
                     if mk(i) /= mk_end(i) then
@@ -120,6 +127,7 @@ begin
                     continue_carry := '1';
                 end if;
                 complete <= complete_v;
+                running <= not complete_v;
             end if;
         end if;
     end process;
