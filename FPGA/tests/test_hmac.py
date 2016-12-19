@@ -27,8 +27,7 @@ from cocotb.log import SimLog
 from cocotb.wavedrom import Wavedrom
 import random
 from shutil import copyfile
-from python_sha1 import Sha1Model, Sha1Driver
-from python_hmac import HmacModel, HmacDriver
+import wpa2slow
 
 _debug = False
 
@@ -78,8 +77,8 @@ def A_cache_data_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 10000).start())
     
-    mockSha1 = Sha1Model()
-    mockObject = HmacModel(mockSha1)
+    mockSha1 = wpa2slow.sha1.Sha1Model()
+    mockObject = wpa2slow.hmac.HmacModel(mockSha1)
     
     yield reset(dut)
     size = random.randint(8, 64)
@@ -106,8 +105,8 @@ def Z_wavedrom_test(dut):
     log = SimLog("cocotb.%s" % dut._name)
     cocotb.fork(Clock(dut.clk_i, 100).start())
     
-    mockSha1 = Sha1Model()
-    mockObject = HmacModel(mockSha1)
+    mockSha1 = wpa2slow.sha1.Sha1Model()
+    mockObject = wpa2slow.hmac.HmacModel(mockSha1)
     shaObject = HmacDriver(dut, None, dut.clk_i)
     
     #yield load_random_data(dut, log, mockObject, 80)

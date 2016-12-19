@@ -60,7 +60,7 @@ architecture RTL of wpa2_main is
     );
     end component;
     
-    component wpa2_compare
+    component wpa2_compare_test
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
@@ -104,7 +104,7 @@ architecture RTL of wpa2_main is
 begin
 
     gen1: gen_tenhex port map (clk_i,rst_i,load_gen,start_gen,mk_initial,mk_end,gen_complete,mk);
-    comp1: wpa2_compare port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
+    comp1: wpa2_compare_test port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
     process(clk_i)   

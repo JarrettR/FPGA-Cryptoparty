@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
---                        wpa2_compare.vhd
---    Calculates PRF with pairwise key expansion to compare against given MIC
+--                        wpa2_compare_test.vhd
+--    Simple comparison for testing hardware
 --    Copyright (C) 2016  Jarrett Rainier
 --
 --    This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ use ieee.numeric_std.all;
 use work.sha1_pkg.all;
 
 
-entity wpa2_compare is
+entity wpa2_compare_test is
 
 port(
     clk_i           : in    std_ulogic;
@@ -35,9 +35,9 @@ port(
     pmk_dat_o       : out   pmk_data;
     pmk_valid_o     : out   std_ulogic
     );
-end wpa2_compare;
+end wpa2_compare_test;
 
-architecture RTL of wpa2_compare is
+architecture RTL of wpa2_compare_test is
     
     signal mk: mk_data;
     signal pmk: w_input;
