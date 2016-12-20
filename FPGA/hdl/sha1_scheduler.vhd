@@ -29,9 +29,7 @@ port(
     rst_i                       : in    std_ulogic;
     dat_i                       : in    std_ulogic_vector(0 to 31);
     sot_in                      : in    std_ulogic;
-    dat_1_o                     : out    std_ulogic_vector(0 to 31);
-    dat_2_o                     : out    std_ulogic_vector(0 to 31);
-    dat_3_o                     : out    std_ulogic_vector(0 to 31)
+    dat_o                     : out    std_ulogic_vector(0 to 31)
     
     );
 end sha1_scheduler;

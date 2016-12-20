@@ -26,74 +26,106 @@ entity hmac_main is
 port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
-    dat_bi_i        : in    w_input;
-    dat_bo_i        : in    w_input;
-    value_i         : in    std_ulogic_vector(0 to 31);
-    value_load_i    : in    std_ulogic;
-    dat_bi_o        : out    w_input;
-    dat_bo_o        : out    w_input;
+    secret_i        : in    w_input;
+    value_i         : in    w_input;
+    load_i          : in    std_ulogic;
+    dat_o           : out    w_input;
     valid_o         : out    std_ulogic
-    
     );
 end hmac_main;
 
-architecture RTL of hmac_main is
+architecture RTL of hmac_main is 
+
+   component sha1_process_input
+    port(
+        clk_i          : in    std_ulogic;
+        rst_i          : in    std_ulogic;
+        dat_i          : in    w_input;
+        load_i         : in    std_ulogic;
+        dat_w_o          : out    w_full;
+        valid_o          : out    std_ulogic
+        );
+    end component;
+    
+   component sha1_process_buffer
+    port(
+       clk_i          : in    std_ulogic;
+       rst_i          : in    std_ulogic;
+       dat_i          : in    w_full;
+       load_i         : in    std_ulogic;
+       new_i          : in    std_ulogic;
+       dat_w_i        : in    w_output;
+       dat_w_o        : out    w_output;
+       valid_o        : out    std_ulogic
+       );
+    end component;
+    
+    signal dat_bi                   :    w_input;
+    signal bi_processed_input_load    :    std_ulogic;
+    signal bi_processed_input        :    w_full;
+    signal bi_processed_valid        :    std_ulogic;
+    signal bi_processed_new        :    std_ulogic;
+    signal bi_buffer_dat        :    w_output;
+    signal bi_buffer_valid        :    std_ulogic;
     
      
-    -- synthesis translate_off
-    signal test_hmac1_o   : std_ulogic_vector(0 to 31);
-    signal test_hmac2_o   : std_ulogic_vector(0 to 31);
-    signal test_hmac3_o   : std_ulogic_vector(0 to 31);
-    signal test_hmac4_o   : std_ulogic_vector(0 to 31);
-    -- synthesis translate_on
+    signal dat_bo                   :    w_input;
+        signal i: integer range 0 to 65535;
 
 begin
 
-    LOAD1: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bi,sot_in,w_load);
-    LOAD2: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bo,sot_in,w_load);
+    --LOAD1: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bi,sot_in,w_load);
+    --LOAD2: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bo,sot_in,w_load);
     
     --Alt: Use a generate statement
     --Inner HMAC
-    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
-    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,dat_bi,bi_processed_input_load,bi_processed_input,bi_processed_valid);
+    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,bi_processed_input,bi_processed_valid,bi_processed_new,bi_buffer_dat,bi_buffer_valid);
     
-    --Inner HMAC
-    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
-    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
+    --Outer HMAC
+    --PINPUT_O1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
+    --PBUFFER_O1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
     
     
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                for x in 0 to 15 loop
-                    bi(x) <= X"36363636";
-                    bo(x) <= X"5c5c5c5c";
-                end loop;
                 i <= 0;
+                bi_process_input_load <= 0;
+                bi_processed_new <= 1;
+            elsif load_i = '1' then
+                for x in 0 to 15 loop
+                    dat_bi(x) <= X"36363636" xor secret_i(x);
+                    dat_bo(x) <= X"5c5c5c5c" xor secret_i(x);
+                end loop;
+                i <= 1;
+            elsif i = 1 then
+                bi_process_input_load <= 1;
+                i <= 2;
+            elsif i = 2 then
+                bi_process_input_load <= 0;
+                i <= 3;
+            elsif bi_buffer_valid = '1' and i = 3 then
+                bi_process_input_load <= 0;
+                bi_processed_new <= 0;
+                for x in 0 to 12 loop
+                    dat_bi(x) <= value_i(x);
+                end loop;
+                dat_bi(13) <= X"80000000";
+                dat_bi(14) <= X"00000000";
+                dat_bi(15) <= X"00000140"; --This is definitely wrong atm
+                i <= 4;
+            elsif i = 4 then
+                bi_process_input_load <= 1;
+                i <= 5;
+            elsif i = 5 then
+                bi_process_input_load <= 0;
+                i <= 6;
             --else
-                --if secret_load_i = '1' then
-                --    bi
+            --    i <= i + 1;
             end if;
         end if;
     end process;
-    --dat_w_o <= w_temp;
-    
-    --w_temp(0) <= dat_i;
-    --w_temp(1) <= w(1);
-    --w_temp(2) <= w(2);
-    --w_temp(3) <= w(3);
-    --w_temp(4) <= w(4);
-    --w_temp(5) <= w(5);
-    --w-_temp(6) <= w(6);
-    --w_temp(7) <= w(7);
-    --w_temp(8) <= w(8);
-    --w_temp(9) <= w(9);
-   -- w_temp(10) <= w(10);
-    ---w_temp(11) <= w(11);
-    --w_temp(12) <= w(12);
-    --w_temp(13) <= w(13);
-    --w_temp(14) <= w(14);
-    --w_temp(15) <= w(15);
 
 end RTL; 
