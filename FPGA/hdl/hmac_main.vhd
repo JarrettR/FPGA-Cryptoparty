@@ -28,6 +28,7 @@ port(
     rst_i           : in    std_ulogic;
     secret_i        : in    w_input;
     value_i         : in    w_input;
+    value_len_i     : in    std_ulogic_vector(0 to 63);
     load_i          : in    std_ulogic;
     dat_o           : out    w_input;
     valid_o         : out    std_ulogic
@@ -60,17 +61,35 @@ architecture RTL of hmac_main is
        );
     end component;
     
+    type state_type is (STATE_IDLE,
+                        STATE_BI1_LOAD_ON, STATE_BI1_LOAD_OFF,
+                        STATE_BI1_PROCESS,
+                        STATE_BI2_LOAD_ON, STATE_BI2_LOAD_OFF,
+                        STATE_BI2_PROCESS,
+                        STATE_WHAT);
+    
+    signal state           : state_type := STATE_IDLE;
+        
     signal dat_bi                   :    w_input;
     signal bi_processed_input_load    :    std_ulogic;
     signal bi_processed_input        :    w_full;
     signal bi_processed_valid        :    std_ulogic;
     signal bi_processed_new        :    std_ulogic;
+    signal bi_buffer_in        :    w_output;
     signal bi_buffer_dat        :    w_output;
     signal bi_buffer_valid        :    std_ulogic;
     
-     
     signal dat_bo                   :    w_input;
-        signal i: integer range 0 to 65535;
+    signal bo_processed_input_load    :    std_ulogic;
+    signal bo_processed_input        :    w_full;
+    signal bo_processed_valid        :    std_ulogic;
+    signal bo_processed_new        :    std_ulogic;
+    signal bo_buffer_in        :    w_output;
+    signal bo_buffer_dat        :    w_output;
+    signal bo_buffer_valid        :    std_ulogic;
+    
+     
+    signal i: integer range 0 to 65535;
 
 begin
 
@@ -80,51 +99,67 @@ begin
     --Alt: Use a generate statement
     --Inner HMAC
     PINPUT_I1: sha1_process_input port map (clk_i,rst_i,dat_bi,bi_processed_input_load,bi_processed_input,bi_processed_valid);
-    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,bi_processed_input,bi_processed_valid,bi_processed_new,bi_buffer_dat,bi_buffer_valid);
+    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,bi_processed_input,bi_processed_valid,bi_processed_new,bi_buffer_in,bi_buffer_dat,bi_buffer_valid);
     
     --Outer HMAC
-    --PINPUT_O1: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input1,w_processed_valid(0));
-    --PBUFFER_O1: sha1_process_buffer port map (clk_i,rst_i,w_processed_input1,w_processed_valid(0),w_processed_valid(0),w_processed_buffer1,w_buffer_valid1);
-    
+    --PINPUT_O1: sha1_process_input port map (clk_i,rst_i,dat_bo,bo_processed_input_load,bo_processed_input,bo_processed_valid);
+    --PBUFFER_O1: sha1_process_buffer port map (clk_i,rst_i,bo_processed_input,bo_processed_valid,bo_processed_new,bo_buffer_in,bo_buffer_dat,bo_buffer_valid);
     
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
                 i <= 0;
-                bi_process_input_load <= 0;
-                bi_processed_new <= 1;
+                state <= STATE_IDLE;
+                bi_processed_input_load <= '0';
+                bi_processed_new <= '1';
+                valid_o <= '0';
             elsif load_i = '1' then
                 for x in 0 to 15 loop
                     dat_bi(x) <= X"36363636" xor secret_i(x);
                     dat_bo(x) <= X"5c5c5c5c" xor secret_i(x);
                 end loop;
-                i <= 1;
-            elsif i = 1 then
-                bi_process_input_load <= 1;
-                i <= 2;
-            elsif i = 2 then
-                bi_process_input_load <= 0;
-                i <= 3;
-            elsif bi_buffer_valid = '1' and i = 3 then
-                bi_process_input_load <= 0;
-                bi_processed_new <= 0;
-                for x in 0 to 12 loop
+                state <= STATE_BI1_LOAD_ON;
+            elsif state = STATE_BI1_LOAD_ON then
+                bi_processed_input_load <= '1';
+                state <= STATE_BI1_LOAD_OFF;
+            elsif state = STATE_BI1_LOAD_OFF then
+                bi_processed_input_load <= '0';
+                state <= STATE_BI1_PROCESS;
+            elsif bi_buffer_valid = '1' and state = STATE_BI1_PROCESS then
+                bi_processed_new <= '0';
+                bi_buffer_in <= bi_buffer_dat;
+                for x in 0 to 13 loop
                     dat_bi(x) <= value_i(x);
                 end loop;
-                dat_bi(13) <= X"80000000";
-                dat_bi(14) <= X"00000000";
-                dat_bi(15) <= X"00000140"; --This is definitely wrong atm
-                i <= 4;
-            elsif i = 4 then
-                bi_process_input_load <= 1;
-                i <= 5;
-            elsif i = 5 then
-                bi_process_input_load <= 0;
-                i <= 6;
+                --Todo:
+                --This is needs the 0x80 frame end flag
+                dat_bi(14) <= value_len_i(0 to 31);
+                dat_bi(15) <= value_len_i(32 to 63);
+                state <= STATE_BI2_LOAD_ON;
+            elsif state = STATE_BI2_LOAD_ON then
+                bi_processed_input_load <= '1';
+                state <= STATE_BI2_LOAD_OFF;
+            elsif state = STATE_BI2_LOAD_OFF then
+                bi_processed_input_load <= '0';
+                state <= STATE_BI2_PROCESS;
+                
+                --Inner done
+            elsif bi_buffer_valid = '1' and state = STATE_BI2_PROCESS then
+                bo_processed_input_load <= '0';
+                bo_processed_new <= '1';
+                state <= STATE_BO1_LOAD_ON;
+            elsif state = STATE_BO1_LOAD_ON then
+                bo_processed_input_load <= '1';
+                state <= STATE_BI1_LOAD_OFF;
+            elsif state = STATE_BO1_LOAD_OFF then
+                bi_processed_input_load <= '0';
+            state <= STATE_BI1_PROCESS;
+                state <= STATE_WHAT;
             --else
             --    i <= i + 1;
             end if;
+            i <= i + 1;
         end if;
     end process;
 

@@ -33,91 +33,87 @@ architecture SIM of sim_hmac is
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
-        dat_bi_i        : in    w_input;
-        dat_bo_i        : in    w_input;
-        value_i         : in    std_ulogic_vector(0 to 31);
-        value_load_i    : in    std_ulogic;
-        dat_bi_o        : out    w_input;
-        dat_bo_o        : out    w_input;
-        valid_o         : out    std_ulogic        
+        secret_i        : in    w_input;
+        value_i         : in    w_input;
+        value_len_i     : in    std_ulogic_vector(0 to 63);
+        load_i          : in    std_ulogic;
+        dat_o           : out    w_input;
+        valid_o         : out    std_ulogic    
     );
     end component;
    
     signal i: integer range 0 to 65535;
     
-    signal rst_i: std_logic := '0';
-    signal clk_i: std_logic := '0';
+    signal rst_i: std_ulogic := '0';
+    signal clk_i: std_ulogic := '0';
     
-    signal dat_i: unsigned(0 to 7);
-    signal dat_o: unsigned(0 to 7);
+    signal load: std_ulogic := '0';
+    signal valid: std_ulogic;
     
-    type t_char_file is file of character;
-    --type t_byte_arr is unsigned(0 to 7);
+    signal secret: w_input;
+    signal value: w_input;
+    signal value_len: std_ulogic_vector(0 to 63) := X"00000000000002E0";
     
-    signal read_arr_byte : handshake_data;
-    
+    signal dat_o: w_input;
     
     constant clock_period : time := 1 ns;
     
 begin
 
-    hmac1: hmac_main port map (clk_i,rst_i, cs_i, cont_i, clk_i);
+    hmac1: hmac_main port map (clk_i,rst_i, secret, value, value_len, load, dat_o, valid);
     
     stim_proc: process
-    file file_sha1_in : t_char_file open read_mode is "sha1_in.csv";
-    variable char_buffer : character;
     begin        
         rst_i <= '0';
         i <= 0;
+        load <= '0';
+        
+        secret(0) <= X"4A656665"; --Jefe
+        secret(1) <= X"00000000";
+        secret(2) <= X"00000000";
+        secret(3) <= X"00000000";
+        secret(4) <= X"00000000";
+        secret(5) <= X"00000000";
+        secret(6) <= X"00000000";
+        secret(7) <= X"00000000";
+        secret(8) <= X"00000000";
+        secret(9) <= X"00000000";
+        secret(10) <= X"00000000";
+        secret(11) <= X"00000000";
+        secret(12) <= X"00000000";
+        secret(13) <= X"00000000";
+        secret(14) <= X"00000000";
+        secret(15) <= X"00000000";
+        
+        --what do ya want for nothing?
+        value(0) <= X"77686174"; 
+        value(1) <= X"20646F20";
+        value(2) <= X"79612077";
+        value(3) <= X"616E7420";
+        value(4) <= X"666F7220";
+        value(5) <= X"6E6F7468";
+        value(6) <= X"696E673F";
+        value(7) <= X"80000000";
+        value(8) <= X"00000000";
+        value(9) <= X"00000000";
+        value(10) <= X"00000000";
+        value(11) <= X"00000000";
+        value(12) <= X"00000000";
+        value(13) <= X"00000000";
+        value(14) <= X"00000000";
+        value(15) <= X"00000000";
         
         wait until rising_edge(clk_i);	
         rst_i <= '1';
         wait until rising_edge(clk_i);     
         rst_i <= '0';   
         wait until rising_edge(clk_i);  
-        while not endfile(file_handshake) loop
-            read(file_handshake, char_buffer);
-            dat_i <= to_unsigned(character'pos(char_buffer), 8);
-            i <= i + 1;
-            wait until rising_edge(clk_i);
-        end loop; 
-        file_close(file_handshake);
-        
-        for x in 0 to 9 loop
-            dat_i <= start_mk(x);
-            i <= i + 1;
-            wait until rising_edge(clk_i);
-        end loop; 
-        for x in 0 to 9 loop
-            dat_i <= end_mk(x);
-            i <= i + 1;
-            wait until rising_edge(clk_i);
-        end loop; 
-        
-        --Do it all again
-        while SLOE = '0' loop
-            wait until rising_edge(clk_i);
-        end loop;
-        
-        rst_i <= '1';
+        load <= '1';
         wait until rising_edge(clk_i);     
-        rst_i <= '0';   
+        load <= '0';   
         wait until rising_edge(clk_i);  
-        while not endfile(file_handshake2) loop
-            read(file_handshake2, char_buffer);
-            dat_i <= to_unsigned(character'pos(char_buffer), 8);
-            i <= i + 1;
-            wait until rising_edge(clk_i);
-        end loop; 
-        file_close(file_handshake2);
         
-        for x in 0 to 9 loop
-            dat_i <= start_mk(x);
-            i <= i + 1;
-            wait until rising_edge(clk_i);
-        end loop; 
-        for x in 0 to 9 loop
-            dat_i <= end_mk(x);
+        while valid = '0' loop
             i <= i + 1;
             wait until rising_edge(clk_i);
         end loop; 
