@@ -30,7 +30,7 @@ port(
     value_i         : in    w_input;
     value_len_i     : in    std_ulogic_vector(0 to 63);
     load_i          : in    std_ulogic;
-    dat_o           : out    w_input;
+    dat_o           : out    w_output;
     valid_o         : out    std_ulogic
     );
 end hmac_main;
@@ -66,28 +66,25 @@ architecture RTL of hmac_main is
                         STATE_BI1_PROCESS,
                         STATE_BI2_LOAD_ON, STATE_BI2_LOAD_OFF,
                         STATE_BI2_PROCESS,
-                        STATE_WHAT);
+                        STATE_BO1_LOAD_ON, STATE_BO1_LOAD_OFF,
+                        STATE_BO1_PROCESS,
+                        STATE_BO2_LOAD_ON, STATE_BO2_LOAD_OFF,
+                        STATE_BO2_PROCESS,
+                        STATE_FINISHED);
     
     signal state           : state_type := STATE_IDLE;
         
-    signal dat_bi                   :    w_input;
-    signal bi_processed_input_load    :    std_ulogic;
-    signal bi_processed_input        :    w_full;
-    signal bi_processed_valid        :    std_ulogic;
-    signal bi_processed_new        :    std_ulogic;
-    signal bi_buffer_in        :    w_output;
+    --signal dat_bi                   :    w_input;
     signal bi_buffer_dat        :    w_output;
-    signal bi_buffer_valid        :    std_ulogic;
     
-    signal dat_bo                   :    w_input;
-    signal bo_processed_input_load    :    std_ulogic;
-    signal bo_processed_input        :    w_full;
-    signal bo_processed_valid        :    std_ulogic;
-    signal bo_processed_new        :    std_ulogic;
-    signal bo_buffer_in        :    w_output;
-    signal bo_buffer_dat        :    w_output;
-    signal bo_buffer_valid        :    std_ulogic;
-    
+    signal process_in                   :    w_input;
+    signal processed_input_load    :    std_ulogic;
+    signal processed_input        :    w_full;
+    signal processed_valid        :    std_ulogic;
+    signal processed_new        :    std_ulogic;
+    signal buffer_in        :    w_output;
+    signal buffer_dat        :    w_output;
+    signal buffer_valid        :    std_ulogic;
      
     signal i: integer range 0 to 65535;
 
@@ -98,8 +95,8 @@ begin
     
     --Alt: Use a generate statement
     --Inner HMAC
-    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,dat_bi,bi_processed_input_load,bi_processed_input,bi_processed_valid);
-    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,bi_processed_input,bi_processed_valid,bi_processed_new,bi_buffer_in,bi_buffer_dat,bi_buffer_valid);
+    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,process_in,processed_input_load,processed_input,processed_valid);
+    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,processed_input,processed_valid,processed_new,buffer_in,buffer_dat,buffer_valid);
     
     --Outer HMAC
     --PINPUT_O1: sha1_process_input port map (clk_i,rst_i,dat_bo,bo_processed_input_load,bo_processed_input,bo_processed_valid);
@@ -111,51 +108,84 @@ begin
             if rst_i = '1' then
                 i <= 0;
                 state <= STATE_IDLE;
-                bi_processed_input_load <= '0';
-                bi_processed_new <= '1';
+                processed_input_load <= '0';
+                processed_new <= '1';
                 valid_o <= '0';
             elsif load_i = '1' then
                 for x in 0 to 15 loop
-                    dat_bi(x) <= X"36363636" xor secret_i(x);
-                    dat_bo(x) <= X"5c5c5c5c" xor secret_i(x);
+                    process_in(x) <= X"36363636" xor secret_i(x);
                 end loop;
                 state <= STATE_BI1_LOAD_ON;
             elsif state = STATE_BI1_LOAD_ON then
-                bi_processed_input_load <= '1';
+                processed_input_load <= '1';
                 state <= STATE_BI1_LOAD_OFF;
             elsif state = STATE_BI1_LOAD_OFF then
-                bi_processed_input_load <= '0';
+                processed_input_load <= '0';
                 state <= STATE_BI1_PROCESS;
-            elsif bi_buffer_valid = '1' and state = STATE_BI1_PROCESS then
-                bi_processed_new <= '0';
-                bi_buffer_in <= bi_buffer_dat;
+            elsif buffer_valid = '1' and state = STATE_BI1_PROCESS then
+                processed_new <= '0';
+                buffer_in <= buffer_dat;
                 for x in 0 to 13 loop
-                    dat_bi(x) <= value_i(x);
+                    process_in(x) <= value_i(x);
                 end loop;
                 --Todo:
                 --This is needs the 0x80 frame end flag
-                dat_bi(14) <= value_len_i(0 to 31);
-                dat_bi(15) <= value_len_i(32 to 63);
+                process_in(14) <= value_len_i(0 to 31);
+                process_in(15) <= value_len_i(32 to 63);
                 state <= STATE_BI2_LOAD_ON;
             elsif state = STATE_BI2_LOAD_ON then
-                bi_processed_input_load <= '1';
+                processed_input_load <= '1';
                 state <= STATE_BI2_LOAD_OFF;
             elsif state = STATE_BI2_LOAD_OFF then
-                bi_processed_input_load <= '0';
+                processed_input_load <= '0';
                 state <= STATE_BI2_PROCESS;
                 
                 --Inner done
-            elsif bi_buffer_valid = '1' and state = STATE_BI2_PROCESS then
-                bo_processed_input_load <= '0';
-                bo_processed_new <= '1';
+            elsif buffer_valid = '1' and state = STATE_BI2_PROCESS then
+                processed_input_load <= '0';
+                processed_new <= '1';
+                
+                bi_buffer_dat <= buffer_dat;
+                
+                for x in 0 to 15 loop
+                    process_in(x) <= X"5c5c5c5c" xor secret_i(x);
+                end loop;
                 state <= STATE_BO1_LOAD_ON;
             elsif state = STATE_BO1_LOAD_ON then
-                bo_processed_input_load <= '1';
-                state <= STATE_BI1_LOAD_OFF;
+                processed_input_load <= '1';
+                state <= STATE_BO1_LOAD_OFF;
             elsif state = STATE_BO1_LOAD_OFF then
-                bi_processed_input_load <= '0';
-            state <= STATE_BI1_PROCESS;
-                state <= STATE_WHAT;
+                processed_input_load <= '0';
+                state <= STATE_BO1_PROCESS;
+            elsif buffer_valid = '1' and state = STATE_BO1_PROCESS then
+                processed_new <= '0';
+                buffer_in <= buffer_dat;
+                for x in 0 to 4 loop
+                    process_in(x) <= bi_buffer_dat(x);
+                end loop;
+                --0x80 frame end flag is always the same here
+                process_in(5) <= X"80000000";
+                for x in 6 to 14 loop
+                    process_in(x) <= X"00000000";
+                end loop;
+                process_in(15) <= X"000002A0";
+                
+                state <= STATE_BO2_LOAD_ON;
+            elsif state = STATE_BO2_LOAD_ON then
+                processed_input_load <= '1';
+                state <= STATE_BO2_LOAD_OFF;
+            elsif state = STATE_BO2_LOAD_OFF then
+                processed_input_load <= '0';
+                state <= STATE_BO2_PROCESS;
+            elsif buffer_valid = '1' and state = STATE_BO2_PROCESS then
+                processed_input_load <= '0';
+                
+                dat_o <= buffer_dat;
+                valid_o <= '1';
+                state <= STATE_FINISHED;
+            elsif state = STATE_FINISHED then
+                valid_o <= '0';
+                state <= STATE_IDLE;
             --else
             --    i <= i + 1;
             end if;

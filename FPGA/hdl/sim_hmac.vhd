@@ -37,7 +37,7 @@ architecture SIM of sim_hmac is
         value_i         : in    w_input;
         value_len_i     : in    std_ulogic_vector(0 to 63);
         load_i          : in    std_ulogic;
-        dat_o           : out    w_input;
+        dat_o           : out    w_output;
         valid_o         : out    std_ulogic    
     );
     end component;
@@ -54,7 +54,7 @@ architecture SIM of sim_hmac is
     signal value: w_input;
     signal value_len: std_ulogic_vector(0 to 63) := X"00000000000002E0";
     
-    signal dat_o: w_input;
+    signal dat_o: w_output;
     
     constant clock_period : time := 1 ns;
     
