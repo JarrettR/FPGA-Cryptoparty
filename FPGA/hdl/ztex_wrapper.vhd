@@ -147,6 +147,8 @@ begin
     PKTEND <= '1'   when cs_i = '1' else 'Z';		-- no data alignment
     --FD <= FD_R      when cs_i = '1' else (others => 'Z');
     
+    dat_o <= X"df" when cs_i = '1' else "ZZZZZZZZ";
+	 
     process(clk_i, rst_i)   
     begin
         if rst_i = '1' then
