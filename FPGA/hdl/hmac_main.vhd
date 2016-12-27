@@ -90,18 +90,9 @@ architecture RTL of hmac_main is
 
 begin
 
-    --LOAD1: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bi,sot_in,w_load);
-    --LOAD2: hmac_load port map (clk_i,rst_i,dat_i,w_pad_bo,sot_in,w_load);
-    
-    --Alt: Use a generate statement
-    --Inner HMAC
-    PINPUT_I1: sha1_process_input port map (clk_i,rst_i,process_in,processed_input_load,processed_input,processed_valid);
-    PBUFFER_I1: sha1_process_buffer port map (clk_i,rst_i,processed_input,processed_valid,processed_new,buffer_in,buffer_dat,buffer_valid);
-    
-    --Outer HMAC
-    --PINPUT_O1: sha1_process_input port map (clk_i,rst_i,dat_bo,bo_processed_input_load,bo_processed_input,bo_processed_valid);
-    --PBUFFER_O1: sha1_process_buffer port map (clk_i,rst_i,bo_processed_input,bo_processed_valid,bo_processed_new,bo_buffer_in,bo_buffer_dat,bo_buffer_valid);
-    
+    PINPUT: sha1_process_input port map (clk_i,rst_i,process_in,processed_input_load,processed_input,processed_valid);
+    PBUFFER: sha1_process_buffer port map (clk_i,rst_i,processed_input,processed_valid,processed_new,buffer_in,buffer_dat,buffer_valid);
+
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
