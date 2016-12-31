@@ -51,7 +51,8 @@ architecture RTL of pbkdf2_main is
 
     
     type state_type is (STATE_IDLE,
-                        STATE_X1, STATE_X2, STATE_X3, STATE_X4,
+                        STATE_X1_START, STATE_X1_PROCESS,
+                        STATE_X2_START, STATE_X2_PROCESS,
                         STATE_FINISHED);
     
     signal state           : state_type := STATE_IDLE;
@@ -71,7 +72,6 @@ architecture RTL of pbkdf2_main is
     signal valid        :    std_ulogic;
     signal valid_x1        :    std_ulogic;
     signal valid_x2        :    std_ulogic;
-    signal rst_x1        :    std_ulogic;
     signal load_x1        :    std_ulogic;
     signal load_x2        :    std_ulogic;
      
@@ -79,7 +79,7 @@ architecture RTL of pbkdf2_main is
 --type w_input is array(0 to 15) of std_ulogic_vector(0 to 31); linksys
 begin
 
-    HMAC1: hmac_main port map (clk_i,rst_x1,mk_in,x1,ssid_length,load_x1,out_x1,valid_x1);
+    HMAC1: hmac_main port map (clk_i,rst_i,mk_in,x1,ssid_length,load_x1,out_x1,valid_x1);
     HMAC2: hmac_main port map (clk_i,rst_i,mk_in,x2,ssid_length,load_x2,out_x2,valid_x2);
     
     process(clk_i)   
@@ -109,18 +109,24 @@ begin
                     x1(x) <= X"00000000";
                 end loop;
                 ssid_length <= X"0000000000000258";
-                state <= STATE_X1;
-            elsif state = STATE_X1 then
-                rst_x1 <= '1';
-                state <= STATE_X2;
-            elsif state = STATE_X2 then
-                rst_x1 <= '0';
-                state <= STATE_X3;
-            elsif state = STATE_X3 then
+                state <= STATE_X1_START;
+            elsif state = STATE_X1_START then
                 load_x1 <= '1';
-                state <= STATE_X4;
-            elsif state = STATE_X4 then
+                state <= STATE_X1_PROCESS;
+            elsif state = STATE_X1_PROCESS then
                 load_x1 <= '0';
+                if valid_x1 = '1' then
+                    state <= STATE_X2_START;
+                    x1(2) <= X"00000280";
+                end if;
+            elsif state = STATE_X2_START then
+                load_x1 <= '1';
+                state <= STATE_X2_PROCESS;
+            elsif state = STATE_X2_PROCESS then
+                load_x1 <= '0';
+                if valid_x1 = '1' then
+                    state <= STATE_FINISHED;
+                end if;
             end if;
         end if;
     end process;

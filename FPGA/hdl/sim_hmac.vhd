@@ -123,7 +123,7 @@ begin
         --what do ya want for nothing?
         value(0) <= X"6C696E6B"; 
         value(1) <= X"73797300";
-        value(2) <= X"00000180";
+        value(2) <= X"00000280";
         value(3) <= X"00000000";
         value(4) <= X"00000000";
         value(5) <= X"00000000";
