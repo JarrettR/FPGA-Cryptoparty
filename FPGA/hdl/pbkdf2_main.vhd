@@ -95,7 +95,7 @@ begin
                     mk_in(x) <= std_ulogic_vector(mk_i(x*4)) & std_ulogic_vector(mk_i(x * 4 + 1)) & std_ulogic_vector(mk_i(x * 4 + 2)) & std_ulogic_vector(mk_i(x * 4 + 3));
                 end loop;
                 --Todo: Fix this, it is dumb
-                mk_in(2) <= std_ulogic_vector(mk_i(8)) & std_ulogic_vector(mk_i(9)) & X"8000";
+                mk_in(2) <= std_ulogic_vector(mk_i(8)) & std_ulogic_vector(mk_i(9)) & X"0000";
                 for x in 3 to 15 loop
                     mk_in(x) <= X"00000000";
                 end loop;
