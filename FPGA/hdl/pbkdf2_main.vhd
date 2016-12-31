@@ -22,141 +22,108 @@ use ieee.std_logic_1164.all;
 use work.sha1_pkg.all;
 
 
-entity pbkdf2_input is
+entity pbkdf2_main is
 
 port(
     clk_i               : in    std_ulogic;
-    load_i              : in    std_ulogic;
     rst_i               : in    std_ulogic;
-    secret_i            : in    std_ulogic_vector(0 to 31);
-    secret_cache_o      : out    w_output;
-    x1_o                : out    std_ulogic_vector(0 to 31);
-    x2_o                : out    std_ulogic_vector(0 to 31)    
+    load_i              : in    std_ulogic;
+    mk_i                : in    mk_data;
+    ssid_i              : in    ssid_data;
+    dat_o               : out    w_output;
+    valid_o             : out    std_ulogic  
     );
-end pbkdf2_input;
+end pbkdf2_main;
 
-architecture RTL of pbkdf2_input is
-    component hmac_cache
+architecture RTL of pbkdf2_main is
+    component hmac_main
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
-        secret_i        : in    std_ulogic_vector(0 to 31);
+        secret_i        : in    w_input;
+        value_i         : in    w_input;
+        value_len_i     : in    std_ulogic_vector(0 to 63);
         load_i          : in    std_ulogic;
-        dat_bi_o        : out    w_input;
-        dat_h_o         : out    w_output;
-        valid_o         : out    std_ulogic  
+        dat_o           : out    w_output;
+        valid_o         : out    std_ulogic
         );
     end component;
-    component sha1_load
-      port (
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        dat_i          : in    std_ulogic_vector(0 to 31);
-        sot_in         : in    std_ulogic;
-        dat_w_o        : out    w_input
-    );
-    end component;
-    component sha1_process_input
-      port (
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        dat_i          : in    w_input;
-        load_i         : in    std_ulogic;
-        dat_w_o        : out    w_full;
-        valid_o        : out    std_ulogic
-    );
-    end component;
-    component sha1_process_buffer
-      port (
-        clk_i          : in    std_ulogic;
-        rst_i          : in    std_ulogic;
-        dat_i          : in    w_full;
-        load_i         : in    std_ulogic;
-        new_i          : in    std_ulogic;
-        dat_w_i        : in    w_output;
-        dat_w_o        : out    w_output;
-        valid_o        : out    std_ulogic
-    );
-    end component;
-   
-    signal w_load: w_input;
-    
-    signal w_processed_input: w_full;
-    
-    signal w_processed_new: std_ulogic;
-    
-    signal w_processed_buffer: w_output;
-    signal w_processed_buffer1: w_output;
-    
-    signal w_buffer_valid: std_ulogic;
-    signal w_pinput: w_input;
-    signal latch_pinput: std_ulogic_vector(0 to 4);
-    signal w_processed_valid: std_ulogic;
-    signal i : integer range 0 to 16;
-    
-    signal i_mux : integer range 0 to 4;
-    
-    -- synthesis translate_off
-    signal test_sha1_process_input_o     : std_ulogic_vector(0 to 31);
-    signal test_sha1_process_buffer0_o   : std_ulogic_vector(0 to 31);
-    signal test_sha1_process_buffer_o    : std_ulogic_vector(0 to 31);
-    signal test_sha1_load_o              : std_ulogic_vector(0 to 31);
-    -- synthesis translate_on
 
+    
+    type state_type is (STATE_IDLE,
+                        STATE_X1, STATE_X2, STATE_X3, STATE_X4,
+                        STATE_FINISHED);
+    
+    signal state           : state_type := STATE_IDLE;
+        
+    signal mk              : mk_data;
+    signal ssid            : ssid_data;
+    signal ssid_length     : std_ulogic_vector(0 to 63);
+    
+    signal mk_in              : w_input;
+    signal out_x1              : w_output;
+    signal out_x2              : w_output;
+    signal x1              : w_input;
+    signal x2              : w_input;
+    --signal mk              : w_input;
+  
+  
+    signal valid        :    std_ulogic;
+    signal valid_x1        :    std_ulogic;
+    signal valid_x2        :    std_ulogic;
+    signal rst_x1        :    std_ulogic;
+    signal load_x1        :    std_ulogic;
+    signal load_x2        :    std_ulogic;
+     
+    signal i: integer range 0 to 4095;
+--type w_input is array(0 to 15) of std_ulogic_vector(0 to 31); linksys
 begin
 
-    LOAD: sha1_load port map (clk_i,rst_i,dat_i,sot_in,w_load);
-    
-    PINPUT: sha1_process_input port map (clk_i,rst_i,w_pinput,latch_pinput(0),w_processed_input,w_processed_valid);
-    PBUFFER: sha1_process_buffer port map (clk_i,rst_i,w_processed_input,w_processed_valid,w_processed_valid,w_processed_buffer1,w_processed_buffer1,w_buffer_valid);
+    HMAC1: hmac_main port map (clk_i,rst_x1,mk_in,x1,ssid_length,load_x1,out_x1,valid_x1);
+    HMAC2: hmac_main port map (clk_i,rst_i,mk_in,x2,ssid_length,load_x2,out_x2,valid_x2);
     
     process(clk_i)   
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
-                latch_pinput <= "00000";
+                state <= STATE_IDLE;
                 i <= 0;
-                --Todo: start from 0 after testing
-                i_mux <= 0;
-                for x in 0 to 15 loop
-                    w_pinput(x) <= "00000000000000000000000000000000";
+                valid <= '0';
+            elsif load_i = '1' and state = STATE_IDLE then
+                mk <= mk_i;
+                for x in 0 to 1 loop
+                    mk_in(x) <= std_ulogic_vector(mk_i(x*4)) & std_ulogic_vector(mk_i(x * 4 + 1)) & std_ulogic_vector(mk_i(x * 4 + 2)) & std_ulogic_vector(mk_i(x * 4 + 3));
                 end loop;
-            else
-                if i = 15 then
-                    case i_mux is
-                        when 0 => latch_pinput <= "10000";
-                        when 1 => latch_pinput <= "01000";
-                        when 2 => latch_pinput <= "00100";
-                        when 3 => latch_pinput <= "00010";
-                        when 4 => latch_pinput <= "00001";
-                    end case;
-                    w_pinput <= w_load;
-                    i <= 0;
-                    --i <= i + 1;
-                    if i_mux = 4 then
-                        i_mux <= 0;
-                    else
-                        i_mux <= i_mux + 1;
-                    end if;
-                else
-                    latch_pinput <= "00000";
-                    i <= i + 1;
-                end if;
-            end if;
-            --Alt: Consider other conditionals
-            if w_processed_valid = '1' then
-                w_processed_buffer <= w_processed_buffer1;
+                --Todo: Fix this, it is dumb
+                mk_in(2) <= std_ulogic_vector(mk_i(8)) & std_ulogic_vector(mk_i(9)) & X"8000";
+                for x in 3 to 15 loop
+                    mk_in(x) <= X"00000000";
+                end loop;
+                
+                ssid <= ssid_i;
+                --Todo: Fix this, it is dumb too
+                x1(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
+                x1(1) <= std_ulogic_vector(ssid_i(4)) & std_ulogic_vector(ssid_i(5)) & std_ulogic_vector(ssid_i(6)) & X"00";
+                x1(2) <= X"00000180";
+                for x in 3 to 15 loop
+                    x1(x) <= X"00000000";
+                end loop;
+                ssid_length <= X"0000000000000258";
+                state <= STATE_X1;
+            elsif state = STATE_X1 then
+                rst_x1 <= '1';
+                state <= STATE_X2;
+            elsif state = STATE_X2 then
+                rst_x1 <= '0';
+                state <= STATE_X3;
+            elsif state = STATE_X3 then
+                load_x1 <= '1';
+                state <= STATE_X4;
+            elsif state = STATE_X4 then
+                load_x1 <= '0';
             end if;
         end if;
     end process;
     
-    dat_1_o <= w_pinput(15);
-    
-    -- synthesis translate_off
-    test_sha1_process_input_o <= w_processed_input(16);
-    test_sha1_process_buffer0_o <= w_processed_buffer1(0);
-    test_sha1_process_buffer_o <= w_processed_buffer(0);
-    test_sha1_load_o <= w_load(15);
-    -- synthesis translate_on
 
 end RTL; 

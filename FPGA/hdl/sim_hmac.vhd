@@ -52,7 +52,7 @@ architecture SIM of sim_hmac is
     
     signal secret: w_input;
     signal value: w_input;
-    signal value_len: std_ulogic_vector(0 to 63) := X"00000000000002E0";
+    signal value_len: std_ulogic_vector(0 to 63) := X"0000000000000258";
     
     signal dat_o: w_output;
     
@@ -68,9 +68,44 @@ begin
         i <= 0;
         load <= '0';
         
-        secret(0) <= X"4A656665"; --Jefe
-        secret(1) <= X"00000000";
-        secret(2) <= X"00000000";
+--        secret(0) <= X"4A656665"; --Jefe
+--        secret(1) <= X"00000000";
+--        secret(2) <= X"00000000";
+--        secret(3) <= X"00000000";
+--        secret(4) <= X"00000000";
+--        secret(5) <= X"00000000";
+--        secret(6) <= X"00000000";
+--        secret(7) <= X"00000000";
+--        secret(8) <= X"00000000";
+--        secret(9) <= X"00000000";
+--        secret(10) <= X"00000000";
+--        secret(11) <= X"00000000";
+--        secret(12) <= X"00000000";
+--        secret(13) <= X"00000000";
+--        secret(14) <= X"00000000";
+--        secret(15) <= X"00000000";
+        
+--        --what do ya want for nothing?
+--        value(0) <= X"77686174"; 
+--        value(1) <= X"20646F20";
+--        value(2) <= X"79612077";
+--        value(3) <= X"616E7420";
+--        value(4) <= X"666F7220";
+--        value(5) <= X"6E6F7468";
+--        value(6) <= X"696E673F";
+--        value(7) <= X"80000000";
+--        value(8) <= X"00000000";
+--        value(9) <= X"00000000";
+--        value(10) <= X"00000000";
+--        value(11) <= X"00000000";
+--        value(12) <= X"00000000";
+--        value(13) <= X"00000000";
+--        value(14) <= X"00000000";
+--        value(15) <= X"00000000";
+        
+        secret(0) <= X"64696374"; --Jefe
+        secret(1) <= X"696F6E61";
+        secret(2) <= X"72790000";
         secret(3) <= X"00000000";
         secret(4) <= X"00000000";
         secret(5) <= X"00000000";
@@ -86,14 +121,14 @@ begin
         secret(15) <= X"00000000";
         
         --what do ya want for nothing?
-        value(0) <= X"77686174"; 
-        value(1) <= X"20646F20";
-        value(2) <= X"79612077";
-        value(3) <= X"616E7420";
-        value(4) <= X"666F7220";
-        value(5) <= X"6E6F7468";
-        value(6) <= X"696E673F";
-        value(7) <= X"80000000";
+        value(0) <= X"6C696E6B"; 
+        value(1) <= X"73797300";
+        value(2) <= X"00000180";
+        value(3) <= X"00000000";
+        value(4) <= X"00000000";
+        value(5) <= X"00000000";
+        value(6) <= X"00000000";
+        value(7) <= X"00000000";
         value(8) <= X"00000000";
         value(9) <= X"00000000";
         value(10) <= X"00000000";

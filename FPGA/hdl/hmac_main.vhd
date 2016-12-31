@@ -102,7 +102,7 @@ begin
                 processed_input_load <= '0';
                 processed_new <= '1';
                 valid_o <= '0';
-            elsif load_i = '1' then
+            elsif load_i = '1' and state = STATE_IDLE then
                 for x in 0 to 15 loop
                     process_in(x) <= X"36363636" xor secret_i(x);
                 end loop;
