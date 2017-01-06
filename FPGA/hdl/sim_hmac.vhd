@@ -56,7 +56,7 @@ architecture SIM of sim_hmac is
     
     signal dat_o: w_output;
     
-    constant clock_period : time := 1 ns;
+    constant clock_period : time := 1 ps;
     
 begin
 

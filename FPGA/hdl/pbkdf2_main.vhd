@@ -51,9 +51,8 @@ architecture RTL of pbkdf2_main is
 
     
     type state_type is (STATE_IDLE,
-                        STATE_X1_START, STATE_X1_PROCESS,
-                        STATE_X2_START, STATE_X2_PROCESS,
-                        STATE_FINISHED);
+                        STATE_X_START, STATE_X_PROCESS,
+                        STATE_CLEANUP, STATE_FINISHED);
     
     signal state           : state_type := STATE_IDLE;
         
@@ -64,9 +63,14 @@ architecture RTL of pbkdf2_main is
     signal mk_in              : w_input;
     signal out_x1              : w_output;
     signal out_x2              : w_output;
+    signal f1              : w_output;
+    signal f2              : w_output;
+    signal f1_con              : w_output;
+    signal f2_con              : w_output;
     signal x1              : w_input;
     signal x2              : w_input;
-    signal x_in              : w_input;
+    signal x1_in              : w_input;
+    signal x2_in              : w_input;
     --signal mk              : w_input;
   
   
@@ -80,7 +84,8 @@ architecture RTL of pbkdf2_main is
 --type w_input is array(0 to 15) of std_ulogic_vector(0 to 31); linksys
 begin
 
-    HMAC1: hmac_main port map (clk_i,rst_i,mk_in,x_in,ssid_length,load_x1,out_x1,valid_x1);
+    HMAC1: hmac_main port map (clk_i,rst_i,mk_in,x1_in,ssid_length,load_x1,out_x1,valid_x1);
+    HMAC2: hmac_main port map (clk_i,rst_i,mk_in,x2_in,ssid_length,load_x2,out_x2,valid_x2);
     
     process(clk_i)   
     begin
@@ -88,8 +93,10 @@ begin
             if rst_i = '1' then
                 state <= STATE_IDLE;
                 i <= 0;
-                valid <= '0';
+                valid_o <= '0';
             elsif load_i = '1' and state = STATE_IDLE then
+                i <= 0;
+                valid_o <= '0';
                 mk <= mk_i;
                 for x in 0 to 1 loop
                     mk_in(x) <= std_ulogic_vector(mk_i(x*4)) & std_ulogic_vector(mk_i(x * 4 + 1)) & std_ulogic_vector(mk_i(x * 4 + 2)) & std_ulogic_vector(mk_i(x * 4 + 3));
@@ -100,49 +107,69 @@ begin
                     mk_in(x) <= X"00000000";
                 end loop;
                 
+                for x in 0 to 4 loop
+                    f1(x) <= X"00000000";
+                    f2(x) <= X"00000000";
+                end loop;
+                
                 ssid <= ssid_i;
                 --Todo: Fix this, it is dumb too
-                x_in(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
-                x_in(1) <= std_ulogic_vector(ssid_i(4)) & std_ulogic_vector(ssid_i(5)) & std_ulogic_vector(ssid_i(6)) & X"00";
-                x_in(2) <= X"00000180";
+                x1_in(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
+                x1_in(1) <= std_ulogic_vector(ssid_i(4)) & std_ulogic_vector(ssid_i(5)) & std_ulogic_vector(ssid_i(6)) & X"00";
+                x1_in(2) <= X"00000180";
+                x2_in(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
+                x2_in(1) <= std_ulogic_vector(ssid_i(4)) & std_ulogic_vector(ssid_i(5)) & std_ulogic_vector(ssid_i(6)) & X"00";
+                x2_in(2) <= X"00000280";
                 for x in 3 to 15 loop
-                    x_in(x) <= X"00000000";
+                    x1_in(x) <= X"00000000";
+                    x2_in(x) <= X"00000000";
                 end loop;
                 ssid_length <= X"0000000000000258";
-                state <= STATE_X1_START;
-            elsif state = STATE_X1_START then
+                state <= STATE_X_START;
+            elsif state = STATE_X_START then
                 load_x1 <= '1';
-                state <= STATE_X1_PROCESS;
-            elsif state = STATE_X1_PROCESS then
+                load_x2 <= '1';
+                state <= STATE_X_PROCESS;
+            elsif state = STATE_X_PROCESS then
                 load_x1 <= '0';
-                if valid_x1 = '1' then
-                    state <= STATE_X2_START;
-                    x_in(2) <= X"00000280";
-                end if;
-            elsif state = STATE_X2_START then
-                load_x1 <= '1';
-                state <= STATE_X2_PROCESS;
-            elsif state = STATE_X2_PROCESS then
-                load_x1 <= '0';
-                if valid_x1 = '1' then
-                    if i = 5 then
-                        state <= STATE_FINISHED;
+                load_x2 <= '0';
+                if valid_x1 = '1' and valid_x2 = '1' then
+                    if i = 4095 then
+                        state <= STATE_CLEANUP;
                     else
                         i <= i + 1;
                         for x in 0 to 4 loop
-                            x_in(x) <= out_x1(x);
+                            x1_in(x) <= out_x1(x);
+                            x2_in(x) <= out_x2(x);
+                            
+                            f1(x) <= f1_con(x) xor out_x1(x);
+                            f2(x) <= f2_con(x) xor out_x2(x);
                         end loop;
-                        x_in(5) <= X"80000000";
+                        x1_in(5) <= X"80000000";
+                        x2_in(5) <= X"80000000";
                         for x in 6 to 15 loop
-                            x_in(x) <= X"00000000";
+                            x1_in(x) <= X"00000000";
+                            x2_in(x) <= X"00000000";
                         end loop;
                         ssid_length <= X"00000000000002A0";
-                        state <= STATE_X1_START;
+                        state <= STATE_X_START;
                     end if;
                 end if;
+            elsif state = STATE_CLEANUP then
+                for x in 0 to 4 loop
+                    f1(x) <= f1_con(x) xor out_x1(x);
+                    f2(x) <= f2_con(x) xor out_x2(x);
+                end loop;
+                state <= STATE_FINISHED;
+            end if;
+            elsif state = STATE_FINISHED then
+                valid_o <= '1';
+                state <= STATE_IDLE;
             end if;
         end if;
     end process;
     
+    f1_con <= f1;
+    f2_con <= f2;
 
 end RTL; 
