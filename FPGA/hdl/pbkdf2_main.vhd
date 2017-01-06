@@ -161,7 +161,6 @@ begin
                     f2(x) <= f2_con(x) xor out_x2(x);
                 end loop;
                 state <= STATE_FINISHED;
-            end if;
             elsif state = STATE_FINISHED then
                 valid_o <= '1';
                 state <= STATE_IDLE;

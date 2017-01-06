@@ -60,6 +60,18 @@ architecture RTL of wpa2_main is
     );
     end component;
     
+    component pbkdf2_main is
+    port(
+        clk_i               : in    std_ulogic;
+        rst_i               : in    std_ulogic;
+        load_i              : in    std_ulogic;
+        mk_i                : in    mk_data;
+        ssid_i              : in    ssid_data;
+        dat_o               : out    w_output;
+        valid_o             : out    std_ulogic   
+    );
+    end component;
+    
     component wpa2_compare_test
     port(
         clk_i           : in    std_ulogic;
@@ -88,22 +100,17 @@ architecture RTL of wpa2_main is
     signal running: std_ulogic := '0';
     signal load_gen: std_ulogic := '0';
     signal start_gen: std_ulogic := '0';
-	
-    -- synthesis translate_off
-    signal test_start1: unsigned(0 to 7);
-    signal test_start2: unsigned(0 to 7);
-    signal test_start3: unsigned(0 to 7);
+ 
+    signal pbkdf_valid              : std_ulogic;
+    signal pbkdf_load              : std_ulogic := '0';
+    signal pbkdf_mk                : mk_data;
+    signal pbkdf_ssid              : ssid_data;
+    signal pbkdf_dat               : w_output;
     
-    signal test_mk1: unsigned(0 to 7);
-    signal test_mk2: unsigned(0 to 7);
-    signal test_mk3: unsigned(0 to 7);
-    
-    
-    -- synthesis translate_on
-
 begin
 
     gen1: gen_tenhex port map (clk_i,rst_i,load_gen,start_gen,mk_initial,mk_end,gen_complete,mk);
+    pbkdf2: pbkdf2_main port map (clk_i,rst_i, pbkdf_load, pbkdf_mk, pbkdf_ssid, pbkdf_dat, pbkdf_valid);
     comp1: wpa2_compare_test port map (clk_i,rst_i,mk,w,w,w,pmk,comp_complete);
 
 
@@ -137,16 +144,5 @@ begin
     
     
     mk_valid_o <= comp_complete;   
-    
-    -- synthesis translate_off
-    test_start1 <= mk_initial(0);
-    test_start2 <= mk_initial(7);
-    test_start3 <= mk_initial(9);
-    
-    test_mk1 <= mk(0);
-    test_mk2 <= mk(8);
-    test_mk3 <= mk(9);
-    -- synthesis translate_on
-
 
 end RTL; 

@@ -100,36 +100,6 @@ architecture RTL of ztex_wrapper is
     signal i               : integer range 0 to 391;
     signal i_word          : integer range 0 to 3;
     signal i_mux           : integer range 0 to 1;
-
-    -- synthesis translate_off
-    signal test_ssid_1: unsigned(0 to 7);
-    signal test_ssid_2: unsigned(0 to 7);
-    signal test_ssid_3: unsigned(0 to 7);
-    
-    signal test_mac_1: unsigned(0 to 7);
-    signal test_mac_2: unsigned(0 to 7);
-    signal test_mac_3: unsigned(0 to 7);
-    
-    signal test_nonce_1: unsigned(0 to 7);
-    signal test_nonce_2: unsigned(0 to 7);
-    signal test_nonce_3: unsigned(0 to 7);
-    
-    signal test_keymic_1: unsigned(0 to 7);
-    signal test_keymic_2: unsigned(0 to 7);
-    signal test_keymic_3: unsigned(0 to 7);
-    
-    signal test_mk1: unsigned(0 to 7);
-    signal test_mk2: unsigned(0 to 7);
-    signal test_mk3: unsigned(0 to 7);
-    
-    signal test_byte_1: unsigned(0 to 7);
-    signal test_byte_2: std_ulogic_vector(0 to 7);
-    signal test_byte_3: std_ulogic_vector(0 to 7);
-    signal test_byte_4: std_ulogic_vector(0 to 7);
-    signal test_byte_5: std_ulogic_vector(0 to 7);
-    
-    signal test_state: integer range 0 to 6;
-    -- synthesis translate_on
     
 begin
 
@@ -220,40 +190,6 @@ begin
     data_dat <= packet_data(handshake_dat(112 to 367));      --256
     --datalength_dat <= to_integer(unsigned(handshake_dat(368 to 371)));--4
     mic_dat <= mic_data(handshake_dat(376 to 391));       --16
-    
-	--write_o <= std_logic_vector( pb_buf ) when select_i = '1' else (others => 'Z');
-    -- synthesis translate_off
-    test_byte_1 <= handshake_dat(3);
-    
-    test_ssid_1 <= ssid_dat(0);
-    test_ssid_2 <= ssid_dat(3);
-    test_ssid_3 <= ssid_dat(6);
-    
-    test_mac_1 <= amac_dat(0);
-    test_mac_2 <= amac_dat(3);
-    test_mac_3 <= cmac_dat(5);
-    
-    test_nonce_1 <= anonce_dat(0);
-    test_nonce_2 <= anonce_dat(3);
-    test_nonce_3 <= cnonce_dat(6);
-    
-    test_keymic_1 <= mic_dat(0);
-    test_keymic_2 <= mic_dat(14);
-    test_keymic_3 <= mic_dat(15);
-    
-    test_mk1 <= mk_initial(0);
-    test_mk2 <= mk_end(7);
-    test_mk3 <= mk_end(9);
-    
-    with state select
-        test_state <= 0 when STATE_IDLE,
-            1 when STATE_PACKET,
-            2 when STATE_START,
-            3 when STATE_END,
-            4 when STATE_PROCESS,
-            5 when STATE_OUT,
-            6 when others;
-    -- synthesis translate_on
 
     
 end RTL; 

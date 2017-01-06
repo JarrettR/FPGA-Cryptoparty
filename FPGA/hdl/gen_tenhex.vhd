@@ -22,7 +22,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.sha1_pkg.all;
 
-
 entity gen_tenhex is
 
 port(
@@ -46,44 +45,7 @@ architecture RTL of gen_tenhex is
     signal running: std_ulogic := '0';
     
     signal carry: unsigned(0 to 10) := "00000000001";
-    -- synthesis translate_off
-    --Testing only - Because GHDL VPI does not support multidimensional arrays :<
-    signal start_val: mk_data;
-    signal end_val: mk_data;
-    signal test_start_val0: unsigned(0 to 7);
-    signal test_start_val1: unsigned(0 to 7);
-    signal test_start_val2: unsigned(0 to 7);
-    signal test_start_val3: unsigned(0 to 7);
-    signal test_start_val4: unsigned(0 to 7);
-    signal test_start_val5: unsigned(0 to 7);
-    signal test_start_val6: unsigned(0 to 7);
-    signal test_start_val7: unsigned(0 to 7);
-    signal test_start_val8: unsigned(0 to 7);
-    signal test_start_val9: unsigned(0 to 7);
-    
-    signal test_end_val0: unsigned(0 to 7);
-    signal test_end_val1: unsigned(0 to 7);
-    signal test_end_val2: unsigned(0 to 7);
-    signal test_end_val3: unsigned(0 to 7);
-    signal test_end_val4: unsigned(0 to 7);
-    signal test_end_val5: unsigned(0 to 7);
-    signal test_end_val6: unsigned(0 to 7);
-    signal test_end_val7: unsigned(0 to 7);
-    signal test_end_val8: unsigned(0 to 7);
-    signal test_end_val9: unsigned(0 to 7);
-    
-    signal test_mk_val0: unsigned(0 to 7);
-    signal test_mk_val1: unsigned(0 to 7);
-    signal test_mk_val2: unsigned(0 to 7);
-    signal test_mk_val3: unsigned(0 to 7);
-    signal test_mk_val4: unsigned(0 to 7);
-    signal test_mk_val5: unsigned(0 to 7);
-    signal test_mk_val6: unsigned(0 to 7);
-    signal test_mk_val7: unsigned(0 to 7);
-    signal test_mk_val8: unsigned(0 to 7);
-    signal test_mk_val9: unsigned(0 to 7);
-    -- synthesis translate_on
-    
+
     --Ten digit, hex (16^10)
     signal mk :  mk_data := (others => "00000000");
     signal mk_end :  mk_data := (others => "00000000");
@@ -134,44 +96,6 @@ begin
     
     dat_mk_o <= mk;
     complete_o <= complete;
-    
-    -- synthesis translate_off
-    --Todo: remove after testing
-    start_val(0) <= test_start_val0;
-    start_val(1) <= test_start_val1;
-    start_val(2) <= test_start_val2;
-    start_val(3) <= test_start_val3;
-    start_val(4) <= test_start_val4;
-    start_val(5) <= test_start_val5;
-    start_val(6) <= test_start_val6;
-    start_val(7) <= test_start_val7;
-    start_val(8) <= test_start_val8;
-    start_val(9) <= test_start_val9;
-    
-    end_val(0) <= test_end_val0;
-    end_val(1) <= test_end_val1;
-    end_val(2) <= test_end_val2;
-    end_val(3) <= test_end_val3;
-    end_val(4) <= test_end_val4;
-    end_val(5) <= test_end_val5;
-    end_val(6) <= test_end_val6;
-    end_val(7) <= test_end_val7;
-    end_val(8) <= test_end_val8;
-    end_val(9) <= test_end_val9;
-    
-    test_mk_val0 <= mk(0);
-    test_mk_val1 <= mk(1);
-    test_mk_val2 <= mk(2);
-    test_mk_val3 <= mk(3);
-    test_mk_val4 <= mk(4);
-    test_mk_val5 <= mk(5);
-    test_mk_val6 <= mk(6);
-    test_mk_val7 <= mk(7);
-    test_mk_val8 <= mk(8);
-    test_mk_val9 <= mk(9);
-    
-    -- synthesis translate_on
-    
     
     mk_inc: for i in 9 downto 0 generate
     begin
