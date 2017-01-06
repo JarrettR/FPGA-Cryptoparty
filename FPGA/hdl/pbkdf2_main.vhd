@@ -66,6 +66,7 @@ architecture RTL of pbkdf2_main is
     signal out_x2              : w_output;
     signal x1              : w_input;
     signal x2              : w_input;
+    signal x_in              : w_input;
     --signal mk              : w_input;
   
   
@@ -75,12 +76,11 @@ architecture RTL of pbkdf2_main is
     signal load_x1        :    std_ulogic;
     signal load_x2        :    std_ulogic;
      
-    signal i: integer range 0 to 4095;
+    signal i: integer range 0 to 4096;
 --type w_input is array(0 to 15) of std_ulogic_vector(0 to 31); linksys
 begin
 
-    HMAC1: hmac_main port map (clk_i,rst_i,mk_in,x1,ssid_length,load_x1,out_x1,valid_x1);
-    HMAC2: hmac_main port map (clk_i,rst_i,mk_in,x2,ssid_length,load_x2,out_x2,valid_x2);
+    HMAC1: hmac_main port map (clk_i,rst_i,mk_in,x_in,ssid_length,load_x1,out_x1,valid_x1);
     
     process(clk_i)   
     begin
@@ -102,11 +102,11 @@ begin
                 
                 ssid <= ssid_i;
                 --Todo: Fix this, it is dumb too
-                x1(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
-                x1(1) <= std_ulogic_vector(ssid_i(4)) & std_ulogic_vector(ssid_i(5)) & std_ulogic_vector(ssid_i(6)) & X"00";
-                x1(2) <= X"00000180";
+                x_in(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
+                x_in(1) <= std_ulogic_vector(ssid_i(4)) & std_ulogic_vector(ssid_i(5)) & std_ulogic_vector(ssid_i(6)) & X"00";
+                x_in(2) <= X"00000180";
                 for x in 3 to 15 loop
-                    x1(x) <= X"00000000";
+                    x_in(x) <= X"00000000";
                 end loop;
                 ssid_length <= X"0000000000000258";
                 state <= STATE_X1_START;
@@ -117,7 +117,7 @@ begin
                 load_x1 <= '0';
                 if valid_x1 = '1' then
                     state <= STATE_X2_START;
-                    x1(2) <= X"00000280";
+                    x_in(2) <= X"00000280";
                 end if;
             elsif state = STATE_X2_START then
                 load_x1 <= '1';
@@ -125,7 +125,20 @@ begin
             elsif state = STATE_X2_PROCESS then
                 load_x1 <= '0';
                 if valid_x1 = '1' then
-                    state <= STATE_FINISHED;
+                    if i = 5 then
+                        state <= STATE_FINISHED;
+                    else
+                        i <= i + 1;
+                        for x in 0 to 4 loop
+                            x_in(x) <= out_x1(x);
+                        end loop;
+                        x_in(5) <= X"80000000";
+                        for x in 6 to 15 loop
+                            x_in(x) <= X"00000000";
+                        end loop;
+                        ssid_length <= X"00000000000002A0";
+                        state <= STATE_X1_START;
+                    end if;
                 end if;
             end if;
         end if;
