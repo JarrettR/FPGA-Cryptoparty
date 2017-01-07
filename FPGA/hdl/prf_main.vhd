@@ -29,14 +29,12 @@ port(
     clk_i           : in    std_ulogic;
     rst_i           : in    std_ulogic;
     pmk_i           : in    pmk_data;
-    data_dat_i      : in    packet_data;
     anonce_dat      : in    nonce_data;
     cnonce_dat      : in    nonce_data;
     amac_dat        : in    mac_data;
     cmac_dat        : in    mac_data;
     ptk_dat_o        : out   ptk_data;
-    ptk_valid_o      : out   std_ulogic;
-    prf_complete_o : out   std_ulogic
+    ptk_valid_o      : out   std_ulogic
     );
 end prf_main;
 
@@ -76,8 +74,15 @@ architecture RTL of prf_main is
     signal x2              : w_input;
     signal x1_in              : w_input;
     signal x2_in              : w_input;
+    signal a              : w_input := X"5061697277697365206b657920657870616e73696f6e"; --Pairwise key expansion
     --signal mk              : w_input;
-  
+    --pmk: 5df920b5481ed70538dd5fd02423d7e2522205feeebb974cad08a52b5613ede2
+    --a: Pairwise key expansion
+    --b: 000b86c2a4850013ce5598efae12a150652e9bc22063720c5081e9eb74077fb19fffe871dc4ca1e6f448af85e8dfa16b8769957d8249a4ec68d2b7641d3782162ef0dc37b014cc48343e8dd2
+    --r: 5e9805e89cb0e84b45e5f9e4a1a80d9d9958c24e
+    --r: 5e9805e89cb0e84b45e5f9e4a1a80d9d9958c24e2b5ca71661334a890814f53e1d035e8beb4f8361
+    --r: 5e9805e89cb0e84b45e5f9e4a1a80d9d9958c24e2b5ca71661334a890814f53e1d035e8beb4f83611dc93e2657cecf69a3651bc4fca5880ce9081345
+    --r: 5e9805e89cb0e84b45e5f9e4a1a80d9d9958c24e2b5ca71661334a890814f53e1d035e8beb4f83611dc93e2657cecf69a3651bc4fca5880ce9081345c5411d489313b29e4aaf287d5231a342b777a67a
   
     signal valid        :    std_ulogic;
     signal valid_x1        :    std_ulogic;
@@ -87,13 +92,13 @@ architecture RTL of prf_main is
      
     signal i: integer range 0 to 4096;
     
-begin
-
-    HMAC: hmac_main port map (clk_i,rst_i,mk_in,x1_in,ssid_length,load_x1,out_x1,valid_x1);
-
-
-    process(clk_i)   
     begin
+    
+        HMAC: hmac_main port map (clk_i,rst_i,mk_in,x1_in,ssid_length,load_x1,out_x1,valid_x1);
+    
+    
+        process(clk_i)   
+        begin
             if (clk_i'event and clk_i = '1') then
                 if rst_i = '1' then
                     state <= STATE_IDLE;
