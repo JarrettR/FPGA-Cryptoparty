@@ -55,7 +55,7 @@ architecture RTL of prf_main is
 
     
     type state_type is (STATE_IDLE,
-                        STATE_X_START, STATE_X_PROCESS,
+                        STATE_START, STATE_PROCESS,
                         STATE_CLEANUP, STATE_FINISHED);
     
     signal state          : state_type := STATE_IDLE;
@@ -76,7 +76,9 @@ architecture RTL of prf_main is
     signal x2_in          : w_input;
     signal r              : w_input;
     
-    constant a              : w_input := (others=>(X"00000000"));--X"50616972", X"77697365", X"206b6579", X"20657870", X"616e7369", X"6f6e0000" others=>(others=>('0')); --Pairwise key expansion
+    constant a              : w_input := (X"50616972", X"77697365", X"206b6579",
+                                        X"20657870", X"616e7369", X"6f6e0000",
+                                        others=>(X"00000000"));--Pairwise key expansion
         
     --pmk: 5df920b5481ed70538dd5fd02423d7e2522205feeebb974cad08a52b5613ede2
     --a: Pairwise key expansion
@@ -106,6 +108,41 @@ architecture RTL of prf_main is
                 elsif load_i = '1' and state = STATE_IDLE then
                     i <= 0;
                     ptk_valid_o <= '0';
+                    
+                    --a + X"00" + b + X"00"
+                    for x in 0 to 4 loop
+                        r(x) <= a(x);
+                    end loop;
+                    --Todo figure out a more elegant way to do this awkward bitshift
+                    --b = min(apMac, cMac) + max(apMac, cMac) + min(apNonce, cNonce) + max(apNonce, cNonce)
+                    r(5) <= a(5)(0 to 23) & std_ulogic_vector(amac_dat(0));
+                    r(6) <= std_ulogic_vector(amac_dat(1)) &
+                            std_ulogic_vector(amac_dat(2)) &
+                            std_ulogic_vector(amac_dat(3)) &
+                            std_ulogic_vector(amac_dat(4));
+                    r(7) <= std_ulogic_vector(amac_dat(5)) &
+                            std_ulogic_vector(cmac_dat(1)) &
+                            std_ulogic_vector(cmac_dat(2)) &
+                            std_ulogic_vector(cmac_dat(3));
+                    r(8) <= std_ulogic_vector(cmac_dat(4)) &
+                            std_ulogic_vector(cmac_dat(5)) &
+                            std_ulogic_vector(anonce_dat(0)) &
+                            std_ulogic_vector(anonce_dat(1));
+                    for x in 0 to 6 loop
+                        r(x + 8) <= std_ulogic_vector(anonce_dat((x * 4) + 2)) &
+                                    std_ulogic_vector(anonce_dat((x * 4) + 3)) &
+                                    std_ulogic_vector(anonce_dat((x * 4) + 4)) &
+                                    std_ulogic_vector(anonce_dat((x * 4) + 5));
+                    end loop;
+--                    r(5) <= std_ulogic_vector(anonce_dat((x * 4) + 2)) &
+--                                std_ulogic_vector(anonce_dat((x * 4) + 3)) &
+--                                std_ulogic_vector(anonce_dat((x * 4) + 4)) &
+--                                std_ulogic_vector(anonce_dat((x * 4) + 5)); --31
+                    --r(x + 1)(0 to 23) <= X"00000000";
+                    state <= STATE_START;
+                elsif state = STATE_START then
+                    state <= STATE_PROCESS;
+                elsif state = STATE_PROCESS then
                     state <= STATE_FINISHED;
                 elsif state = STATE_FINISHED then
                     ptk_valid_o <= '1';
