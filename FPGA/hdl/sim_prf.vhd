@@ -31,7 +31,8 @@ architecture Behavioral of sim_prf is
     port(
         clk_i           : in    std_ulogic;
         rst_i           : in    std_ulogic;
-        pmk_i           : in    pmk_data;
+        load_i           : in    std_ulogic;
+        pmk_i           : in    w_input;
         anonce_dat      : in    nonce_data;
         cnonce_dat      : in    nonce_data;
         amac_dat        : in    mac_data;
@@ -45,7 +46,7 @@ architecture Behavioral of sim_prf is
     signal load              : std_ulogic := '0';
     signal clk_i             : std_ulogic := '0';
     signal rst_i             : std_ulogic := '0';
-    signal pmk                : pmk_data;
+    signal pmk               : w_input;
     signal anonce            : nonce_data;
     signal cnonce            : nonce_data;
     signal amac_dat          : mac_data;
@@ -63,47 +64,39 @@ architecture Behavioral of sim_prf is
     --ptk: 5e9805e89cb0e84b45e5f9e4a1a80d9d
     
     
+    
     signal i: integer range 0 to 65535;
     constant clock_period : time := 1 ns;
     
  begin      
-    prf: prf_main port map (clk_i,rst_i,pmk,anonce, cnonce,amac_dat,cmac_dat,ptk,valid);
+    prf: prf_main port map (clk_i,rst_i,load,pmk,anonce,cnonce,amac_dat,cmac_dat,ptk,valid);
     
     stim_proc: process
     begin        
         rst_i <= '0';
         i <= 0;
         load <= '0';
+       
+        --Ordinally will come from PBKDF2
+        --5df920b5481ed70538dd5fd02423d7e2 522205feeebb974cad08a52b5613ede2
+        pmk <= (X"5df920b5",X"481ed705",X"38dd5fd0",X"2423d7e2",
+               X"522205fe",X"eebb974c",X"ad08a52b",X"5613ede2",
+               others=>(X"00000000"));
         
-        for x in 0 to 35 loop
-            ssid(x) <= X"00";
-        end loop; 
+        --b = min(apMac, cMac) + max(apMac, cMac) + min(apNonce, cNonce) + max(apNonce, cNonce)
+        --We're assuming that min/max will be calculated host-side
+        --Comes directly from handshake on host
+        --000b86c2a485
+        amac_dat <= (X"00",X"0b",X"86",X"c2",X"a4",X"85");
+        --0013ce5598ef
+        cmac_dat <= (X"00",X"13",X"ce",X"55",X"98",X"ef");
         
-        --linksys
-        --6c 69 6e 6b 73 79 73  
-        ssid(0) <= X"6C";
-        ssid(1) <= X"69";
-        ssid(2) <= X"6E";
-        ssid(3) <= X"6B";
-        ssid(4) <= X"73";
-        ssid(5) <= X"79";
-        ssid(6) <= X"73";
-        
-        --dictionary
-        --64 69 63 74 69 6f 6e 61 72 79
-        for x in 0 to 9 loop
-            mk(x) <= X"00";
-        end loop; 
-        mk(0) <= X"64";
-        mk(1) <= X"69";
-        mk(2) <= X"63";
-        mk(3) <= X"74";
-        mk(4) <= X"69";
-        mk(5) <= X"6F";
-        mk(6) <= X"6E";
-        mk(7) <= X"61";
-        mk(8) <= X"72";
-        mk(9) <= X"79";
+        --ae12a150652e9bc22063720c5081e9eb 74077fb19fffe871dc4ca1e6f448af85
+        anonce <= (X"ae",X"12",X"a1",X"50",X"65",X"2e",X"9b",X"c2",X"20",X"63",X"72",X"0c",X"50",X"81",X"e9",X"eb",
+                  X"74",X"07",X"7f",X"b1",X"9f",X"ff",X"e8",X"71",X"dc",X"4c",X"a1",X"e6",X"f4",X"48",X"af",X"85");
+        --e8dfa16b8769957d8249a4ec68d2b764 1d3782162ef0dc37b014cc48343e8dd2
+        cnonce <= (X"e8",X"df",X"a1",X"6b",X"87",X"69",X"95",X"7d",X"82",X"49",X"a4",X"ec",X"68",X"d2",X"b7",X"64",
+                  X"1d",X"37",X"82",X"16",X"2e",X"f0",X"dc",X"37",X"b0",X"14",X"cc",X"48",X"34",X"3e",X"8d",X"d2");
         
         wait until rising_edge(clk_i);	
         rst_i <= '1';
@@ -122,9 +115,6 @@ architecture Behavioral of sim_prf is
         
          wait;
     end process;
-
-    --ssid_dat <= ssid_data(handshake_dat(0 to 35));      --36
-
 
    clock_process: process
    begin
