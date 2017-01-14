@@ -24,24 +24,42 @@ use work.sha1_pkg.all;
 
 
 entity ztex_wrapper is
-    port(
-        rst_i         : in std_logic;   --RESET
-        cs_i          : in std_logic;   --CS
-        cont_i        : in std_logic;   --CONT
-        clk_i         : in std_logic;   --IFCLK
+	 port(
+        rst_i         : in std_logic;
+        cs_i            : in std_logic;
+        cont_i          : in std_logic;
+        clk_i         : in std_logic;
 
-        dat_i         : in unsigned(0 to 7);  --FD
-        dat_o         : out unsigned(0 to 7);  --pc
+        FD            : out std_logic_vector(15 downto 0); 
 
-        SLOE          : out std_logic;  --SLOE
-        SLRD          : out std_logic;  --SLRD
-        SLWR          : out std_logic;  --SLWR
-        FIFOADR0      : out std_logic;  --FIFOADR0
-        FIFOADR1      : out std_logic;  --FIFOADR1
-        PKTEND        : out std_logic;  --PKTEND
-   
-        FLAGA         : in std_logic;   --FLAGA   EP2 FIFO Empty flag (FLAGA)
-        FLAGB         : in std_logic    --FLAGB
+        SLOE          : out std_logic;
+        SLRD          : out std_logic;
+        SLWR          : out std_logic;
+        FIFOADR0      : out std_logic;
+        FIFOADR1      : out std_logic;
+        PKTEND        : out std_logic;
+
+        FLAGB         : in std_logic
+        
+--        SCL	      : in std_logic;
+--        SDA	      : in std_logic
+--        rst_i         : in std_logic;   --RESET
+--        cs_i          : in std_logic;   --CS
+--        cont_i        : in std_logic;   --CONT
+--        clk_i         : in std_logic;   --IFCLK
+--
+--        dat_i         : in unsigned(0 to 7);  --FD
+--        dat_o         : out unsigned(0 to 7);  --pc
+--
+--        SLOE          : out std_logic;  --SLOE
+--        SLRD          : out std_logic;  --SLRD
+--        SLWR          : out std_logic;  --SLWR
+--        FIFOADR0      : out std_logic;  --FIFOADR0
+--        FIFOADR1      : out std_logic;  --FIFOADR1
+--        PKTEND        : out std_logic;  --PKTEND
+--   
+--        FLAGA         : in std_logic;   --FLAGA   EP2 FIFO Empty flag (FLAGA)
+--        FLAGB         : in std_logic    --FLAGB
     );
 end ztex_wrapper;
 
@@ -101,6 +119,11 @@ architecture RTL of ztex_wrapper is
     signal i_word          : integer range 0 to 3;
     signal i_mux           : integer range 0 to 1;
     
+    signal FIFO_WORD : std_logic;
+    signal SLWR_R : std_logic;
+    signal FD_R : std_logic_vector(15 downto 0); 
+    
+    
 begin
 
     MAIN1: wpa2_main port map (clk_i,rst_i,start_wpa2,
@@ -108,16 +131,15 @@ begin
             mk_initial,mk_end,
             mk_dat,pmk_valid,wpa2_complete);
     
-    --I guess this is the completion flag for now
-    SLOE <= wpa2_complete     when cs_i = '1' else 'Z';
-    SLRD <= '1'     when cs_i = '1' else 'Z';
-    SLWR <= '0'  when cs_i = '1' else 'Z';
+    SLOE <= '1' when cs_i = '1' else 'Z';
+    SLRD <= '1' when cs_i = '1' else 'Z';
+    SLWR <= SLWR_R when cs_i = '1' else 'Z';
     FIFOADR0 <= '0' when cs_i = '1' else 'Z';
     FIFOADR1 <= '0' when cs_i = '1' else 'Z';
-    PKTEND <= '1'   when cs_i = '1' else 'Z';		-- no data alignment
-    --FD <= FD_R      when cs_i = '1' else (others => 'Z');
+    PKTEND <= '1' when cs_i = '1' else 'Z';        -- no data alignment
+    FD <= FD_R when cs_i = '1' else (others => 'Z');
     
-    dat_o <= X"df" when cs_i = '1' else "ZZZZZZZZ";
+    --dat_o <= X"df" when cs_i = '1' else "ZZZZZZZZ";
 	 
     process(clk_i, rst_i)   
     begin
@@ -125,7 +147,8 @@ begin
             --GEN_CNT <= ( others => '0' );
             --INT_CNT <= ( others => '0' );
             --FIFO_WORD <= '0';
-            --SLWR_R <= '1';
+            SLWR_R <= '1';
+            FD_R <= X"dead";
             
             --latch_input <= "00";
             state <= STATE_IDLE;
@@ -142,7 +165,7 @@ begin
                 i <= 0;
                 
             elsif state = STATE_PACKET then
-                handshake_dat(i) <= dat_i;
+                --handshake_dat(i) <= dat_i;
                 
                 if i = 391 then
                     state <= STATE_START;
@@ -152,7 +175,7 @@ begin
                 end if;
                 
             elsif state = STATE_START then
-                mk_initial(i) <= dat_i;
+                --mk_initial(i) <= dat_i;
                 
                 if i = mk_len - 1 then
                     state <= STATE_END;
@@ -162,7 +185,7 @@ begin
                 end if;
                 
             elsif state = STATE_END then
-                mk_end(i) <= dat_i;
+                --mk_end(i) <= dat_i;
                 
                 if i = mk_len - 1 then
                     state <= STATE_PROCESS;

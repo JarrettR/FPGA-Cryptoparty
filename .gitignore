@@ -58,7 +58,6 @@
 *.bak
 *.make
 *.opt
-*.bit
 *.elf
 *.ncd
 *.xwbt
@@ -71,5 +70,4 @@
 *.rst
 *.sym
 *.tmp.c
-*.ihx
 
