@@ -1,7 +1,6 @@
 /*!
-   WPA2 -- Firmware for ZTEX USB-FPGA Module 1.15y and 1.15y2
+   ucecho -- uppercase conversion example for ZTEX USB-FPGA Module 1.15b and 1.15y2
    Copyright (C) 2009-2014 ZTEX GmbH.
-   Copyright (C) 2016 Jarrett Rainier
    http://www.ztex.de
 
    This program is free software; you can redistribute it and/or modify
@@ -17,105 +16,82 @@
    along with this program; if not, see http://www.gnu.org/licenses/.
 !*/
 
-#include[ztex-conf.h]   // Loads the configuration macros, see ztex-conf.h for the available macros
-#include[ztex-utils.h]  // include basic functions
+#include[ztex-conf.h]	// Loads the configuration macros, see ztex-conf.h for the available macros
+#include[ztex-utils.h]	// include basic functions
 
-// configure endpoint 2, in, quad buffered, 512 bytes, interface 0
-EP_CONFIG(2,0,BULK,IN,512,4);
-
-// configure endpoint 6, out, quad buffered, 512 bytes, interface 0
-EP_CONFIG(6,0,BULK,OUT,512,4);
+// configure endpoints 2 and 4, both belong to interface 0 (in/out are from the point of view of the host)
+EP_CONFIG(2,0,BULK,IN,512,2);	 
+EP_CONFIG(4,0,BULK,OUT,512,2);	 
 
 // select ZTEX USB FPGA Module 1.15 as target  (required for FPGA configuration)
-IDENTITY_UFM_1_15Y(10.15.0.0,0);
+IDENTITY_UFM_1_15Y(10.15.0.0,0);	 
 
 // this product string is also used for identification by the host software
-#define[PRODUCT_STRING]["WPA2 UFM 1.15y 0.1"]
+#define[PRODUCT_STRING]["ucecho example for UFM 1.15y"]
 
-// enables high speed FPGA configuration via EP6
-ENABLE_HS_FPGA_CONF(6);
+// enables high speed FPGA configuration via EP4
+ENABLE_HS_FPGA_CONF(4);
 
+__xdata BYTE run;
+
+#define[PRE_FPGA_RESET][PRE_FPGA_RESET
+    run = 0;
+]
 // this is called automatically after FPGA configuration
 #define[POST_FPGA_CONFIG][POST_FPGA_CONFIG
-	IOA0 = 1;				// controlled mode
-	IOA7 = 1;				// reset on
-	OEA = bmBIT0 | bmBIT7;
+    IFCONFIG = bmBIT7;	        // internel 30MHz clock, drive IFCLK ouput, slave FIFO interface
+    SYNCDELAY; 
+    EP2FIFOCFG = 0;
+    SYNCDELAY;
+    EP4FIFOCFG = 0;
+    SYNCDELAY;
 
-	EP2CS &= ~bmBIT0;			// clear stall bit
-    
-	REVCTL = 0x1;
-	SYNCDELAY; 
+    REVCTL = 0x0;	// reset 
+    SYNCDELAY; 
+    EP2CS &= ~bmBIT0;	// stall = 0
+    SYNCDELAY; 
+    EP4CS &= ~bmBIT0;	// stall = 0
 
-	IFCONFIG = bmBIT7 | bmBIT5 | 3; 	// internal IFCLK, 30 MHz, OE, slave FIFO interface
-	SYNCDELAY; 
-	EP2FIFOCFG = bmBIT3 | bmBIT0;           // AOTUOIN, WORDWIDE
-	SYNCDELAY;
-    
-	EP2AUTOINLENH = 2;                 	// 512 bytes 
-	SYNCDELAY;
-	EP2AUTOINLENL = 0;
-	SYNCDELAY;
+    SYNCDELAY;		// first two packages are waste
+    EP4BCL = 0x80;	// skip package, (re)arm EP4
+    SYNCDELAY;
+    EP4BCL = 0x80;	// skip package, (re)arm EP4
 
-	FIFORESET = 0x80;			// reset FIFO
-	SYNCDELAY;
-	FIFORESET = 2;
-	SYNCDELAY;
-	FIFORESET = 0x00;
-	SYNCDELAY;
+    FIFORESET = 0x80;	// reset FIFO
+    SYNCDELAY;
+    FIFORESET = 0x82;
+    SYNCDELAY;
+    FIFORESET = 0x00;
+    SYNCDELAY;
 
-	FIFOPINPOLAR = 0;
-	SYNCDELAY; 
-	PINFLAGSAB = 0;
-	SYNCDELAY; 
-	PINFLAGSCD = 0;
-	SYNCDELAY; 
-
-	IOA7 = 0;				// reset off
+    OEC = 255;
+    run = 1;
 ]
-
-// set mode
-ADD_EP0_VENDOR_COMMAND((0x60,,
-	IOA7 = 1;				    // reset on
-	IOA0 = SETUPDAT[2] ? 1 : 0; // CONT = LSB Address byte
-	IOA7 = 0;				    // reset off
-,,
-	NOP;
-));;
 
 // include the main part of the firmware kit, define the descriptors, ...
 #include[ztex.h]
 
 void main(void)	
 {
-    BYTE b, c;
-    char stopped[4];
-    char watchdog_cnt;
+    WORD i,size;
+    
     // init everything
     init_USB();
 
-    watchdog_cnt = 1;
-    for ( b = 0; b<NUMBER_OF_FPGAS; b++ ) {
-        stopped[b] = 1;
-    }
-
-    
     while (1) {	
-    
-        wait(10);
-
-
-        watchdog_cnt += 1;
-        /*
-        if ( watchdog_cnt == WATCHDOG_TIMEOUT ) {
-        
-            c = select_num;
-            for ( b = 0; b<NUMBER_OF_FPGAS; b++ ) {
-            select_fpga(b);
-            stopped[b] = 1;
-            PLL_STOP = 1;
+        if (run && !(EP4CS & bmBIT2) ) {	// EP4 is not empty
+            size = (EP4BCH << 8) | EP4BCL;
+            if (size > 0 && size <= 512 && !(EP2CS & bmBIT3)) {	// EP2 is not full
+                for ( i= 0; i < size; i++ ) {
+                    IOC = EP4FIFOBUF[i];	// data from EP4 is converted to uppercase by the FPGA ...
+                    EP2FIFOBUF[i] = IOB;	// ... and written back to EP2 buffer
+                } 
+                EP2BCH = size >> 8;
+                SYNCDELAY; 
+                EP2BCL = size & 255;		// arm EP2
             }
-            select_fpga(c);
-        }*/
+            SYNCDELAY; 
+            EP4BCL = 0x80;			// (re)arm EP4
+        }
     }
 }
-

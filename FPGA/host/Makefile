@@ -18,7 +18,7 @@ IHXTARGETS=wpa2.ihx
 IHXEXTRADEPS=
 
 # Extra files that should be included into th jar archive
-#EXTRAJARFILES=wpa2.ihx ../hdl/wpa2.bit
+EXTRAJARFILES=wpa2.ihx ../hdl/ztex_wrapper.bit
 
 ################################
 # DO NOT CHANAGE THE FOLLOWING #
