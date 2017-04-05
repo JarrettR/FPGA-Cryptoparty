@@ -62,7 +62,7 @@ class UCEcho extends Ztex1v1 {
         int i = LibusbJava.usb_bulk_write(handle(), 0x04, buf, buf.length, 1000);
         if ( i<0 )
             throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
-        System.out.println("FPGA " + fpga + ": Send " + i + " bytes: `" + input + "'" );
+        System.out.println("FPGA " + fpga + ": Send " + i + " filename: `" + filename + "'" );
 
         try {
                 Thread.sleep( 10 );

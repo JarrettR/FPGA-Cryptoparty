@@ -16,13 +16,13 @@ fi
 exe=""
 if [ "$WINDIR" != "" ]; then
     exe=".exe"
-fi    
+fi
 
 BINDIR=`dirname $0`
 BMP=bmp
 if [ -x "$BINDIR/bmp$exe" ]; then
     BMP="$BINDIR/bmp$exe"
-fi    
+fi
 
 if [ -f "$BINDIR/peeph.def" ]; then
     PEEPH="--peep-file $BINDIR/peeph.def"
@@ -30,18 +30,18 @@ elif [ -f "/usr/local/share/ztex/peeph.def" ]; then
     PEEPH="$PEEPH --peep-file /usr/local/share/ztex/peeph.def"
 elif [ -f "/usr/share/ztex/peeph.def" ]; then
     PEEPH="$PEEPH --peep-file /usr/share/ztex/peeph.def"
-fi    
+fi
 
 inp="$1"
-if [ ! -f "$inp" -a -f "$inp.c" ]; then 
+if [ ! -f "$inp" -a -f "$inp.c" ]; then
     inp="$1.c"
 fi
-base=${inp%*.c}    
+base=${inp%*.c}
 
-if [ ! -f "$inp" ]; then 
+if [ ! -f "$inp" ]; then
     echo "File not found: $inp"
     exit 2
-fi    
+fi
 
 bytePad=""
 while true; do
@@ -69,7 +69,7 @@ while true; do
     	else
     	    echo 0x${a#*:}
     	fi
-    )`    
+    )`
     echo "Addr=$addr"
     if [ $((addr & 1)) = "0" ]; then
 	exit 0
@@ -81,4 +81,4 @@ while true; do
 	    bytePad="-D PAD_BYTE"
 	fi
     fi
-done    
+done
