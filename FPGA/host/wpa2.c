@@ -67,6 +67,22 @@ __xdata BYTE run;
     OEC = 255;
     run = 1;
 ]
+/*
+// set mode
+ADD_EP0_VENDOR_COMMAND((0x60,,
+	IOA7 = 1;				// reset on
+	IOA0 = SETUPDAT[2] ? 1 : 0;
+	IOA7 = 0;				// reset off
+,,
+	NOP;
+));;*/
+
+
+void wpa2_reset() {
+	IOA7 = 1;				// reset on
+    SYNCDELAY;
+	IOA7 = 0;				// reset off
+}
 
 // include the main part of the firmware kit, define the descriptors, ...
 #include[ztex.h]
@@ -78,6 +94,8 @@ void main(void)
     // init everything
     init_USB();
 
+    wpa2_reset();
+    
     while (1) {	
         if (run && !(EP4CS & bmBIT2) ) {	// EP4 is not empty
             size = (EP4BCH << 8) | EP4BCL;

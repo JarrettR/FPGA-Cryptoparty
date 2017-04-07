@@ -48,8 +48,10 @@
 *.cmd_log
 *.mrp
 *.lso
-*/xlnx_*
+*xlnx_auto_*
+*par_usage_statistics.html
 *.xml
+*.gise
 *.stx
 *.xreport
 *.prj

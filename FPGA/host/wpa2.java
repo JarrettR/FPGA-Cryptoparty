@@ -44,37 +44,48 @@ class ParameterException extends Exception {
 // *****************************************************************************
 // ******* Test0 ***************************************************************
 // *****************************************************************************
-class UCEcho extends Ztex1v1 {
+class WPA2 extends Ztex1v1 {
 
-// ******* UCEcho **************************************************************
+// ******* WPA2 **************************************************************
 // constructor
-    public UCEcho ( ZtexDevice1 pDev ) throws UsbException {
+    public WPA2 ( ZtexDevice1 pDev ) throws UsbException {
         super ( pDev );
     }
 
 // ******* load ****************************************************************
 // writes a file to Endpoint 4, reads it back from Endpoint 2 and writes the output to System.out
     public void load ( int fpga, String filename ) throws UsbException, InvalidFirmwareException, IndexOutOfBoundsException {
-        byte buf[] = filename.getBytes(); 
+        byte[] buf;
+        RandomAccessFile f;
         
-        selectFpga(fpga);
-        
-        int i = LibusbJava.usb_bulk_write(handle(), 0x04, buf, buf.length, 1000);
-        if ( i<0 )
-            throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
-        System.out.println("FPGA " + fpga + ": Send " + i + " filename: `" + filename + "'" );
-
         try {
-                Thread.sleep( 10 );
-        }
-            catch ( InterruptedException e ) {
-        }
+            f = new RandomAccessFile(filename, "r");
+            try {
+                buf = new byte[(int)f.length()];
+                f.readFully(buf);
+                
+                selectFpga(fpga);
+                
+                int i = LibusbJava.usb_bulk_write(handle(), 0x04, buf, buf.length, 1000);
+                if ( i<0 )
+                    throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
+                System.out.println("FPGA " + fpga + ": Send file: `" + filename + "' (" + i + " bytes)" );
 
-        buf = new byte[1024];
-        i = LibusbJava.usb_bulk_read(handle(), 0x82, buf, 1024, 1000);
-        if ( i < 0 )
-            throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
-        System.out.println("FPGA " + fpga + ": Read "+i+" bytes: `"+new String(buf,0,i)+"'" );  
+                try {
+                        Thread.sleep( 10 );
+                }  catch ( InterruptedException e ) { }
+
+                buf = new byte[1024];
+                i = LibusbJava.usb_bulk_read(handle(), 0x82, buf, 1024, 1000);
+                if ( i < 0 )
+                    throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
+                System.out.println("FPGA " + fpga + ": Read "+i+" bytes: `"+new String(buf,0,i)+"'" );  
+            } catch ( IOException e ) {
+                System.out.println("Could not read file!");
+            }
+        } catch ( FileNotFoundException e ) {
+            System.out.println("File not found!");
+        }
     }
 
 // ******* echo ****************************************************************
@@ -155,12 +166,12 @@ class UCEcho extends Ztex1v1 {
             
 
             // create the main class	    
-            UCEcho ztex = new UCEcho ( bus.device(devNum) );
+            WPA2 ztex = new WPA2 ( bus.device(devNum) );
             ztex.certainWorkarounds = workarounds;
             
             // upload the firmware if necessary
-            if ( force || ! ztex.valid() || ! ztex.dev().productString().equals("ucecho example for UFM 1.15y")  ) {
-                System.out.println("Firmware upload time: " + ztex.uploadFirmware( "ucecho.ihx", force ) + " ms");
+            if ( force || ! ztex.valid() || ! ztex.dev().productString().equals("WPA2 example for UFM 1.15y")  ) {
+                System.out.println("Firmware upload time: " + ztex.uploadFirmware( "wpa2.ihx", force ) + " ms");
                 force=true;
             }
 
@@ -171,7 +182,9 @@ class UCEcho extends Ztex1v1 {
                 ztex.selectFpga(i);
                 if ( force || ! ztex.getFpgaConfiguration() ) {
                     System.out.print("FPGA "+i+": ");
-                    System.out.println("FPGA configuration time: " + ztex.configureFpga( "fpga/ucecho.bit" , force ) + " ms");
+                    System.out.println("FPGA configuration time: " + ztex.configureFpga( "../hdl/ztex_wrapper.bit" , force ) + " ms");
+                    //ztex.vendorCommand (0x60, "Set test mode", 0, 0);
+                    //reader.reset();
                 }
             } 
 
@@ -187,7 +200,8 @@ class UCEcho extends Ztex1v1 {
                 str = reader.readLine();
                 if ( ! str.equals("") ) {
                     for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
-                        ztex.echo(i, str);
+                        //ztex.echo(i, str);
+                        ztex.load(i, "test.hccap");
                 }
                 System.out.println("");
             }
