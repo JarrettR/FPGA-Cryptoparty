@@ -65,6 +65,8 @@ __xdata BYTE run;
     SYNCDELAY;
 
     OEC = 255;
+	IOA0 = 0; IOA7 = 0;
+	OEA = bmBIT0 | bmBIT7;
     run = 1;
 ]
 /*
@@ -103,6 +105,7 @@ void main(void)
                 for ( i= 0; i < size; i++ ) {
                     IOC = EP4FIFOBUF[i];	// data from EP4 is converted to uppercase by the FPGA ...
                     EP2FIFOBUF[i] = IOB;	// ... and written back to EP2 buffer
+                    IOA0 = 1; IOA0 = 0;
                 } 
                 EP2BCH = size >> 8;
                 SYNCDELAY; 

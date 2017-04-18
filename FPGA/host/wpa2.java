@@ -200,8 +200,8 @@ class WPA2 extends Ztex1v1 {
                 str = reader.readLine();
                 if ( ! str.equals("") ) {
                     for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
-                        //ztex.echo(i, str);
-                        ztex.load(i, "test.hccap");
+                        ztex.echo(i, str);
+                        //ztex.load(i, "test.hccap");
                 }
                 System.out.println("");
             }
