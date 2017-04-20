@@ -44,7 +44,7 @@ architecture RTL of gen_tenhex is
     signal complete: std_ulogic := '0';
     signal running: std_ulogic := '0';
     
-    signal carry: unsigned(0 to 10) := "00000000001";
+    signal carry: unsigned(0 to MK_SIZE + 1) := "00000000001";
 
     --Ten digit, hex (16^10)
     signal mk :  mk_data := (others => "00000000");
@@ -62,7 +62,7 @@ begin
                 complete <= '0';
                 running <= '0';
             elsif load_i = '1' then
-                for i in 0 to 9 loop
+                for i in 0 to MK_SIZE loop
                     --Todo: fix to start_val_i and end_val_i
                     mk(i) <= start_val_i(i);
                     mk_end(i) <= end_val_i(i);
@@ -73,13 +73,13 @@ begin
                 running <= '1';
             elsif running = '1' then
                 complete_v := '1';
-                for i in 9 downto 0 loop
+                for i in MK_SIZE downto 0 loop
                     if mk(i) /= mk_end(i) then
                         complete_v := '0';
                     end if;
                 end loop;
                 if complete_v = '0' then
-                    for i in 9 downto 0 loop
+                    for i in MK_SIZE downto 0 loop
                         if carry(i + 1) = '1' and continue_carry = '1' then
                             mk(i) <= mk_next(i);
                         else
@@ -97,7 +97,7 @@ begin
     dat_mk_o <= mk;
     complete_o <= complete;
     
-    mk_inc: for i in 9 downto 0 generate
+    mk_inc: for i in MK_SIZE downto 0 generate
     begin
         with mk(i) select mk_next(i) <=
                      X"61" when X"39",

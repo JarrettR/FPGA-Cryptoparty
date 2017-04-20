@@ -196,12 +196,33 @@ class WPA2 extends Ztex1v1 {
             String str = "";
             BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
             while ( ! str.equals("quit") ) {
-                System.out.print("Enter a string or `quit' to exit the program: ");
+                System.out.print("Enter a command string or `quit' to exit the program: ");
                 str = reader.readLine();
-                if ( ! str.equals("") ) {
+                if ( str.equals("?") ) {
+                    System.out.print("    l:       load file\n");
+                    System.out.print("    i<5>:    send input command, followed by 5 byte input\n");
+                    System.out.print("    s:       request status\n");
+                    System.out.print("    r:       read target\n");
+                    System.out.print("    b:       begin calculations\n");
+                    System.out.print("    a:       abort\n");
+                } else if ( str.equals("l") ) {
+                    for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
+                        ztex.load(i, "test.hccap");
+                /*} else if ( str.equals("i") ) {
+                    for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
+                        ztex.load(i, "test.hccap");
+                } else if ( str.equals("s") ) {
+                    for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
+                        ztex.load(i, "test.hccap");
+                } else if ( str.equals("b") ) {
+                    for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
+                        ztex.load(i, "test.hccap");
+                } else if ( str.equals("a") ) {
+                    for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
+                        ztex.load(i, "test.hccap");*/
+                } else if ( ! str.equals("") ) {
                     for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
                         ztex.echo(i, str);
-                        //ztex.load(i, "test.hccap");
                 }
                 System.out.println("");
             }

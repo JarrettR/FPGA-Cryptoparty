@@ -35,9 +35,10 @@ package sha1_pkg is
     type mac_data is array(0 to 5) of unsigned(0 to 7);
     --Todo: add back in with correct length
     --type pke_data is array(0 to 63) of unsigned(0 to 7);
+    constant MK_SIZE : integer := 9;
     type mic_data is array(0 to 15) of unsigned(0 to 7);
-    type mk_data is array(0 to 9) of unsigned(0 to 7);
-    type pmk_data is array(0 to 9) of unsigned(0 to 7);
+    type mk_data is array(0 to MK_SIZE) of unsigned(0 to 7);
+    type pmk_data is array(0 to MK_SIZE) of unsigned(0 to 7);
     type ptk_data is array(0 to 19) of unsigned(0 to 7);
     
     --Temporary for benchmark PMK generation (enforces a pretty arbitrary input)

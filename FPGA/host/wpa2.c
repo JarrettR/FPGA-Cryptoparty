@@ -81,6 +81,8 @@ ADD_EP0_VENDOR_COMMAND((0x60,,
 
 
 void wpa2_reset() {
+	IOA0 = 0; IOA7 = 0;
+	OEA = bmBIT0 | bmBIT7;
 	IOA7 = 1;				// reset on
     SYNCDELAY;
 	IOA7 = 0;				// reset off
@@ -103,8 +105,11 @@ void main(void)
             size = (EP4BCH << 8) | EP4BCL;
             if (size > 0 && size <= 512 && !(EP2CS & bmBIT3)) {	// EP2 is not full
                 for ( i= 0; i < size; i++ ) {
+                    //IOA0 = 0;
                     IOC = EP4FIFOBUF[i];	// data from EP4 is converted to uppercase by the FPGA ...
                     EP2FIFOBUF[i] = IOB;	// ... and written back to EP2 buffer
+                    //IOA0 = 1;
+                    //IOA0 = 0; IOA0 = 1;
                     IOA0 = 1; IOA0 = 0;
                 } 
                 EP2BCH = size >> 8;
