@@ -107,7 +107,7 @@ begin
                         state <= STATE_INPUT;
                         count <= 0;
                     elsif pc = X"73" then      --s, status
-                        pb_buf <= x"2D";       -- -
+                        pb_buf <= x"00";       -- null
                     elsif pc = X"62" then      --b, begin
                         pb_buf <= x"78";       -- x
                         state <= STATE_WORKING;

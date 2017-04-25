@@ -112,6 +112,42 @@ class WPA2 extends Ztex1v1 {
             throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
         System.out.println("FPGA " + fpga + ": Read "+i+" bytes: `"+new String(buf,0,i)+"'" );  
     }
+
+// ******* read_in ****************************************************************
+// writes the 'read input' command to Endpoint 4, reads the input data from Endpoint 2 and writes it to System.out
+    public void read_in ( int fpga ) throws UsbException, InvalidFirmwareException, IndexOutOfBoundsException {
+        byte sendBuf[] = "r".getBytes();
+        //sendBuf[0] = "r".getBytes; 
+        
+        selectFpga(fpga);
+        
+        int i = LibusbJava.usb_bulk_write(handle(), 0x04, sendBuf, sendBuf.length, 1000);
+        if ( i<0 )
+            throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
+        System.out.println("FPGA " + fpga + ": Send " + i + " bytes: `" + sendBuf + "'" );
+        sendBuf = "s".getBytes();
+        
+        try {
+                Thread.sleep( 30 );
+        }
+            catch ( InterruptedException e ) {
+        }
+
+        byte buf[] = new byte[1024];
+        String outbuf = "";
+        do {
+            i = LibusbJava.usb_bulk_read(handle(), 0x82, buf, 1024, 1000);
+            System.out.println("Sup");
+            if ( i < 0 )
+                throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
+            System.out.println("FPGA " + fpga + ": Read "+i+" bytes: `"+new String(buf,0,i)+"'" );
+            //i = LibusbJava.usb_bulk_write(handle(), 0x04, sendBuf, sendBuf.length, 1000);
+            //if ( i<0 )
+            //    throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
+            //outbuf += new String(buf,0,i);
+        } while (sendBuf[sendBuf.length] != 0x00);
+        System.out.println("FPGA " + fpga + ": Read "+i+" bytes: `"+outbuf+"'" );  
+    }
     
 // ******* main ****************************************************************
         public static void main (String args[]) {
@@ -202,16 +238,20 @@ class WPA2 extends Ztex1v1 {
                     System.out.print("    l:       load file\n");
                     System.out.print("    i<5>:    send input command, followed by 5 byte input\n");
                     System.out.print("    s:       request status\n");
-                    System.out.print("    r:       read target\n");
+                    System.out.print("    r:       read target input\n");
+                    System.out.print("    o:       read target output\n");
                     System.out.print("    b:       begin calculations\n");
                     System.out.print("    a:       abort\n");
                 } else if ( str.equals("l") ) {
                     for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
                         ztex.load(i, "test.hccap");
-                /*} else if ( str.equals("i") ) {
+                } else if ( str.equals("r") ) {
+                    for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
+                        ztex.read_in(i);
+                /*} else if ( str.equals("s") ) {
                     for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
                         ztex.load(i, "test.hccap");
-                } else if ( str.equals("s") ) {
+                } else if ( str.equals("i") ) {
                     for ( int i=0; i<ztex.numberOfFpgas(); i++ ) 
                         ztex.load(i, "test.hccap");
                 } else if ( str.equals("b") ) {
