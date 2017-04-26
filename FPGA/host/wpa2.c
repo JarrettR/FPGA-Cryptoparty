@@ -27,7 +27,7 @@ EP_CONFIG(4,0,BULK,OUT,512,2);
 IDENTITY_UFM_1_15Y(10.15.0.0,0);	 
 
 // this product string is also used for identification by the host software
-#define[PRODUCT_STRING]["ucecho example for UFM 1.15y"]
+#define[PRODUCT_STRING]["WPA2 for UFM 1.15y"]
 
 // enables high speed FPGA configuration via EP4
 ENABLE_HS_FPGA_CONF(4);
@@ -101,16 +101,21 @@ void main(void)
     wpa2_reset();
     
     while (1) {	
-        if (run && !(EP4CS & bmBIT2) ) {	// EP4 is not empty
-            size = (EP4BCH << 8) | EP4BCL;
-            if (size > 0 && size <= 512 && !(EP2CS & bmBIT3)) {	// EP2 is not full
-                for ( i= 0; i < size; i++ ) {
-                    //IOA0 = 0;
-                    IOC = EP4FIFOBUF[i];	// data from EP4 is converted to uppercase by the FPGA ...
-                    EP2FIFOBUF[i] = IOB;	// ... and written back to EP2 buffer
-                    //IOA0 = 1;
-                    //IOA0 = 0; IOA0 = 1;
-                    IOA0 = 1; IOA0 = 0;
+        if (run) {
+            if (run && !(EP4CS & bmBIT2) ) {	// EP4 is not empty
+                size = (EP4BCH << 8) | EP4BCL;
+                if (size > 0 && size <= 512) {	// EP2 is not full
+                    for ( i= 0; i < size; i++ ) {
+                        IOC = EP4FIFOBUF[i];	// IOC out
+                        IOA0 = 1;
+                        SYNCDELAY;
+                        IOA0 = 0;
+                    }
+                }
+            }
+            if (IOB) {	// IOB is not null
+                for ( size= 0; IOB; i++ ) {
+                    EP2FIFOBUF[i] = IOB;	// IOB in
                 } 
                 EP2BCH = size >> 8;
                 SYNCDELAY; 

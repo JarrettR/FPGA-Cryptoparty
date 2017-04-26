@@ -206,7 +206,7 @@ class WPA2 extends Ztex1v1 {
             ztex.certainWorkarounds = workarounds;
             
             // upload the firmware if necessary
-            if ( force || ! ztex.valid() || ! ztex.dev().productString().equals("WPA2 example for UFM 1.15y")  ) {
+            if ( force || ! ztex.valid() || ! ztex.dev().productString().equals("WPA2 for UFM 1.15y")  ) {
                 System.out.println("Firmware upload time: " + ztex.uploadFirmware( "wpa2.ihx", force ) + " ms");
                 force=true;
             }
