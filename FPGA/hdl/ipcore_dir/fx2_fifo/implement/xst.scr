@@ -1,0 +1,13 @@
+run
+-ifmt VHDL
+-ent fx2_fifo_exdes 
+-p xc6slx150-csg484-2
+-ifn xst.prj
+-write_timing_constraints No
+-iobuf YES
+-max_fanout 100
+-ofn fx2_fifo_exdes 
+-ofmt NGC
+-bus_delimiter ()
+-hierarchy_separator /
+-case Maintain
