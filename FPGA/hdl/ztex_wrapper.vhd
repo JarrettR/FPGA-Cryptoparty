@@ -11,10 +11,12 @@ entity ztex_wrapper is
       CS      : in std_logic;
       CLK     : in std_logic;
       sck_i     : in std_logic;
-      SLRD     : in std_logic;
-      SLWR     : in std_logic;
+      dir_i     : in std_logic;
+      empty_o     : out std_logic;
       rst_i     : in std_logic
 
+   --   SLRD     : in std_logic;
+   --   SLWR     : in std_logic;
 --      SCL     : in std_logic;
 --      SDA     : in std_logic
    );
@@ -50,6 +52,7 @@ architecture RTL of ztex_wrapper is
 
 	--signal declaration
     signal pb_buf : std_logic_vector(7 downto 0);
+    signal out_buf : std_logic_vector(7 downto 0);
     signal in_buf : std_logic_vector(7 downto 0);
     signal load: std_ulogic := '0';
     signal count: integer range 0 to (MK_SIZE * 2) + 1;
@@ -66,10 +69,16 @@ architecture RTL of ztex_wrapper is
     
     --fifo signals
     signal start: std_ulogic := '0';
-    --signal wr_en: std_ulogic := '0';
+    signal wr_en: std_ulogic := '0';
+    signal out_wr: std_ulogic := '0';
+    signal in_wr: std_ulogic := '0';
     --signal rd_en: std_ulogic := '0';
-    signal full: std_ulogic := '0';
-    signal empty: std_ulogic := '0';
+    signal full_i: std_ulogic := '0';
+    signal full_o: std_ulogic := '0';
+    signal empty_i: std_ulogic := '0';
+    signal empty_o_buff: std_ulogic := '0';
+    signal in_rd: std_ulogic := '0';
+    signal out_rd: std_ulogic := '0';
 
     type in_type is array (0 to (MK_SIZE * 2) + 1) of unsigned(7 downto 0);
     signal input: in_type;
@@ -95,7 +104,13 @@ architecture RTL of ztex_wrapper is
     signal command          : command_type := CMD_ERROR;
 
 begin
-    pb <= std_logic_vector( pb_buf ) when CS = '1' else (others => 'Z');
+    pb      <= std_logic_vector( pb_buf ) when CS = '1' else (others => 'Z');
+    out_rd  <= std_ulogic( dir_i )        when CS = '1' else 'Z';
+    empty_o <= std_ulogic( empty_o_buff ) when CS = '1' else 'Z';
+    
+    in_wr  <= '1' when dir_i = '1' and CS = '1' else '0';
+    
+    
     mk_initial <= mk_data(input(0 to MK_SIZE));
     mk_end <= mk_data(input(MK_SIZE + 1 to (MK_SIZE * 2) + 1));
     
@@ -106,58 +121,77 @@ begin
 	  port map (
 		 rst => rst_i,
 		 wr_clk => sck_i,
-		 rd_clk => load,
+		 rd_clk => CLK,
 		 din => pc,
-		 wr_en => SLWR,
-		 rd_en => rd_en,
+		 wr_en => in_wr,
+		 rd_en => in_rd,
 		 dout => in_buf,
-		 full => full,
-		 empty => empty
+		 full => full_i,
+		 empty => empty_i
+	  );
+    out_fifo : fx2_fifo
+	  port map (
+		 rst => rst_i,
+		 wr_clk => CLK,
+		 rd_clk => sck_i,
+		 din => out_buf,
+		 wr_en => out_wr,
+		 rd_en => out_rd,
+		 dout => pb_buf,
+		 full => full_o,
+		 empty => empty_o_buff
 	  );
 	  
-    dpUCECHO: process(CLK)
+    ztex_state_machine: process(CLK)
     begin
         if CLK'event and CLK = '1' then
             if rst_i = '1' then
+                start <= '1';
                 load <= '0';
                 load_gen <= '0';
                 start_gen <= '0';
-                pb_buf <= x"31";
+                out_buf <= x"31";
                 count <= 0;
-                state <= STATE_READY; 
-                for i in 0 to 4 loop
+                state <= STATE_ERROR; 
+                for i in 0 to ((MK_SIZE * 2) + 1) loop
                     input(i) <= "00000000";
                 end loop;
-                state <= STATE_READY;
-            elsif ( empty = '1') then
-                pb_buf <= x"32";
+            --elsif ( empty_i = '1' or ) then
+            --    out_buf <= x"32";
                 --load <= '1';
                 --in_buf <= pc;
-            elsif ( empty = '0') then
-                if ( load = '0') then
+            else
+                if ( empty_i = '1' ) then
+                --if ( load = '0' and start = '1' ) then
                     load <= '1';
-                else
+                    in_rd <= '1';
+                elsif ( load = '1') then
                     load <= '0';
+                    in_rd <= '0';
+                    out_buf <= in_buf;
+                    out_buf(0) <= '1';
+                    out_wr <= '1';
+                    --start <= '0';
                     if state = STATE_READY then    --STATE_READY
                         if in_buf = X"69" then         --i, input
-                            pb_buf <= x"3E";       -- >
+                            out_buf <= x"3E";       -- >
                             state <= STATE_INPUT;
                             count <= 0;
                         elsif in_buf = X"73" then      --s, status
-                            pb_buf <= x"00";       -- null
+                            out_buf <= x"00";       -- null
                         elsif in_buf = X"62" then      --b, begin
-                            pb_buf <= x"78";       -- x
+                            out_buf <= x"78";       -- x
                             state <= STATE_WORKING;
                             start_gen <= '1';
                         elsif in_buf = X"72" then      --r, read
-                            pb_buf <= x"3C";       -- <
+                            out_buf <= x"3C";       -- <
                             state <= STATE_READ_INPUT;
                         else
-                            pb_buf <= x"3F";       -- ?
+                            out_buf <= x"3F";       -- ?
                         end if;
                     elsif state = STATE_INPUT then --STATE_INPUT
                         input(count) <= unsigned(in_buf);
-                        pb_buf <= x"2E";           -- .
+                        out_buf <= x"2E";           -- .
                         if count < (MK_SIZE * 2) + 1 then
                             count <= count + 1;
                         else
@@ -165,7 +199,7 @@ begin
                             state <= STATE_READY;
                         end if;
                     elsif state = STATE_READ_INPUT then  --STATE_READ_INPUT
-                        pb_buf <= std_logic_vector(input(count));
+                        out_buf <= std_logic_vector(input(count));
                         if count < (MK_SIZE * 2) + 1 then
                             count <= count + 1;
                             load_gen <= '1';
@@ -175,7 +209,7 @@ begin
                             load_gen <= '0';
                         end if;
                     elsif state = STATE_READ_PROGRESS then  --STATE_READ_PROGRESS
-                        pb_buf <= std_logic_vector(mk_read(count));
+                        out_buf <= std_logic_vector(mk_read(count));
                         if count < (MK_SIZE * 2) + 1 then
                             count <= count + 1;
                         else
@@ -186,23 +220,26 @@ begin
                         start_gen <= '0';
                         if in_buf = X"73" then               --s, status
                             if gen_complete = '1' then
-                                pb_buf <= x"3B";         -- ;
+                                out_buf <= x"3B";         -- ;
                                 state <= STATE_READY;
                             else
-                                pb_buf <= x"2E";         -- .
+                                out_buf <= x"2E";         -- .
                             end if;
                         elsif in_buf = X"72" then           --r, read
-                            pb_buf <= x"00";            -- null
+                            out_buf <= x"00";            -- null
                             mk_read <= mk;
                             state <= STATE_READ_PROGRESS;
                          else
-                            pb_buf <= x"58";         -- X
+                            out_buf <= x"58";         -- X
                         end if;
                     else --Error?
                     
-                        state <= STATE_READY;
+                        state <= STATE_ERROR;
                     end if;
                 else
+                    --out_buf <= x"32";
+                    out_wr <= '0';
+                    --start <= '1';
 				--Waiting
                 --pb_buf <= x"35";
 				
@@ -210,6 +247,6 @@ begin
             end if;
             --count <= count + '1';
         end if;
-    end process dpUCECHO;
+    end process ztex_state_machine;
     
 end RTL;

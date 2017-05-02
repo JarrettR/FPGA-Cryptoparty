@@ -65,8 +65,8 @@ __xdata BYTE run;
     SYNCDELAY;
 
     OEC = 255;
-	IOA0 = 0; IOA7 = 0;
-	OEA = bmBIT0 | bmBIT7;
+	IOA0 = 0; IOA1 = 0; IOA7 = 0;
+	OEA = bmBIT0 | bmBIT1 | bmBIT7;
     run = 1;
 ]
 /*
@@ -81,7 +81,7 @@ ADD_EP0_VENDOR_COMMAND((0x60,,
 
 
 void wpa2_reset() {
-	IOA0 = 0; IOA7 = 0;
+	IOA0 = 0; IOA1 = 0; IOA7 = 0;
 	OEA = bmBIT0 | bmBIT7;
 	IOA7 = 1;				// reset on
     SYNCDELAY;
@@ -102,25 +102,28 @@ void main(void)
     
     while (1) {	
         if (run) {
-            if (run && !(EP4CS & bmBIT2) ) {	// EP4 is not empty
+            if (!(EP4CS & bmBIT2) ) {	// EP4 is not empty
                 size = (EP4BCH << 8) | EP4BCL;
                 if (size > 0 && size <= 512) {	// EP2 is not full
                     for ( i= 0; i < size; i++ ) {
+                        IOA1 = 0;
                         IOC = EP4FIFOBUF[i];	// IOC out
                         IOA0 = 1;
-                        SYNCDELAY;
                         IOA0 = 0;
                     }
                 }
             }
-            if (IOB) {	// IOB is not null
-                for ( size= 0; IOB; i++ ) {
-                    EP2FIFOBUF[i] = IOB;	// IOB in
-                } 
-                EP2BCH = size >> 8;
+            for (size = 0; IOA2 == 0; size++) {	// Empty flag not set
+                IOA1 = 1;
                 SYNCDELAY; 
-                EP2BCL = size & 255;		// arm EP2
-            }
+                IOA0 = 1;
+                IOA0 = 0;
+                EP2FIFOBUF[size] = IOB;	// IOB in
+            } 
+            EP2BCH = size >> 8;
+            SYNCDELAY; 
+            EP2BCL = size & 255;		// arm EP2
+        
             SYNCDELAY; 
             EP4BCL = 0x80;			// (re)arm EP4
         }
