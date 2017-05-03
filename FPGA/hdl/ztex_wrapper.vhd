@@ -10,6 +10,7 @@ entity ztex_wrapper is
       pb      : out std_logic_vector(7 downto 0);
       CS      : in std_logic;
       CLK     : in std_logic;
+      IFCLK     : in std_logic;
       sck_i     : in std_logic;
       dir_i     : in std_logic;
       empty_o     : out std_logic;
@@ -26,7 +27,7 @@ end ztex_wrapper;
 architecture RTL of ztex_wrapper is
     component gen_tenhex
     port(
-        clk_i          : in    std_ulogic;
+        CLK_i          : in    std_ulogic;
         rst_i          : in    std_ulogic;
         load_i         : in    std_ulogic;
         start_i        : in    std_ulogic;
@@ -116,12 +117,12 @@ begin
     
     
     
-    gen1: gen_tenhex port map (CLK,rst_i,load_gen,start_gen,mk_initial,mk_end,gen_complete,mk);
+    gen1: gen_tenhex port map (IFCLK,rst_i,load_gen,start_gen,mk_initial,mk_end,gen_complete,mk);
     in_fifo : fx2_fifo
 	  port map (
 		 rst => rst_i,
 		 wr_clk => sck_i,
-		 rd_clk => CLK,
+		 rd_clk => IFCLK,
 		 din => pc,
 		 wr_en => in_wr,
 		 rd_en => in_rd,
@@ -132,7 +133,7 @@ begin
     out_fifo : fx2_fifo
 	  port map (
 		 rst => rst_i,
-		 wr_clk => CLK,
+		 wr_clk => IFCLK,
 		 rd_clk => sck_i,
 		 din => out_buf,
 		 wr_en => out_wr,
@@ -142,9 +143,9 @@ begin
 		 empty => empty_o_buff
 	  );
 	  
-    ztex_state_machine: process(CLK)
+    ztex_state_machine: process(IFCLK)
     begin
-        if CLK'event and CLK = '1' then
+        if IFCLK'event and IFCLK = '1' then
             if rst_i = '1' then
                 start <= '1';
                 load <= '0';
