@@ -55,31 +55,32 @@ architecture RTL of ztex_wrapper is
     signal pb_buf : std_logic_vector(7 downto 0);
     signal out_buf : std_logic_vector(7 downto 0);
     signal in_buf : std_logic_vector(7 downto 0);
-    signal load: std_ulogic := '0';
+    signal load: std_ulogic := 'X';
     signal count: integer range 0 to (MK_SIZE * 2) + 1;
     --constant rst : unsigned(7 downto 0) := X"30";  -- Reset
 
     --gen_tenhex helpers
-    signal load_gen: std_ulogic := '0';
-    signal start_gen: std_ulogic := '0';
-    signal gen_complete: std_ulogic := '0';
+    signal load_gen: std_ulogic := 'X';
+    signal start_gen: std_ulogic := 'X';
+    signal gen_complete: std_ulogic := 'X';
     signal mk_initial: mk_data;
     signal mk_end: mk_data;
     signal mk: mk_data;
     signal mk_read: mk_data;
     
     --fifo signals
-    signal start: std_ulogic := '0';
-    signal wr_en: std_ulogic := '0';
-    signal out_wr: std_ulogic := '0';
-    signal in_wr: std_ulogic := '0';
-    --signal rd_en: std_ulogic := '0';
-    signal full_i: std_ulogic := '0';
-    signal full_o: std_ulogic := '0';
-    signal empty_i: std_ulogic := '0';
-    signal empty_o_buff: std_ulogic := '0';
-    signal in_rd: std_ulogic := '0';
-    signal out_rd: std_ulogic := '0';
+    signal sck: std_ulogic;
+    signal rst: std_ulogic;
+    signal start: std_ulogic;
+    signal wr_en: std_ulogic;
+    signal out_wr: std_ulogic;
+    signal in_wr: std_ulogic;
+    signal full_i: std_ulogic;
+    signal full_o: std_ulogic;
+    signal empty_i: std_ulogic;
+    signal empty_o_buff: std_ulogic;
+    signal in_rd: std_ulogic;
+    signal out_rd: std_ulogic;
 
     type in_type is array (0 to (MK_SIZE * 2) + 1) of unsigned(7 downto 0);
     signal input: in_type;
@@ -106,22 +107,23 @@ architecture RTL of ztex_wrapper is
 
 begin
     pb      <= std_logic_vector( pb_buf ) when CS = '1' else (others => 'Z');
-    out_rd  <= std_ulogic( dir_i )        when CS = '1' else 'Z';
-    empty_o <= std_ulogic( empty_o_buff ) when CS = '1' else 'Z';
+    sck     <= sck_i        when CS = '1' else '0';
+    out_rd  <= dir_i        when CS = '1' else '0';
+    empty_o <= empty_o_buff when CS = '1' else 'Z';
+    rst     <= rst_i        when CS = '1' else '0';
     
-    in_wr  <= '1' when dir_i = '1' and CS = '1' else '0';
+    in_wr  <= '1' when dir_i = '0' and CS = '1' else '0';
     
     
     mk_initial <= mk_data(input(0 to MK_SIZE));
     mk_end <= mk_data(input(MK_SIZE + 1 to (MK_SIZE * 2) + 1));
     
     
-    
-    gen1: gen_tenhex port map (IFCLK,rst_i,load_gen,start_gen,mk_initial,mk_end,gen_complete,mk);
+    gen1: gen_tenhex port map (IFCLK,rst,load_gen,start_gen,mk_initial,mk_end,gen_complete,mk);
     in_fifo : fx2_fifo
 	  port map (
-		 rst => rst_i,
-		 wr_clk => sck_i,
+		 rst => rst,
+		 wr_clk => sck,
 		 rd_clk => IFCLK,
 		 din => pc,
 		 wr_en => in_wr,
@@ -132,9 +134,9 @@ begin
 	  );
     out_fifo : fx2_fifo
 	  port map (
-		 rst => rst_i,
+		 rst => rst,
 		 wr_clk => IFCLK,
-		 rd_clk => sck_i,
+		 rd_clk => sck,
 		 din => out_buf,
 		 wr_en => out_wr,
 		 rd_en => out_rd,
@@ -146,12 +148,13 @@ begin
     ztex_state_machine: process(IFCLK)
     begin
         if IFCLK'event and IFCLK = '1' then
-            if rst_i = '1' then
+            if rst = '1' then
                 start <= '1';
                 load <= '0';
                 load_gen <= '0';
+                in_rd <= '0';
                 start_gen <= '0';
-                out_buf <= x"31";
+                out_buf <= x"35";
                 count <= 0;
                 state <= STATE_ERROR; 
                 for i in 0 to ((MK_SIZE * 2) + 1) loop
@@ -162,7 +165,7 @@ begin
                 --load <= '1';
                 --in_buf <= pc;
             else
-                if ( empty_i = '1' ) then
+                if ( empty_i = '0' ) then
                 --if ( load = '0' and start = '1' ) then
                     load <= '1';
                     in_rd <= '1';

@@ -62,13 +62,16 @@
      begin
         CS <= '0';
         IOA7 <= '0';
-        IOA2 <= '0';
         IOA1 <= '0';
         IOA0 <= '0';
 
-        wait for 100 ns; -- wait until global set/reset completes
+        wait for 40 ns; -- wait until global set/reset completes
         
         CS <= '1';
+        
+        wait for 5 ns; 
+        
+        IOC <= X"30";
         
         wait for 5 ns; 
         
@@ -87,7 +90,30 @@
         
         wait for 5 ns; 
         
-        IOC <= X"30";
+        --sck
+        IOA0 <= '1';
+        
+        wait for 5 ns; 
+        
+        IOA0 <= '0';
+        
+        wait for 5 ns; 
+        
+        --sck
+        IOA0 <= '1';
+        
+        wait for 5 ns; 
+        
+        IOA0 <= '0';
+        
+        wait for 5 ns; 
+        
+        --sck
+        IOA0 <= '1';
+        
+        wait for 5 ns; 
+        
+        IOA0 <= '0';
         
         wait for 5 ns; 
         
@@ -101,16 +127,16 @@
         wait for 5 ns; 
         
         --Read direction
-        IOA0 <= '1';
-        
-        wait for 5 ns; 
-        
-        --sck
         IOA1 <= '1';
         
         wait for 5 ns; 
         
-        IOA1 <= '0';
+        --sck
+        IOA0 <= '1';
+        
+        wait for 5 ns; 
+        
+        IOA0 <= '0';
         
         wait for 5 ns; 
         
