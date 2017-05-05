@@ -17,6 +17,7 @@
    <WVObjectSize size="8" />
    <wave_markers>
       <marker time="50012000" label="" />
+      <marker time="69920000" label="" />
    </wave_markers>
    <wvobject fp_name="/testbench/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
@@ -70,12 +71,14 @@
          <obj_property name="ElementShortName">pc[7:0]</obj_property>
          <obj_property name="ObjectShortName">pc[7:0]</obj_property>
          <obj_property name="label">pc[7:0] - In</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/pb" type="array" db_ref_id="1">
          <obj_property name="DisplayName">label</obj_property>
          <obj_property name="ElementShortName">pb[7:0]</obj_property>
          <obj_property name="ObjectShortName">pb[7:0]</obj_property>
          <obj_property name="label">pb[7:0] - Out</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/cs" type="logic" db_ref_id="1">
          <obj_property name="DisplayName">label</obj_property>
@@ -88,6 +91,8 @@
          <obj_property name="ElementShortName">sck_i</obj_property>
          <obj_property name="ObjectShortName">sck_i</obj_property>
          <obj_property name="label">sck_i - In</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#0000ff</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/dir_i" type="logic" db_ref_id="1">
          <obj_property name="DisplayName">label</obj_property>
@@ -114,6 +119,7 @@
       <wvobject fp_name="/testbench/uut/pc" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">pc[7:0]</obj_property>
          <obj_property name="ObjectShortName">pc[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/sck" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">sck</obj_property>
@@ -130,6 +136,7 @@
       <wvobject fp_name="/testbench/uut/in_buf" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">in_buf[7:0]</obj_property>
          <obj_property name="ObjectShortName">in_buf[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/full_i" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">full_i</obj_property>
@@ -146,6 +153,7 @@
       <wvobject fp_name="/testbench/uut/out_buf" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">out_buf[7:0]</obj_property>
          <obj_property name="ObjectShortName">out_buf[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/out_wr" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">out_wr</obj_property>
@@ -158,6 +166,7 @@
       <wvobject fp_name="/testbench/uut/pb_buf" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">pb_buf[7:0]</obj_property>
          <obj_property name="ObjectShortName">pb_buf[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/full_o" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">full_o</obj_property>

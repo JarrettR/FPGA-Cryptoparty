@@ -41,6 +41,7 @@
     
     constant clk_period : time := 1 ns;
 
+
   begin
 
   -- component instantiation
@@ -59,6 +60,33 @@
 
   --  Test Bench Statements
      tb : process
+     
+    procedure fx_read is
+    begin
+        IOA1 <= '1';
+        wait for 2 ns; 
+        IOA0 <= '1';
+        wait for 2 ns; 
+        IOA0 <= '0';
+        wait for 2 ns; 
+        data <= IOB;
+    end fx_read; 
+     
+    procedure fx_write (
+        wr_dat  : in std_logic_vector(7 downto 0)
+        ) is
+    begin
+        IOA1 <= '0';
+        wait for 2 ns; 
+        IOC <= wr_dat;
+        wait for 2 ns; 
+        IOA0 <= '1';
+        wait for 2 ns; 
+        IOA0 <= '0';
+        wait for 2 ns; 
+    end fx_write; 
+    
+    
      begin
         CS <= '0';
         IOA7 <= '0';
@@ -71,12 +99,15 @@
         
         wait for 5 ns; 
         
-        IOC <= X"30";
+        --Reset on
+        IOA7 <= '1';
+        
+        --sck
+        IOA0 <= '1';
         
         wait for 5 ns; 
         
-        --Reset on
-        IOA7 <= '1';
+        IOA0 <= '0';
         
         wait for 5 ns; 
         
@@ -85,64 +116,37 @@
         
         wait for 10 ns; 
         
-        --Write direction
-        IOA1 <= '0';
+        --Write
+        fx_write(X"30");
+        fx_write(X"31");
+        fx_write(X"32");
+        fx_write(X"33");
+        fx_write(X"34");
+        fx_write(X"35");
+        fx_write(X"36");
+        fx_write(X"37");
+        fx_write(X"38");
+        fx_write(X"39");
         
-        wait for 5 ns; 
+        --Read
+        fx_read;
+        fx_read;
+        fx_read;
+        fx_read;
         
-        --sck
-        IOA0 <= '1';
+        fx_write(X"30");
+        fx_write(X"31");
+        fx_write(X"32");
+        fx_write(X"33");
         
-        wait for 5 ns; 
-        
-        IOA0 <= '0';
-        
-        wait for 5 ns; 
-        
-        --sck
-        IOA0 <= '1';
-        
-        wait for 5 ns; 
-        
-        IOA0 <= '0';
-        
-        wait for 5 ns; 
-        
-        --sck
-        IOA0 <= '1';
-        
-        wait for 5 ns; 
-        
-        IOA0 <= '0';
-        
-        wait for 5 ns; 
-        
-        --sck
-        IOA0 <= '1';
-        
-        wait for 5 ns; 
-        
-        IOA0 <= '0';
-        
-        wait for 5 ns; 
-        
-        --Read direction
-        IOA1 <= '1';
-        
-        wait for 5 ns; 
-        
-        --sck
-        IOA0 <= '1';
-        
-        wait for 5 ns; 
-        
-        IOA0 <= '0';
-        
-        wait for 5 ns; 
-        
-        data <= IOB;
-        
-        wait for 5 ns; 
+        fx_read;
+        fx_read;
+        fx_read;
+        fx_read;
+        fx_read;
+        fx_read;
+        fx_read;
+        fx_read;
 
 
         wait; -- will wait forever
