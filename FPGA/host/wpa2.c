@@ -1,5 +1,5 @@
 /*!
-   ucecho -- uppercase conversion example for ZTEX USB-FPGA Module 1.15b and 1.15y2
+   wpa2 -- Send packet data containing WPA2 test params for the FPGA to chew on
    Copyright (C) 2009-2014 ZTEX GmbH.
    http://www.ztex.de
 
@@ -39,13 +39,11 @@ __xdata BYTE run;
 ]
 // this is called automatically after FPGA configuration
 #define[POST_FPGA_CONFIG][POST_FPGA_CONFIG
-    IFCONFIG = bmBIT7;	        // internel 30MHz clock, drive IFCLK ouput, slave FIFO interface
-    SYNCDELAY; 
-    EP2FIFOCFG = 0;
+    //IFCLKSRC 3048MHZ IFCLKOE IFCLKPOL ASYNC GSTATE IFCFG1 IFCFG0
+    // IFCLK    48MHz     OE             SYNC
+	IFCONFIG = bmBIT7 | bmBIT6 | bmBIT5 | bmBIT1 | bmBIT0;
     SYNCDELAY;
-    EP4FIFOCFG = 0;
-    SYNCDELAY;
-
+/*
     REVCTL = 0x0;	// reset 
     SYNCDELAY; 
     EP2CS &= ~bmBIT0;	// stall = 0
@@ -56,15 +54,32 @@ __xdata BYTE run;
     EP4BCL = 0x80;	// skip package, (re)arm EP4
     SYNCDELAY;
     EP4BCL = 0x80;	// skip package, (re)arm EP4
+*/
+	PORTACFG = 0x00; SYNCDELAY; // used PA7/FLAGD as a port pin, not as a FIFO flag
+	FIFOPINPOLAR = bmBIT4 | bmBIT3 | bmBIT2; SYNCDELAY; // OE/RD/WR active high
 
-    FIFORESET = 0x80;	// reset FIFO
-    SYNCDELAY;
-    FIFORESET = 0x82;
-    SYNCDELAY;
-    FIFORESET = 0x00;
-    SYNCDELAY;
+	// EZ-USB automatically commits data in 512-byte chunks
+	EP2AUTOINLENH = 0x02; SYNCDELAY;
+	EP2AUTOINLENL = 0x00; SYNCDELAY;
 
-    OEC = 255;
+	// Bits [7:4] FlagB / Flag D
+	// Bits [3:0] FlagA / Flag C
+	// 0100 EP2 PF (prog.full) {0x8}
+	// 1100 EP2 Full  {0xC}
+	// 1010 EP6 Empty {0xA}
+    //FLAGB3 FLAGB2 FLAGB1 FLAGB0 FLAGA3 FLAGA2 FLAGA1 FLAGA0
+    //FLAGD3 FLAGD2 FLAGD1 FLAGD0 FLAGC3 FLAGC2 FLAGC1 FLAGC0
+	PINFLAGSAB = 0xC8; SYNCDELAY;
+	PINFLAGSCD = 0x0A; SYNCDELAY;
+
+	// Programmable-level Flag (PF)
+	// Active when zero bytes in endpoint buffer
+	EP2FIFOPFH = bmBIT6 | 0; SYNCDELAY;
+	EP2FIFOPFL = 0; SYNCDELAY;
+    
+	fifo_reset();
+    
+    OEC = 0xFF;
 	IOA0 = 0; IOA1 = 0; IOA7 = 0;
 	OEA = bmBIT0 | bmBIT1 | bmBIT7;
     run = 1;
@@ -79,10 +94,32 @@ ADD_EP0_VENDOR_COMMAND((0x60,,
 	NOP;
 ));;*/
 
+void fifo_reset() {
+	EP2CS &= ~bmBIT0; // clear stall bit
+	EP4CS &= ~bmBIT0; // clear stall bit
+
+    REVCTL = 0x0;
+	FIFORESET = 0x80; SYNCDELAY;
+	EP4FIFOCFG = 0x00; SYNCDELAY; //manual mode
+	FIFORESET = 6; SYNCDELAY;
+	OUTPKTEND = 0x86; SYNCDELAY;  // skip uncommitted pkts in OUT endpoint
+	OUTPKTEND = 0x86; SYNCDELAY;
+	OUTPKTEND = 0x86; SYNCDELAY; 
+	OUTPKTEND = 0x86; SYNCDELAY;
+	EP4FIFOCFG = bmBIT4 | bmBIT0; SYNCDELAY;        // AUTOOUT, WORDWIDE
+	FIFORESET = 0x00; SYNCDELAY;  //Release NAKALL
+	
+	FIFORESET = 0x80; SYNCDELAY;
+	EP2FIFOCFG = 0x00; SYNCDELAY;
+	FIFORESET = 2; SYNCDELAY;
+	EP2FIFOCFG = bmBIT3 | bmBIT0; SYNCDELAY;        // AOTUOIN, WORDWIDE
+	FIFORESET = 0x00; SYNCDELAY;  //Release NAKALL
+}
+
 
 void wpa2_reset() {
 	IOA0 = 0; IOA1 = 0; IOA7 = 0;
-	OEA = bmBIT0 | bmBIT7;
+	OEA = bmBIT0 | bmBIT1 | bmBIT7;
 	IOA7 = 1;				// reset on
     SYNCDELAY;
 	IOA7 = 0;				// reset off
@@ -97,7 +134,7 @@ void main(void)
     
     // init everything
     init_USB();
-
+    fifo_reset();
     wpa2_reset();
     
     while (1) {	
@@ -107,16 +144,20 @@ void main(void)
                 if (size > 0 && size <= 512) {	// EP2 is not full
                     for ( i= 0; i < size; i++ ) {
                         IOA1 = 0;
+                        SYNCDELAY; 
                         IOC = EP4FIFOBUF[i];	// IOC out
                         IOA0 = 1;
+                        SYNCDELAY; 
                         IOA0 = 0;
                     }
                 }
             }
-            for (size = 0; IOA2 == 0; size++) {	// Empty flag not set
+            //for (size = 0; IOA2 == 0; size++) {	// Empty flag not set
+            for (size = 0; size < 5; size++) {	// Empty flag not set
                 IOA1 = 1;
                 SYNCDELAY; 
                 IOA0 = 1;
+                SYNCDELAY; 
                 IOA0 = 0;
                 EP2FIFOBUF[size] = IOB;	// IOB in
             } 

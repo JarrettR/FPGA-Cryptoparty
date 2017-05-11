@@ -14,215 +14,216 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="8" />
-   <wave_markers>
-      <marker time="50012000" label="" />
-      <marker time="69920000" label="" />
-   </wave_markers>
-   <wvobject fp_name="/testbench/clk" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <WVObjectSize size="22" />
+   <wvobject fp_name="/testbench/ifclk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ifclk</obj_property>
+      <obj_property name="ObjectShortName">ifclk</obj_property>
    </wvobject>
-   <wvobject fp_name="group45" type="group">
-      <obj_property name="label">TB</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/testbench/ioa7" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">ioa7</obj_property>
-         <obj_property name="ObjectShortName">ioa7</obj_property>
-         <obj_property name="label">ioa7 - Reset</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/ioa0" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">ioa0</obj_property>
-         <obj_property name="ObjectShortName">ioa0</obj_property>
-         <obj_property name="label">ioa0 - sck</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/ioa1" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">ioa1</obj_property>
-         <obj_property name="ObjectShortName">ioa1</obj_property>
-         <obj_property name="label">ioa1 - dir_i</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/ioa2" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">ioa2</obj_property>
-         <obj_property name="ObjectShortName">ioa2</obj_property>
-         <obj_property name="label">ioa2 - empty_o</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/cs" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">cs</obj_property>
-         <obj_property name="ObjectShortName">cs</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/ioc" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">ioc[7:0]</obj_property>
-         <obj_property name="ObjectShortName">ioc[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/iob" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">iob[7:0]</obj_property>
-         <obj_property name="ObjectShortName">iob[7:0]</obj_property>
-      </wvobject>
+   <wvobject fp_name="/testbench/ioa7" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ioa7</obj_property>
+      <obj_property name="ObjectShortName">ioa7</obj_property>
    </wvobject>
-   <wvobject fp_name="group46" type="group">
-      <obj_property name="label">Wrapper</obj_property>
+   <wvobject fp_name="/testbench/sloe" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sloe</obj_property>
+      <obj_property name="ObjectShortName">sloe</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/slrd" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">slrd</obj_property>
+      <obj_property name="ObjectShortName">slrd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/slwr" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">slwr</obj_property>
+      <obj_property name="ObjectShortName">slwr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/flagb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">flagb</obj_property>
+      <obj_property name="ObjectShortName">flagb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/flagc" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">flagc</obj_property>
+      <obj_property name="ObjectShortName">flagc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/endpoint" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">endpoint</obj_property>
+      <obj_property name="ObjectShortName">endpoint</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/cs" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">cs</obj_property>
+      <obj_property name="ObjectShortName">cs</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/iob" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">iob[7:0]</obj_property>
+      <obj_property name="ObjectShortName">iob[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/ioc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ioc[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ioc[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/slrd_read" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">slrd_read</obj_property>
+      <obj_property name="ObjectShortName">slrd_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/slwr_read" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">slwr_read</obj_property>
+      <obj_property name="ObjectShortName">slwr_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/setup" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">setup</obj_property>
+      <obj_property name="ObjectShortName">setup</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/ep2_buff" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ep2_buff[0:255]</obj_property>
+      <obj_property name="ObjectShortName">ep2_buff[0:255]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/ep2_conc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ep2_conc[0:255]</obj_property>
+      <obj_property name="ObjectShortName">ep2_conc[0:255]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/ep4_buff" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ep4_buff[0:255]</obj_property>
+      <obj_property name="ObjectShortName">ep4_buff[0:255]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/ep4_conc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ep4_conc[0:255]</obj_property>
+      <obj_property name="ObjectShortName">ep4_conc[0:255]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/ep4_init" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ep4_init[0:255]</obj_property>
+      <obj_property name="ObjectShortName">ep4_init[0:255]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/testbench/clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_period</obj_property>
+      <obj_property name="ObjectShortName">clk_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="group23" type="group">
+      <obj_property name="label">DUT</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/testbench/uut/pc" type="array" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">pc[7:0]</obj_property>
-         <obj_property name="ObjectShortName">pc[7:0]</obj_property>
-         <obj_property name="label">pc[7:0] - In</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject fp_name="/testbench/uut/pc_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pc_i[7:0]</obj_property>
+         <obj_property name="ObjectShortName">pc_i[7:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/pb" type="array" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">pb[7:0]</obj_property>
-         <obj_property name="ObjectShortName">pb[7:0]</obj_property>
-         <obj_property name="label">pb[7:0] - Out</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject fp_name="/testbench/uut/pb_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pb_o[7:0]</obj_property>
+         <obj_property name="ObjectShortName">pb_o[7:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/cs" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
          <obj_property name="ElementShortName">cs</obj_property>
          <obj_property name="ObjectShortName">cs</obj_property>
-         <obj_property name="label">cs - In</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/sck_i" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">sck_i</obj_property>
-         <obj_property name="ObjectShortName">sck_i</obj_property>
-         <obj_property name="label">sck_i - In</obj_property>
-         <obj_property name="UseCustomSignalColor">true</obj_property>
-         <obj_property name="CustomSignalColor">#0000ff</obj_property>
+      <wvobject fp_name="/testbench/uut/ifclk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ifclk</obj_property>
+         <obj_property name="ObjectShortName">ifclk</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/dir_i" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">dir_i</obj_property>
-         <obj_property name="ObjectShortName">dir_i</obj_property>
-         <obj_property name="label">dir_i - In</obj_property>
+      <wvobject fp_name="/testbench/uut/sloe" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sloe</obj_property>
+         <obj_property name="ObjectShortName">sloe</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/empty_o" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="ElementShortName">empty_o</obj_property>
-         <obj_property name="ObjectShortName">empty_o</obj_property>
-         <obj_property name="label">empty_o - Out</obj_property>
+      <wvobject fp_name="/testbench/uut/slrd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">slrd</obj_property>
+         <obj_property name="ObjectShortName">slrd</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/slwr" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">slwr</obj_property>
+         <obj_property name="ObjectShortName">slwr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/fifoadr_buf" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifoadr_buf[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fifoadr_buf[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/fifoadr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifoadr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fifoadr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/flagb" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">flagb</obj_property>
+         <obj_property name="ObjectShortName">flagb</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/flagc" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">flagc</obj_property>
+         <obj_property name="ObjectShortName">flagc</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/rst_i" type="logic" db_ref_id="1">
-         <obj_property name="DisplayName">label</obj_property>
          <obj_property name="ElementShortName">rst_i</obj_property>
          <obj_property name="ObjectShortName">rst_i</obj_property>
-         <obj_property name="label">rst_i - In</obj_property>
       </wvobject>
-   </wvobject>
-   <wvobject fp_name="group62" type="group">
-      <obj_property name="label">in_fifo</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/testbench/uut/pc" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">pc[7:0]</obj_property>
-         <obj_property name="ObjectShortName">pc[7:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject fp_name="/testbench/uut/pb_buf" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pb_buf[7:0]</obj_property>
+         <obj_property name="ObjectShortName">pb_buf[7:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/sck" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">sck</obj_property>
-         <obj_property name="ObjectShortName">sck</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_wr" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">in_wr</obj_property>
-         <obj_property name="ObjectShortName">in_wr</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_rd" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">in_rd</obj_property>
-         <obj_property name="ObjectShortName">in_rd</obj_property>
+      <wvobject fp_name="/testbench/uut/out_buf" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">out_buf[7:0]</obj_property>
+         <obj_property name="ObjectShortName">out_buf[7:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/in_buf" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">in_buf[7:0]</obj_property>
          <obj_property name="ObjectShortName">in_buf[7:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/full_i" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">full_i</obj_property>
-         <obj_property name="ObjectShortName">full_i</obj_property>
+      <wvobject fp_name="/testbench/uut/load" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">load</obj_property>
+         <obj_property name="ObjectShortName">load</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/empty_i" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">empty_i</obj_property>
-         <obj_property name="ObjectShortName">empty_i</obj_property>
+      <wvobject fp_name="/testbench/uut/sloe_buf" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sloe_buf</obj_property>
+         <obj_property name="ObjectShortName">sloe_buf</obj_property>
       </wvobject>
-   </wvobject>
-   <wvobject fp_name="group55" type="group">
-      <obj_property name="label">out_fifo</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/testbench/uut/out_buf" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">out_buf[7:0]</obj_property>
-         <obj_property name="ObjectShortName">out_buf[7:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject fp_name="/testbench/uut/slrd_buf" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">slrd_buf</obj_property>
+         <obj_property name="ObjectShortName">slrd_buf</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/slwr_buf" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">slwr_buf</obj_property>
+         <obj_property name="ObjectShortName">slwr_buf</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/count" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">count</obj_property>
+         <obj_property name="ObjectShortName">count</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/start" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">start</obj_property>
+         <obj_property name="ObjectShortName">start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/testbench/uut/wr_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">wr_en</obj_property>
+         <obj_property name="ObjectShortName">wr_en</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/out_wr" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">out_wr</obj_property>
          <obj_property name="ObjectShortName">out_wr</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/out_rd" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">out_rd</obj_property>
-         <obj_property name="ObjectShortName">out_rd</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/pb_buf" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">pb_buf[7:0]</obj_property>
-         <obj_property name="ObjectShortName">pb_buf[7:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject fp_name="/testbench/uut/full_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">full_i</obj_property>
+         <obj_property name="ObjectShortName">full_i</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/uut/full_o" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">full_o</obj_property>
          <obj_property name="ObjectShortName">full_o</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/empty_o_buff" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">empty_o_buff</obj_property>
-         <obj_property name="ObjectShortName">empty_o_buff</obj_property>
+      <wvobject fp_name="/testbench/uut/empty_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">empty_i</obj_property>
+         <obj_property name="ObjectShortName">empty_i</obj_property>
       </wvobject>
-   </wvobject>
-   <wvobject fp_name="/testbench/uut/state" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">state</obj_property>
-      <obj_property name="ObjectShortName">state</obj_property>
-   </wvobject>
-   <wvobject fp_name="/testbench/uut/load" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">load</obj_property>
-      <obj_property name="ObjectShortName">load</obj_property>
-   </wvobject>
-   <wvobject fp_name="group72" type="group">
-      <obj_property name="label">in_fifo_internal</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/testbench/uut/in_fifo/rst" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">rst</obj_property>
-         <obj_property name="ObjectShortName">rst</obj_property>
+      <wvobject fp_name="/testbench/uut/in_full" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">in_full</obj_property>
+         <obj_property name="ObjectShortName">in_full</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/wr_clk" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">wr_clk</obj_property>
-         <obj_property name="ObjectShortName">wr_clk</obj_property>
+      <wvobject fp_name="/testbench/uut/in_empty" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">in_empty</obj_property>
+         <obj_property name="ObjectShortName">in_empty</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/rd_clk" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">rd_clk</obj_property>
-         <obj_property name="ObjectShortName">rd_clk</obj_property>
+      <wvobject fp_name="/testbench/uut/in_rd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">in_rd</obj_property>
+         <obj_property name="ObjectShortName">in_rd</obj_property>
       </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/din" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">din[7:0]</obj_property>
-         <obj_property name="ObjectShortName">din[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/wr_en" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">wr_en</obj_property>
-         <obj_property name="ObjectShortName">wr_en</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/rd_en" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">rd_en</obj_property>
-         <obj_property name="ObjectShortName">rd_en</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/dout" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">dout[7:0]</obj_property>
-         <obj_property name="ObjectShortName">dout[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/full" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">full</obj_property>
-         <obj_property name="ObjectShortName">full</obj_property>
-      </wvobject>
-      <wvobject fp_name="/testbench/uut/in_fifo/empty" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">empty</obj_property>
-         <obj_property name="ObjectShortName">empty</obj_property>
+      <wvobject fp_name="/testbench/uut/out_rd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">out_rd</obj_property>
+         <obj_property name="ObjectShortName">out_rd</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

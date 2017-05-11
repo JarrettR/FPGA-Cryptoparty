@@ -51,7 +51,22 @@ class WPA2 extends Ztex1v1 {
     public WPA2 ( ZtexDevice1 pDev ) throws UsbException {
         super ( pDev );
     }
-
+// ******* load ****************************************************************
+    private static String convertToHexString(byte[] data, int length) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int halfbyte = (data[i] >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9))
+                    buf.append((char) ('0' + halfbyte));
+                else
+                    buf.append((char) ('a' + (halfbyte - 10)));
+                    halfbyte = data[i] & 0x0F;
+                } while(two_halfs++ < 1);
+            }
+    return buf.toString();
+    }
 // ******* load ****************************************************************
 // writes a file to Endpoint 4, reads it back from Endpoint 2 and writes the output to System.out
     public void load ( int fpga, String filename ) throws UsbException, InvalidFirmwareException, IndexOutOfBoundsException {
@@ -111,6 +126,7 @@ class WPA2 extends Ztex1v1 {
         if ( i < 0 )
             throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
         System.out.println("FPGA " + fpga + ": Read "+i+" bytes: `"+new String(buf,0,i)+"'" );  
+        System.out.println("Hex                 : `"+convertToHexString(buf, i)+"'" );  
     }
 
 // ******* read_in ****************************************************************
