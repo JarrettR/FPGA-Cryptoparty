@@ -56,7 +56,7 @@ __xdata BYTE run;
     EP4BCL = 0x80;	// skip package, (re)arm EP4
 */
 	PORTACFG = 0x00; SYNCDELAY; // used PA7/FLAGD as a port pin, not as a FIFO flag
-	FIFOPINPOLAR = bmBIT4 | bmBIT3 | bmBIT2; SYNCDELAY; // OE/RD/WR active high
+	//FIFOPINPOLAR = bmBIT4 | bmBIT3 | bmBIT2; SYNCDELAY; // OE/RD/WR active high
 
 	// EZ-USB automatically commits data in 512-byte chunks
 	EP2AUTOINLENH = 0x02; SYNCDELAY;
