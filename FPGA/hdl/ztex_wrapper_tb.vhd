@@ -57,10 +57,6 @@
     signal CS   :  std_logic;   --CS1-4, AB11 on FPGA
     signal IOB  :  std_logic_vector(7 downto 0);
     signal IOC  :  std_logic_vector(7 downto 0);
-    signal data  :  std_logic_vector(7 downto 0);
-    
-    signal slrd_read :  std_logic;   --Read cycle
-    signal slwr_read :  std_logic;
 
     --TB FIFOs
     signal write_fifo_rd_clk :  std_logic;
@@ -133,13 +129,6 @@ begin
 		 empty => read_fifo_empty
 	  );
     
-    -- Shift register
---    reg_gen: for i in 0 to 254 generate
---        ep2_conc(i + 1) <= ep2_buff(i);
---        ep4_conc(i) <= ep4_buff(i + 1);
---        --ep4_conc(i) <= ep4_init(i + 1) when setup = '1' else ep4_buff(i + 1);
---    end generate reg_gen;
-
     -- Endpoint identification
     with FIFOADR select endpoint <=
         EP2 when "00",
@@ -193,30 +182,14 @@ begin
         
         write_fifo_din <= wr_dat;
         wait until rising_edge(IFCLK); 
---        if endpoint = EP4 then
---            wait until SLOE = '0' and rising_edge(IFCLK); 
---            slrd_read <= '1';
---            IOC <= ep4_buff(0);
---            wait until SLRD = '0' and rising_edge(IFCLK); 
---            ep4_buff(0) <= ep4_conc(1);
---            IOC <= ep4_conc(1);
---            slrd_read <= '0';
---        end if;
     end fx_write; 
     
     
      begin
         rst <= '1';
-        --FLAGB <= '0';
-        --FLAGC <= '0';
         IOC <= "ZZZZZZZZ";
         CS <= '0';
         IOA7 <= '0';
-        --IOA1 <= '0';
-        --IOA0 <= '0';
-        slrd_read <= '0';
-        slwr_read <= '0';
-        --sloe_read <= '0';
         wait for 5 ns;
         rst <= '0';
         
@@ -251,28 +224,21 @@ begin
         --Reset off
         IOA7 <= '0';
         
---        wait for 5 ns; 
---        fx_write(X"30");
---        wait for 5 ns; 
+        wait for 15 ns; 
+        rst <= '1';
+        wait for 5 ns; 
+        rst <= '0';
+        
 --        fx_read;
---        wait for 5 ns; 
---        fx_write(X"31");
---        wait for 5 ns; 
---        fx_read;
---        wait for 5 ns; 
---        fx_write(X"32");
+
         wait for 5 ns; 
         fx_read;
         wait for 5 ns; 
         
         
-        wait for 20 ns; 
+        wait for 30 ns; 
         CS <= '0';
---        --Write
---        fx_read;
-
-
-
+        
         wait; -- will wait forever
     end process tb;
   --  End Test Bench 
