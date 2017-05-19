@@ -27,6 +27,20 @@ end ztex_wrapper;
 
 
 architecture RTL of ztex_wrapper is
+    component state_machine
+    port(
+        IFCLK     : in std_logic;
+        rst_i     : in std_logic;
+        enable_i  : in std_logic;
+        dat_i     : in std_logic_vector(7 downto 0);
+        state_o    : out integer range 0 to 5;
+        ssid_o    : out std_logic_vector(7 downto 0);
+        dat_mk_o  : out    mk_data;
+        valid_o   : out std_ulogic
+    );
+    end component;
+    
+    
     COMPONENT fx2_fifo
       PORT (
         rst : IN STD_LOGIC;
@@ -69,6 +83,13 @@ architecture RTL of ztex_wrapper is
     signal out_empty: std_ulogic;
     signal in_rd_en: std_ulogic;
     signal out_rd: std_ulogic;
+    
+    --State machine signals
+    --signal enable_i  : std_ulogic;
+    signal state_o   : integer range 0 to 5;
+    signal ssid_o    : std_logic_vector(7 downto 0);
+    signal dat_mk_o  : mk_data;
+    signal valid_o   : std_ulogic;
 	
 begin
     pb_o <= pb_buf when CS = '1' else (others => 'Z');
@@ -107,6 +128,18 @@ begin
 		 dout => pb_buf,
 		 full => full_o,
 		 empty => out_empty
+	  );
+    
+    state_machine_block : state_machine
+	  port map (
+        IFCLK => IFCLK,
+        rst_i => rst_i,
+        enable_i => in_rd_en,
+        dat_i => in_buf,
+        state_o => state_o,
+        ssid_o => ssid_o,
+        dat_mk_o => dat_mk_o,
+        valid_o => valid_o
 	  );
       
       

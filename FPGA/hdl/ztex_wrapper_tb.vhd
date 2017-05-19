@@ -86,6 +86,19 @@
                     );
     signal endpoint : ep_type := EP2;
     
+    --Simulation labels
+    type test_type is (unint,
+                    setup,
+                    reset_fpga,
+                    write_tb_fifo,
+                    fifo_printout,
+                    reset_tb,
+                    read_tb_fifo,
+                    tb_complete,
+                    ERR
+                    );
+    signal test_process : test_type := unint;
+    
     constant clk_period : time := 1 ns;
     
 begin
@@ -186,6 +199,7 @@ begin
     
     
      begin
+        test_process <= setup;
         rst <= '1';
         IOC <= "ZZZZZZZZ";
         CS <= '0';
@@ -194,6 +208,7 @@ begin
         rst <= '0';
         
         --Reset FPGA
+        test_process <= reset_fpga;
         wait for 5 ns;
         CS <= '1';
         wait for 5 ns; 
@@ -204,33 +219,32 @@ begin
         IOA7 <= '0';
         wait for 5 ns; 
         
+        test_process <= write_tb_fifo;
         write_fifo_wr_en <= '1';
         for i in 0 to 255 loop
             fx_write(std_logic_vector(to_unsigned(i, 8)));
         end loop;
         write_fifo_wr_en <= '0';
 
-        wait for 35 ns; -- wait until global set/reset completes
+        test_process <= fifo_printout;
+        wait for 35 ns;
         
-        CS <= '1';
-        
-        wait for 5 ns; 
-        
+        test_process <= reset_fpga;
         --Reset on
         IOA7 <= '1';
-        
         wait for 5 ns; 
-        
         --Reset off
         IOA7 <= '0';
-        
         wait for 15 ns; 
+        
+        test_process <= reset_tb;
         rst <= '1';
         wait for 5 ns; 
         rst <= '0';
         
 --        fx_read;
 
+        test_process <= read_tb_fifo;
         wait for 5 ns; 
         fx_read;
         wait for 5 ns; 
@@ -239,6 +253,7 @@ begin
         wait for 30 ns; 
         CS <= '0';
         
+        test_process <= tb_complete;
         wait; -- will wait forever
     end process tb;
   --  End Test Bench 
