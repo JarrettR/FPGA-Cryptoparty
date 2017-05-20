@@ -10,9 +10,10 @@ entity state_machine is
         rst_i     : in std_logic;
         enable_i  : in std_logic;
         dat_i     : in std_logic_vector(7 downto 0);
-        state_o    : out integer range 0 to 5;
+        state_o   : out integer range 0 to 5;
         ssid_o    : out std_logic_vector(7 downto 0);
         dat_mk_o  : out    mk_data;
+        dat_o     : out std_logic_vector(7 downto 0);
         valid_o   : out std_ulogic
    );
 end state_machine;
@@ -81,11 +82,14 @@ begin
         if IFCLK'event and IFCLK = '1' then
             if rst_i = '1' then
                 state <= STATE_READY; 
---                for i in 0 to ((MK_SIZE * 2) + 1) loop
---                    input(i) <= "00000000";
---                end loop;
+                dat_o <= X"00"; 
+                valid_o <= '0'; 
+                for i in 0 to count_max loop
+                    mk_initial(i) <= X"00";
+                end loop;
             elsif ( enable_i = '1' ) then
                 if ( state = STATE_READY ) then             --STATE_READY
+                    valid_o <= '0'; 
                     if ( command = CMD_INPUT ) then
                         state <= STATE_INPUT;
                         count <= 0;
@@ -102,14 +106,20 @@ begin
                         state <= STATE_READY;
                     end if;
                 elsif ( state = STATE_READ_INPUT ) then     --STATE_READ_INPUT
-                    if ( dat_i = X"01" ) then
-                        state <= STATE_INPUT;
-                    elsif ( dat_i = X"02" ) then
-                        state <= STATE_READ_INPUT;
+                    valid_o <= '1'; 
+                    if ( count < count_max ) then
+                        dat_o <= std_logic_vector(mk_initial(count));
+                        count <= count + 1;
+                    else
+                        dat_o <= std_logic_vector(mk_initial(count));
+                        count <= 0;
+                        state <= STATE_READY;
                     end if;
                 --else
 				
                 end if;
+            else
+                valid_o <= '0'; 
             end if;
             --count <= count + '1';
         end if;

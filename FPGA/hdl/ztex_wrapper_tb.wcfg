@@ -289,6 +289,11 @@
          <obj_property name="ObjectShortName">ssid_o[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
+      <wvobject fp_name="/testbench/uut/state_machine_block/dat_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dat_o[7:0]</obj_property>
+         <obj_property name="ObjectShortName">dat_o[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
       <wvobject fp_name="/testbench/uut/state_machine_block/dat_mk_o" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dat_mk_o[0:9]</obj_property>
          <obj_property name="ObjectShortName">dat_mk_o[0:9]</obj_property>

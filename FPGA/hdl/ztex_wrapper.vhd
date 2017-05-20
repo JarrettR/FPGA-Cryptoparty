@@ -36,6 +36,7 @@ architecture RTL of ztex_wrapper is
         state_o    : out integer range 0 to 5;
         ssid_o    : out std_logic_vector(7 downto 0);
         dat_mk_o  : out    mk_data;
+        dat_o     : out std_logic_vector(7 downto 0);
         valid_o   : out std_ulogic
     );
     end component;
@@ -124,7 +125,7 @@ begin
 		 rd_clk => IFCLK,
 		 din => out_buf,
 		 wr_en => out_wr,
-		 rd_en => full_i,
+		 rd_en => start,
 		 dout => pb_buf,
 		 full => full_o,
 		 empty => out_empty
@@ -139,7 +140,8 @@ begin
         state_o => state_o,
         ssid_o => ssid_o,
         dat_mk_o => dat_mk_o,
-        valid_o => valid_o
+        dat_o => out_buf,
+        valid_o => out_wr
 	  );
       
       
@@ -150,7 +152,7 @@ begin
                 start <= '0';
                 load <= '0';
                 fifoadr_buf <= "01";
-                out_buf <= x"35";
+                --out_buf <= x"35";
                 slwr_buf <= '1';
                 slrd_buf <= '1';
                 sloe_buf <= '1';

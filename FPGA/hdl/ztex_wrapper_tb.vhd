@@ -93,6 +93,7 @@
                     write_tb_fifo,
                     fifo_printout,
                     reset_tb,
+                    write_state_machine_readcmd,
                     read_tb_fifo,
                     tb_complete,
                     ERR
@@ -242,7 +243,23 @@ begin
         wait for 5 ns; 
         rst <= '0';
         
+        wait for 5 ns; 
+        
+        --Fixes a strange clock glitch
+        wait for 0.1 ns;
+        
+        test_process <= write_state_machine_readcmd;
+        write_fifo_wr_en <= '1';
+        for i in 1 to 11 loop
+            fx_write(std_logic_vector(to_unsigned(i, 8)));
+        end loop;
+        for i in 2 to 15 loop
+            fx_write(std_logic_vector(to_unsigned(i, 8)));
+        end loop;
+        write_fifo_wr_en <= '0';
+        
 --        fx_read;
+        wait for 5 ns; 
 
         test_process <= read_tb_fifo;
         wait for 5 ns; 
