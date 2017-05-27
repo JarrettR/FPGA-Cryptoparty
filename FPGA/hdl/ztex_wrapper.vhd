@@ -18,6 +18,7 @@ entity ztex_wrapper is
         FIFOADR : out std_logic_vector(1 downto 0);
         FLAGB    : in std_logic;  --Full
         FLAGC    : in std_logic; --Empty
+        PKTEND    : out std_logic;
         rst_i     : in std_logic
 
 --      SCL     : in std_logic;
@@ -27,20 +28,6 @@ end ztex_wrapper;
 
 
 architecture RTL of ztex_wrapper is
-    component state_machine
-    port(
-        IFCLK     : in std_logic;
-        rst_i     : in std_logic;
-        enable_i  : in std_logic;
-        dat_i     : in std_logic_vector(7 downto 0);
-        state_o    : out integer range 0 to 5;
-        ssid_o    : out std_logic_vector(7 downto 0);
-        dat_mk_o  : out    mk_data;
-        dat_o     : out std_logic_vector(7 downto 0);
-        valid_o   : out std_ulogic
-    );
-    end component;
-    
     
     COMPONENT fx2_fifo
       PORT (
@@ -57,115 +44,130 @@ architecture RTL of ztex_wrapper is
     END COMPONENT;
 
 	--signal declaration
-    signal pb_buf : std_logic_vector(7 downto 0);
-    signal out_buf : std_logic_vector(7 downto 0);
+    --signal pb_buf : std_logic_vector(7 downto 0);
+    --signal out_buf : std_logic_vector(7 downto 0);
     signal in_buf : std_logic_vector(7 downto 0);
     signal load: std_ulogic;
     signal sloe_buf: std_ulogic;
     signal slrd_buf: std_ulogic;
     signal slwr_buf: std_ulogic;
+    signal pktend_buf: std_ulogic;
     signal fifoadr_buf: std_logic_vector(1 downto 0);
     signal count: integer range 0 to (MK_SIZE * 2) + 1;
     --constant rst : unsigned(7 downto 0) := X"30";  -- Reset
 
     
-    --fifo signals
-    signal start: std_ulogic;
+    signal direction: std_ulogic;
+    
     signal wr_en: std_ulogic;
     signal out_wr: std_ulogic;
     --signal rd_en: std_ulogic;
     signal full_i: std_ulogic;
     signal full_o: std_ulogic;
     signal empty_i: std_ulogic;
-    --signal empty_o: std_ulogic;
-    signal in_wr_en: std_ulogic;
-    signal in_full: std_ulogic;
-    signal in_empty: std_ulogic;
-    signal out_empty: std_ulogic;
-    signal in_rd_en: std_ulogic;
-    signal out_rd: std_ulogic;
     
-    --State machine signals
-    --signal enable_i  : std_ulogic;
-    signal state_o   : integer range 0 to 5;
-    signal ssid_o    : std_logic_vector(7 downto 0);
-    signal dat_mk_o  : mk_data;
-    signal valid_o   : std_ulogic;
+    --FPGA FIFOs
+    signal write_fifo_rd_clk :  std_logic;
+    signal write_fifo_din :  std_logic_vector(7 downto 0);
+    signal write_fifo_wr_en :  std_logic;
+    signal write_fifo_rd_en :  std_logic;
+    signal write_fifo_dout :  std_logic_vector(7 downto 0);
+    signal write_fifo_full :  std_logic;
+    signal write_fifo_empty :  std_logic;
+    signal read_fifo_din :  std_logic_vector(7 downto 0);
+    signal read_fifo_wr_en :  std_logic;
+    signal read_fifo_rd_en :  std_logic;
+    signal read_fifo_dout :  std_logic_vector(7 downto 0);
+    signal read_fifo_full :  std_logic;
+    signal read_fifo_empty :  std_logic;
 	
 begin
-    pb_o <= pb_buf when CS = '1' else (others => 'Z');
-    SLOE <= sloe_buf when CS = '1' and in_full = '0' else
-            '1' when CS = '1' and in_full = '0' else
+    SLOE <= sloe_buf when CS = '1' else
+            --'1' when CS = '1' and in_full = '0' else
             'Z';
     SLRD <= slrd_buf when CS = '1' else 'Z';
     SLWR <= slwr_buf when CS = '1' else 'Z';
     FIFOADR <= fifoadr_buf when CS = '1' else "ZZ";
-    in_wr_en <= not sloe_buf when CS = '1' and in_full = '0' else '0';
-    in_rd_en <= not in_empty;
-    empty_i <= FLAGC when CS = '1' else '0';
-    full_i <= FLAGB when CS = '1' else '0';
-    --out_rd <= std_logic_vector( sck_i ) when CS = '1' else (others => 'Z');
+    empty_i <= not FLAGC when CS = '1' else '1';
+    full_i <= not FLAGB when CS = '1' else '0';
+    full_o <= read_fifo_full when CS = '1' else '0';
+    PKTEND <= pktend_buf when CS = '1' else '0';            --Unused
+    pb_o <= write_fifo_dout when CS = '1' else (others => 'Z');
+    fifoadr_buf <= "01" when direction = '1' else "00";
+      
+    sloe_buf <= not read_fifo_wr_en when direction = '1' else '1';
+    slrd_buf <= IFCLK when direction = '1' and read_fifo_wr_en = '1' else '1';
+    slwr_buf <= IFCLK when direction = '0' and write_fifo_rd_en = '1' else '1';
     
-    in_fifo : fx2_fifo
-	  port map (
-		 rst => rst_i,
-		 wr_clk => slrd_buf,
-		 rd_clk => IFCLK,
-		 din => pc_i,
-		 wr_en => in_wr_en,
-		 rd_en => in_rd_en,
-		 dout => in_buf,
-		 full => in_full,
-		 empty => in_empty
-	  );
-    out_fifo : fx2_fifo
-	  port map (
+    --Read
+    --Read is always enabled when direction is in and FX2LP is not empty
+    read_fifo_wr_en <= '1' when direction = '1' and empty_i = '0' else '0';
+    
+    --Write
+    --write_fifo_rd_en <= not write_fifo_empty when direction = '0' else '0';
+    
+
+    --Loopback
+    --read_fifo_rd_en <= not read_fifo_empty;
+    --write_fifo_wr_en <= not read_fifo_empty;
+        
+    read_fifo : fx2_fifo port map (
 		 rst => rst_i,
 		 wr_clk => IFCLK,
 		 rd_clk => IFCLK,
-		 din => out_buf,
-		 wr_en => out_wr,
-		 rd_en => start,
-		 dout => pb_buf,
-		 full => full_o,
-		 empty => out_empty
+		 din => pc_i,
+		 wr_en => read_fifo_wr_en,
+		 rd_en => read_fifo_rd_en,
+		 dout => read_fifo_dout,
+		 full => read_fifo_full,
+		 empty => read_fifo_empty
 	  );
-    
-    state_machine_block : state_machine
-	  port map (
-        IFCLK => IFCLK,
-        rst_i => rst_i,
-        enable_i => in_rd_en,
-        dat_i => in_buf,
-        state_o => state_o,
-        ssid_o => ssid_o,
-        dat_mk_o => dat_mk_o,
-        dat_o => out_buf,
-        valid_o => out_wr
+    write_fifo : fx2_fifo port map (
+		 rst => rst_i,
+		 wr_clk => IFCLK,
+		 rd_clk => IFCLK,
+		 din => write_fifo_din,
+		 wr_en => write_fifo_wr_en,
+		 rd_en => write_fifo_rd_en,
+		 dout => write_fifo_dout,
+		 full => write_fifo_full,
+		 empty => write_fifo_empty
 	  );
-      
       
     ztex_comm: process(IFCLK)
     begin
         if IFCLK'event and IFCLK = '1' then
             if rst_i = '1' then
-                start <= '0';
-                load <= '0';
-                fifoadr_buf <= "01";
-                --out_buf <= x"35";
-                slwr_buf <= '1';
-                slrd_buf <= '1';
-                sloe_buf <= '1';
+                --slwr_buf <= '1';
+                --slrd_buf <= '1';
+                --sloe_buf <= '1';
+                pktend_buf <= '1';
+                direction <= '1';
+                read_fifo_rd_en <= '0';
+                write_fifo_wr_en <= '0';
+                write_fifo_rd_en <= '0';
             else
-                sloe_buf <= '0';
-                if ( empty_i = '1' ) then
-                    if ( start = '0' ) then
-                        start <= '1';
-                    else
-                        slrd_buf <= not slrd_buf;
-                    end if;
+                --Loopbackb
+                if read_fifo_empty = '0' then
+                    read_fifo_rd_en <= '1';
+                end if;
+                if read_fifo_rd_en = '1' then
+                    write_fifo_wr_en <= '1';
+                end if;
+                --Output
+                if write_fifo_empty = '0' and direction = '0' then
+                    write_fifo_rd_en <= '1';
                 else
-                    slrd_buf <= '1';
+                    write_fifo_rd_en <= '0';
+                end if;
+
+                if read_fifo_dout = X"08" then
+                    write_fifo_din <= X"CE";
+                elsif read_fifo_dout = X"18" then
+                    write_fifo_din <= read_fifo_dout;
+                    direction <= '0';
+                else
+                    write_fifo_din <= read_fifo_dout;
                 end if;
             end if;
         end if;
