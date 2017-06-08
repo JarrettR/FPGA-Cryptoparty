@@ -1,1 +1,1 @@
-java -cp wpa2.jar Wpa2
+java -cp wpa2.jar WPA2
