@@ -89,7 +89,7 @@ class UsbReader extends Thread {
         System.out.println("Send " + i + " bytes: `" + input + "'" );
 
         try {
-                Thread.sleep( 10 );
+                Thread.sleep( 100 );
         }
             catch ( InterruptedException e ) {
         }
@@ -98,7 +98,7 @@ class UsbReader extends Thread {
         i = LibusbJava.usb_bulk_read(ztex.handle(), 0x82, buf, 1024, 1000);
         if ( i < 0 )
             throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
-            
+
         System.out.println("Reading "+i+" bytes");
         for (int j = 0; j < i; j++)
             System.out.println(j+": " + String.format("%02x", buf[j] ));

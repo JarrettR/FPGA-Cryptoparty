@@ -45,7 +45,7 @@ ENABLE_HS_FPGA_CONF(6);
 	REVCTL = 0x1;
 	SYNCDELAY; 
 
-	IFCONFIG = bmBIT7 | bmBIT5 | 3; 	// internal IFCLK, 30 MHz, OE, slave FIFO interface
+	IFCONFIG = bmBIT7 | bmBIT5 | bmBIT1 | bmBIT0; 	// internal IFCLK, 30 MHz, OE, slave FIFO interface
 	SYNCDELAY; 
 	EP2FIFOCFG = bmBIT3 | bmBIT0;           // AOTUOIN, WORDWIDE
 	SYNCDELAY;

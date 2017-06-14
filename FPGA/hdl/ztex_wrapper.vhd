@@ -15,6 +15,7 @@ entity ztex_wrapper is
         SLRD     : out std_logic;
         SLWR     : out std_logic;
         FIFOADR : out std_logic_vector(1 downto 0);
+        FLAGA    : in std_logic;  --PF
         FLAGB    : in std_logic;  --Full
         FLAGC    : in std_logic; --Empty
         PKTEND    : out std_logic;
@@ -30,6 +31,7 @@ end ztex_wrapper;
 architecture RTL of ztex_wrapper is
 
     signal fd_buf : std_logic_vector(15 downto 0);
+    signal fd_conc : std_logic_vector(15 downto 0);
     signal sloe_buf: std_ulogic;
     signal slrd_buf: std_ulogic;
     signal slwr_buf: std_ulogic;
@@ -56,40 +58,42 @@ begin
     SLRD <= slrd_buf when CS = '1' else 'Z';
     SLWR <= slwr_buf when CS = '1' else 'Z';
     FIFOADR <= fifoadr_buf when CS = '1' else "ZZ";
-    PKTEND <= pktend_buf when CS = '1' else '0';            --Unused
+    PKTEND <= pktend_buf when CS = '1' else 'Z';            --Unused
     fd <= fd_buf when CS = '1' and direction = '0' else (others => 'Z');
     fifoadr_buf <= "10" when direction = '1' else "00";
 
     sloe_buf <= '0' when direction = '1' else '1';
-    slrd_buf <= '0' when direction = '1' else '1';
+    slrd_buf <= '0' when direction = '1' and FLAGC = '1' else '1'; --Input and FX2 not empty
     slwr_buf <= '0' when direction = '0' else '1';
 
+    fd_conc <= fd_buf;
+    
     ztex_comm: process(IFCLK, RESET)
     begin
-        if IFCLK'event and IFCLK = '1' then
-            if RESET = '1' then
-                --slwr_buf <= '1';
-                --slrd_buf <= '1';
-                --sloe_buf <= '1';
-                fd_buf <= X"ce5d";
-                pktend_buf <= '1';
+        if RESET = '1' then
+            --slwr_buf <= '1';
+            --slrd_buf <= '1';
+            --sloe_buf <= '1';
+            fd_buf <= X"ce5d";
+            pktend_buf <= '1';
+            direction <= '0';
+            state <= STATE_READ_PROGRESS;
+        elsif IFCLK'event and IFCLK = '1' then
+
+            if state = STATE_READY then
                 direction <= '1';
-                state <= STATE_READY;
-
-            elsif IFCLK'event and IFCLK = '1' then
-
-                if state = STATE_READY then
-                    direction <= '1';
-                    if fd = X"3232" then
-                        state <= STATE_READ_INPUT;
-                        fd_buf <= X"3837";
-                    elsif CONT = '1' then
-                        fd_buf <= fd + 1;
-                    end if;
-                elsif state = STATE_READ_INPUT then
-                    state <= STATE_READY;
-                    direction <= '0';
+                if fd = X"3232" then
+                    state <= STATE_READ_INPUT;
+                    fd_buf <= X"3837";
+                elsif CONT = '1' then
+                    fd_buf(7 downto 0) <= fd(7 downto 0) - 1;
                 end if;
+            elsif state = STATE_READ_INPUT then
+                state <= STATE_READY;
+                direction <= '0';
+            elsif state = STATE_READ_PROGRESS then
+                fd_buf(7 downto 0) <= fd_conc(7 downto 0) + 1;
+                direction <= '0';
             end if;
         end if;
     end process ztex_comm;

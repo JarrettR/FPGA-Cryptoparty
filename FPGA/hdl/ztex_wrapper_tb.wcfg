@@ -122,6 +122,8 @@
          <obj_property name="ElementShortName">read_fifo_dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">read_fifo_dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#ff0000</obj_property>
       </wvobject>
       <wvobject fp_name="/testbench/read_fifo_full" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">read_fifo_full</obj_property>
