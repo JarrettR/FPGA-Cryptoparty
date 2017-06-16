@@ -83,7 +83,7 @@ begin
             if state = STATE_READY then
                 direction <= '1';
                 if fd = X"3232" then
-                    state <= STATE_READ_INPUT;
+                    state <= STATE_READ_PROGRESS;
                     fd_buf <= X"3837";
                 elsif CONT = '1' then
                     fd_buf(7 downto 0) <= fd(7 downto 0) - 1;
@@ -92,8 +92,13 @@ begin
                 state <= STATE_READY;
                 direction <= '0';
             elsif state = STATE_READ_PROGRESS then
-                fd_buf(7 downto 0) <= fd_conc(7 downto 0) + 1;
                 direction <= '0';
+                if CONT = '1' then
+                    fd_buf(7 downto 0) <= fd_conc(7 downto 0) + 1;
+                else
+                    fd_buf(7 downto 0) <= fd_conc(7 downto 0) - 1;
+                    --state <= STATE_READY;
+                end if;
             end if;
         end if;
     end process ztex_comm;

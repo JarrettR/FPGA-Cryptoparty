@@ -26,7 +26,7 @@ EP_CONFIG(2,0,BULK,IN,512,4);
 EP_CONFIG(6,0,BULK,OUT,512,2);
 
 // select ZTEX USB FPGA Module 1.15 as target  (required for FPGA configuration)
-IDENTITY_UFM_1_15Y(10.15.0.0,0);	 
+IDENTITY_UFM_1_15Y(10.15.0.0,0);
 
 // this product string is also used for identification by the host software
 #define[PRODUCT_STRING]["WPA2 for UFM 1.15y"]
@@ -41,16 +41,16 @@ ENABLE_HS_FPGA_CONF(6);
 	OEA = bmBIT0 | bmBIT7;
 
 	EP2CS &= ~bmBIT0;			// clear stall bit
-    
+
 	REVCTL = 0x1;
-	SYNCDELAY; 
+	SYNCDELAY;
 
 	IFCONFIG = bmBIT7 | bmBIT5 | bmBIT1 | bmBIT0; 	// internal IFCLK, 30 MHz, OE, slave FIFO interface
-	SYNCDELAY; 
+	SYNCDELAY;
 	EP2FIFOCFG = bmBIT3 | bmBIT0;           // AOTUOIN, WORDWIDE
 	SYNCDELAY;
-    
-	EP2AUTOINLENH = 2;                 	// 512 bytes 
+
+	EP2AUTOINLENH = 2;                 	// 512 bytes
 	SYNCDELAY;
 	EP2AUTOINLENL = 0;
 	SYNCDELAY;
@@ -63,20 +63,20 @@ ENABLE_HS_FPGA_CONF(6);
 	SYNCDELAY;
 
 	FIFOPINPOLAR = 0;
-	SYNCDELAY; 
+	SYNCDELAY;
 	PINFLAGSAB = 0;
-	SYNCDELAY; 
+	SYNCDELAY;
 	PINFLAGSCD = 0;
-	SYNCDELAY; 
+	SYNCDELAY;
 
 	IOA7 = 0;				// reset off
 ]
 
 // set mode
 ADD_EP0_VENDOR_COMMAND((0x60,,
-	IOA7 = 1;				// reset on
+	//IOA7 = 1;				// reset on
 	IOA0 = SETUPDAT[2] ? 1 : 0;
-	IOA7 = 0;				// reset off
+	//IOA7 = 0;				// reset off
 ,,
 	NOP;
 ));;
@@ -84,11 +84,10 @@ ADD_EP0_VENDOR_COMMAND((0x60,,
 // include the main part of the firmware kit, define the descriptors, ...
 #include[ztex.h]
 
-void main(void)	
+void main(void)
 {
     init_USB();
 
-    while (1) {	
+    while (1) {
     }
 }
-

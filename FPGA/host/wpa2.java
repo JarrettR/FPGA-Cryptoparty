@@ -85,7 +85,8 @@ class UsbReader extends Thread {
 
         int i = LibusbJava.usb_bulk_write(ztex.handle(), 0x06, buf, buf.length, 1000);
         if ( i<0 )
-            throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
+            //throw new UsbException("Error sending data: " + LibusbJava.usb_strerror());
+            System.out.println("Error sending data: " + LibusbJava.usb_strerror());
         System.out.println("Send " + i + " bytes: `" + input + "'" );
 
         try {
@@ -94,14 +95,28 @@ class UsbReader extends Thread {
             catch ( InterruptedException e ) {
         }
 
-        buf = new byte[1024];
-        i = LibusbJava.usb_bulk_read(ztex.handle(), 0x82, buf, 1024, 1000);
-        if ( i < 0 )
-            throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
+        buf = new byte[512];
+        i = LibusbJava.usb_bulk_read(ztex.handle(), 0x82, buf, 512, 1000);
+        int iter = 0;
+        while ( i >= 0 && iter < 5) {
 
-        System.out.println("Reading "+i+" bytes");
-        for (int j = 0; j < i; j++)
-            System.out.println(j+": " + String.format("%02x", buf[j] ));
+            System.out.println("Reading "+i+" bytes");
+            for (int j = 0; j < i; j++) {
+                if (j % 16 == 0)
+                    System.out.print(j+":");
+
+                System.out.print(" " + String.format("%02x", buf[j] ));
+                if (j % 16 == 15)
+                    System.out.println(";");
+            }
+
+            i = LibusbJava.usb_bulk_read(ztex.handle(), 0x82, buf, 512, 1000);
+            iter++;
+        }
+        if ( i < 0 ) {
+            //throw new UsbException("Error receiving data: " + LibusbJava.usb_strerror());
+            System.out.println("Error: read "+i);
+        }
     }
 
     public void run() {
@@ -131,7 +146,7 @@ class UsbReader extends Thread {
             }
 
             int i = readCount % bufNum;
-            bufBytes[i] = LibusbJava.usb_bulk_read(ztex.handle(), 0x82, buf[i], bufSize, 1000);
+            bufBytes[i] = LibusbJava.usb_bulk_read(ztex.handle(), 0x82, buf[i], 512, 1000);
             //	    System.out.println("Buffer " + i +": read " + bufBytes[i] + " bytes");
         }
 
@@ -163,6 +178,7 @@ class WPA2 extends Ztex1v1 {
         try {
             // init USB stuff
             LibusbJava.usb_init();
+            LibusbJava.usb_set_debug(5);
 
             // scan the USB bus
             ZtexScanBus1 bus = new ZtexScanBus1( ZtexDevice1.ztexVendorId, ZtexDevice1.ztexProductId, true, false, 1);
@@ -239,48 +255,24 @@ class WPA2 extends Ztex1v1 {
                 reader.reset();
 
                 int vcurrent = -1;
+                //for (int i=0; i<1; i++) {
+                    reader.write("144774222334455555");
+                //}
+
+
+                System.out.println("Continous mode");
+                // EZ-USB FIFO test (continous mode)
+                ztex.vendorCommand (0x60, "Set test mode", 1, 0);
+                reader.reset();
+
+                vcurrent = -1;
                 for (int i=0; i<10; i++) {
                     reader.write("144774222334455555");
                 }
-                for (int i=0; i<10; i++) {
-                    int j = reader.getBuffer();
-                    int bb = reader.bufBytes[j];
-                    byte[] b = reader.buf[j];
-                    int current = vcurrent+1;
-                    int lastwi = -1;
 
-                    for (int k=1; k<bb; k+=2 ) {
-                        if ( (b[k] & 0x80) == 0 ) { //LSB
-                            current = ((b[k] & 0x7f) << 8) | (b[k-1] & 0xff);
-                            if ( lastwi == 0 )
-                            System.out.println("Alignment error: 0 at " + i + ":" + (k-1) );
-                            lastwi = 0;
-                        } else { //MSB
-                            current |= ((b[k] & 0x7f) << 23) | ((b[k-1] & 0xff) << 15);
-
-                            vcurrent += 1;
-                            if ( vcurrent % 100 == 90 )
-                            vcurrent += 10;
-
-                            if ( lastwi == 1 ) {
-                                System.out.println("Alignment error: 1 at " + i + ":" + (k-1) );
-                            } else if ( vcurrent != current ) {
-                                if ( (i != 0) && ( k > 5) ) {
-                                    System.out.println("Error: 0b" + Integer.toBinaryString(vcurrent) + " expected at " + i + ":" + (k-3) + " but " );
-                                    System.out.println("       0b" + Integer.toBinaryString(current) + " found");
-                                }
-                                vcurrent = current;
-                            }
-
-                            lastwi = 1;
-                            //				System.out.println(current);
-                        }
-                        //		    	System.out.println(b[k]+"  " +b[k+1]);
-                    }
-                    //System.out.print("Buffer " + i + ": " + (errors-ferrors) + " errors,  " + ferrors + " FIFO errors,  " + aerrors + " alignment errors  \r");
-                }
                 System.out.println();
 
+                /*
                 // performance test (continous mode)
                 ztex.vendorCommand (0x60, "Set test mode", 1, 0);
                 reader.reset();
@@ -296,36 +288,9 @@ class WPA2 extends Ztex1v1 {
                     byte[] b = reader.buf[j];
                     int current = vcurrent+1;
 
-                    for (int k=1; k<bb; k+=2 ) {
-                        if ( (b[k] & 0x80) == 0 ) {
-                            current = ((b[k] & 0x7f) << 8) | (b[k-1] & 0xff);
-                            if ( lastwi == 0 )
-                            intAdj -= 1;
-                            lastwi = 0;
-                        } else {
-                            current |= ((b[k] & 0x7f) << 23) | ((b[k-1] & 0xff) << 15);
-
-                            if ( lastwi == 1 ) {
-                                intAdj += 1;
-                            } else {
-                                vcurrent += 1;
-                                int it = (current - vcurrent)*2 + intAdj;
-                                if ( it > 0 && words > 0) {
-                                    intSum += it;
-                                    if ( it > intMax )
-                                    intMax = it;
-                                }
-                                words += 2;
-                                vcurrent = current;
-                                intAdj = 0;
-                            }
-                            lastwi = 1;
-                            //			    System.out.println(current);
-                        }
-                        //		    System.out.println(b[k]+"  " +b[k+1]);
-                    }
                     System.out.print("Buffer " + i + ": " + Math.round(words*6000.0/(words+intSum))/100.0 + "MB/s, max. interrupt: " + Math.round(intMax/150.0)/100 + "ms    \r");
                 }
+                */
                 System.out.println();
             }
 
