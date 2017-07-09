@@ -22,8 +22,8 @@
 // configure endpoint 2, in, quad buffered, 512 bytes, interface 0
 EP_CONFIG(2,0,BULK,IN,512,4);
 
-// configure endpoint 6, out, doublebuffered, 512 bytes, interface 0
-EP_CONFIG(6,0,BULK,OUT,512,2);
+// configure endpoint 6, out, quad ebuffered, 512 bytes, interface 0
+EP_CONFIG(6,0,BULK,OUT,512,4);
 
 // select ZTEX USB FPGA Module 1.15 as target  (required for FPGA configuration)
 IDENTITY_UFM_1_15Y(10.15.0.0,0);
@@ -41,23 +41,30 @@ ENABLE_HS_FPGA_CONF(6);
 	OEA = bmBIT0 | bmBIT7;
 
 	EP2CS &= ~bmBIT0;			// clear stall bit
-
-	REVCTL = 0x1;
 	SYNCDELAY;
+	EP6CS &= ~bmBIT0;			// clear stall bit
 
-	IFCONFIG = bmBIT7 | bmBIT5 | bmBIT1 | bmBIT0; 	// internal IFCLK, 30 MHz, OE, slave FIFO interface
-	SYNCDELAY;
-	EP2FIFOCFG = bmBIT3 | bmBIT0;           // AOTUOIN, WORDWIDE
+	REVCTL = 0x03;
 	SYNCDELAY;
 
-	EP2AUTOINLENH = 2;                 	// 512 bytes
+	IFCONFIG = bmBIT7 | bmBIT5 | bmBIT1 | bmBIT0; 	// internal IFCLK, 48 MHz, OE, slave FIFO interface
 	SYNCDELAY;
-	EP2AUTOINLENL = 0;
+	EP2FIFOCFG = bmBIT3 | bmBIT0;           // AUTOIN, WORDWIDE
 	SYNCDELAY;
+	EP6FIFOCFG = bmBIT4 | bmBIT0;           // AUTOOUT, WORDWIDE
+	SYNCDELAY;
+
+	//Default values
+	// EP2AUTOINLENH = 2;                 	// 512 bytes
+	// SYNCDELAY;
+	// EP2AUTOINLENL = 0;
+	// SYNCDELAY;
 
 	FIFORESET = 0x80;			// reset FIFO
 	SYNCDELAY;
-	FIFORESET = 2;
+	FIFORESET = 0x82;
+	SYNCDELAY;
+	FIFORESET = 0x86;
 	SYNCDELAY;
 	FIFORESET = 0x00;
 	SYNCDELAY;
@@ -67,6 +74,15 @@ ENABLE_HS_FPGA_CONF(6);
 	PINFLAGSAB = 0;
 	SYNCDELAY;
 	PINFLAGSCD = 0;
+	SYNCDELAY;
+
+	OUTPKTEND = 0x86;
+	SYNCDELAY;
+	OUTPKTEND = 0x86;
+	SYNCDELAY;
+	OUTPKTEND = 0x86;
+	SYNCDELAY;
+	OUTPKTEND = 0x86;
 	SYNCDELAY;
 
 	IOA7 = 0;				// reset off

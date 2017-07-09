@@ -79,7 +79,18 @@ class UsbReader extends Thread {
     }
 
     public void write ( String input ) throws UsbException, InvalidFirmwareException, IndexOutOfBoundsException {
-        byte buf[] = input.getBytes();
+        byte buf[] = { (byte)0x50, (byte)0x34,
+                        (byte)0x51, (byte)0x31,
+                        (byte)0x52, (byte)0x32,
+                        (byte)0x53, (byte)0x38,
+                        (byte)0x51, (byte)0x31,
+                        (byte)0x00, (byte)0x00,
+                        (byte)0x00, (byte)0x00,
+                        (byte)0x90, (byte)0xce,
+                        (byte)0x91, (byte)0xce,
+                        (byte)0x92, (byte)0xce,
+                        (byte)0x93, (byte)0xce,
+                        (byte)0xe94, (byte)0xce };//input.getBytes();
         //byte buf[] = "144774222334455555".getBytes();
         //System.out.println("Sending " + buf.length + " bytes: `" + input + "'" );
 
@@ -178,7 +189,7 @@ class WPA2 extends Ztex1v1 {
         try {
             // init USB stuff
             LibusbJava.usb_init();
-            LibusbJava.usb_set_debug(5);
+            //LibusbJava.usb_set_debug(5);
 
             // scan the USB bus
             ZtexScanBus1 bus = new ZtexScanBus1( ZtexDevice1.ztexVendorId, ZtexDevice1.ztexProductId, true, false, 1);
