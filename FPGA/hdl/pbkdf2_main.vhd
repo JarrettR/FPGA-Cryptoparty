@@ -30,8 +30,8 @@ port(
     load_i              : in    std_ulogic;
     mk_i                : in    mk_data;
     ssid_i              : in    ssid_data;
-    dat_o               : out    w_output;
-    valid_o             : out    std_ulogic  
+    dat_o               : out    w_pmk;
+    valid_o             : out    std_ulogic
     );
 end pbkdf2_main;
 
@@ -49,17 +49,17 @@ architecture RTL of pbkdf2_main is
         );
     end component;
 
-    
+
     type state_type is (STATE_IDLE,
                         STATE_X_START, STATE_X_PROCESS,
                         STATE_CLEANUP, STATE_FINISHED);
-    
+
     signal state           : state_type := STATE_IDLE;
-        
+
     signal mk              : mk_data;
     signal ssid            : ssid_data;
     signal ssid_length     : std_ulogic_vector(0 to 63);
-    
+
     signal mk_in              : w_input;
     signal out_x1              : w_output;
     signal out_x2              : w_output;
@@ -72,22 +72,22 @@ architecture RTL of pbkdf2_main is
     signal x1_in              : w_input;
     signal x2_in              : w_input;
     --signal mk              : w_input;
-  
-  
+
+
     signal valid        :    std_ulogic;
     signal valid_x1        :    std_ulogic;
     signal valid_x2        :    std_ulogic;
     signal load_x1        :    std_ulogic;
     signal load_x2        :    std_ulogic;
-     
+
     signal i: integer range 0 to 4096;
 --type w_input is array(0 to 15) of std_ulogic_vector(0 to 31); linksys
 begin
 
     HMAC1: hmac_main port map (clk_i,rst_i,mk_in,x1_in,ssid_length,load_x1,out_x1,valid_x1);
     HMAC2: hmac_main port map (clk_i,rst_i,mk_in,x2_in,ssid_length,load_x2,out_x2,valid_x2);
-    
-    process(clk_i)   
+
+    process(clk_i)
     begin
         if (clk_i'event and clk_i = '1') then
             if rst_i = '1' then
@@ -106,12 +106,12 @@ begin
                 for x in 3 to 15 loop
                     mk_in(x) <= X"00000000";
                 end loop;
-                
+
                 for x in 0 to 4 loop
                     f1(x) <= X"00000000";
                     f2(x) <= X"00000000";
                 end loop;
-                
+
                 ssid <= ssid_i;
                 --Todo: Fix this, it is dumb too
                 x1_in(0) <= std_ulogic_vector(ssid_i(0)) & std_ulogic_vector(ssid_i(1)) & std_ulogic_vector(ssid_i(2)) & std_ulogic_vector(ssid_i(3));
@@ -141,7 +141,7 @@ begin
                         for x in 0 to 4 loop
                             x1_in(x) <= out_x1(x);
                             x2_in(x) <= out_x2(x);
-                            
+
                             f1(x) <= f1_con(x) xor out_x1(x);
                             f2(x) <= f2_con(x) xor out_x2(x);
                         end loop;
@@ -167,8 +167,10 @@ begin
             end if;
         end if;
     end process;
-    
+
     f1_con <= f1;
     f2_con <= f2;
 
-end RTL; 
+    dat_o <= w_pmk(f1(0 to 4) & f2(0 to 2));
+
+end RTL;
